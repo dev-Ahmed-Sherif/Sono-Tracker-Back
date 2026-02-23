@@ -1,0 +1,2416 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SonoTracker.Api</name>
+    </assembly>
+    <members>
+        <member name="T:SonoTracker.Api.Controllers.V1.Base.BaseController">
+            <inheritdoc />
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Identity.AccountController">
+            <summary>
+            Controller for managing user accounts, including registration, login, and role updates.
+            </summary>
+            <remarks>
+            Initializes a new instance of the <see cref="T:SonoTracker.Api.Controllers.V1.Identity.AccountController"/> class.
+            </remarks>
+            <param name="accountService">Service for handling account-related operations.</param>
+            <param name="userData">Data of the currently logged-in user.</param>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.#ctor(SonoTracker.Application.Services.Identity.Account.IAccountService,SonoTracker.Common.DTO.Identity.User.UserData)">
+            <summary>
+            Controller for managing user accounts, including registration, login, and role updates.
+            </summary>
+            <remarks>
+            Initializes a new instance of the <see cref="T:SonoTracker.Api.Controllers.V1.Identity.AccountController"/> class.
+            </remarks>
+            <param name="accountService">Service for handling account-related operations.</param>
+            <param name="userData">Data of the currently logged-in user.</param>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.RegisterAsync(SonoTracker.Common.DTO.Identity.User.RegisterDto)">
+            <summary>
+            Registers a new user with the provided details.
+            </summary>
+            <param name="user">The registration details of the user.</param>
+            <returns>
+            An <see cref="T:ActionResult"/> containing a success message if the registration is successful, 
+            or a conflict response if the registration fails.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.LoginAsync(SonoTracker.Common.DTO.Identity.User.LoginRequestDto)">
+            <summary>
+            Authenticates a user and generates an access token and refresh token.
+            </summary>
+            <param name="user">The login request containing the user's email and password.</param>
+            <returns>
+            An <see cref="T:SonoTracker.Common.Core.IFinalResult"/> containing a <see cref="T:SonoTracker.Common.Core.IFinalResult"/> if the login is successful, 
+            or an unauthorized response if the login fails.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.Logout(System.String)">
+            <summary>
+            Logs out the user with the specified user ID.
+            </summary>
+            <param name="userId">The ID of the user to log out.</param>
+            <returns>An IActionResult indicating the result of the logout operation.</returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.RefreshTokenAsync(SonoTracker.Common.DTO.Identity.User.RefreshTokenRequestDto)">
+            <summary>
+            Refreshes the access token and refresh token for the user.
+            </summary>
+            <param name="model">The refresh token request containing user ID, access token, and refresh token.</param>
+            <returns>
+            An <see cref="T:ActionResult"/> containing a <see cref="T:SonoTracker.Common.DTO.Identity.User.LoginResponseDto"/> if successful, 
+            or an unauthorized response if the refresh operation fails.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.AccessTokenData">
+            <summary>
+            Retrieves the data of the currently logged-in user from the access token.
+            </summary>
+            <returns>An <see cref="T:ActionResult"/> containing the <see cref="T:SonoTracker.Common.DTO.Identity.User.UserData"/> of the logged-in user.</returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.GetUserByIdAsync(System.String)">
+            <summary>
+            Retrieves a user by their unique identifier.
+            </summary>
+            <param name="id"></param>
+            <returns>
+            An <see cref="T:ActionResult"/> containing the <see cref="T:SonoTracker.Domain.Entities.Identity.User"/> object if found, 
+            or a not found response if the user does not exist.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.GetAllUsersAsync">
+            <summary>
+            Gets all users in the application.
+            </summary>
+            <returns>A list of users.</returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.GetAllPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.User.FilterUserDto})">
+            <summary>
+            Retrieves a paginated list of users in the application.
+            </summary>
+            <returns>
+            An <see cref="T:ActionResult"/> containing a paginated list of users if found, 
+            or a not found response if no users exist.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.UpdateUserPersonalData(SonoTracker.Common.DTO.Identity.User.ChangeUserPersonalDataDto)">
+            <summary>
+            Updates the personal data of the currently logged-in user.
+            </summary>
+            <param name="changeUserPersonalDataDto">The DTO containing the user's updated personal data.</param>
+            <returns>
+            An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> indicating the result of the update operation. 
+            Returns a success message if the update is successful, or a bad request response if the operation fails.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.UpdateUserRoleAsync(SonoTracker.Common.DTO.Identity.User.UpdateUserRoleDto)">
+            <summary>
+            Updates the role of a user.
+            </summary>
+            <param name="user">The user role update request containing user ID and role ID.</param>
+            <returns>
+            An <see cref="T:ActionResult"/> containing a success message if the role update is successful, 
+            or a bad request response if the operation fails.
+            </returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountController.RemoveUser(System.String)">
+            <summary>
+            Removes a user by their unique identifier.
+            </summary>
+            <param name="id"></param>
+            <returns>
+            An <see cref="T:ActionResult"/> indicating whether the user was successfully removed.
+            </returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Identity.RolesController">
+            <summary>
+            Controller for managing roles in the application.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.#ctor(Microsoft.AspNetCore.Identity.RoleManager{Microsoft.AspNetCore.Identity.IdentityRole},SonoTracker.Application.Services.Identity.Role.IRoleService)">
+            <summary>
+            Controller for managing roles in the application.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetAllRolesAsync">
+            <summary>
+            Gets all roles in the application.
+            </summary>
+            <returns>A list of roles.</returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetPagedRolesAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.Role.FilterRoleDto})">
+            <summary>
+            Retrieves a paginated list of users in the application.
+            </summary>
+            <returns>
+            An <see cref="T:ActionResult"/> containing a paginated list of roles if found, 
+            or a not found response if no users exist.
+            </returns> 
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetRoleByIdAsync(System.String)">
+            <summary>
+            Gets a role by its ID.
+            </summary>
+            <param name="id"></param>
+            <returns>The role with the specified ID, or a not found result if the role does not exist.</returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.CreateRoleAsync(SonoTracker.Common.DTO.Identity.Role.AddRole)">
+            <summary>
+            Creates a new role in the application.
+            </summary>
+            <param name="roleDto">The role data transfer object containing role details.</param>
+            <returns>An ActionResult indicating the result of the role creation operation.</returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SonoTracker.Api.Controllers.V1.Identity.RolesController.DeleteRoleAsync(System.String)" -->
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.#ctor(SonoTracker.Application.Services.LookUp.AccidentType.IAccidentTypeService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.AccidentType.Parameters.AccidentTypeFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.AccidentType.AddAccidentTypeDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.AccidentType.AddAccidentTypeDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.CitiesController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.#ctor(SonoTracker.Application.Services.Lookup.City.ICityService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.City.Parameters.CityFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.City.AddCityDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.City.AddCityDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController.#ctor(SonoTracker.Application.Services.Enums.AppliedOns.IAppliedOnService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.CasesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.CasesController.#ctor(SonoTracker.Application.Services.Enums.Cases.ICaseService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.CasesController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.GendersController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.GendersController.#ctor(SonoTracker.Application.Services.Enums.Genders.IGenderService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.GendersController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.IDTypesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.IDTypesController.#ctor(SonoTracker.Application.Services.Enums.IDTypes.IIDTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.IDTypesController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController.#ctor(SonoTracker.Application.Services.Enums.InspectionTypes.IInspectionTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.OrganizationTypesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.OrganizationTypesController.#ctor(SonoTracker.Application.Services.Enums.OrganizationTypes.IOrganizationTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.OrganizationTypesController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.UnitCategoriesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.UnitCategoriesController.#ctor(SonoTracker.Application.Services.Enums.UnitCategories.IUnitCategoryService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.UnitCategoriesController.GetAllAsync">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.#ctor(SonoTracker.Application.Services.LookUp.GeoPoint.IGeoPointService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.GeoPoint.Parameters.GeoPointFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.AddAsync(SonoTracker.Common.DTO.Lookup.GeoPoint.AddGeoPointDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.UpdateAsync(SonoTracker.Common.DTO.Lookup.GeoPoint.AddGeoPointDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.#ctor(SonoTracker.Application.Services.LookUp.InspectionType.IInspectionTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.InspectionType.Parameters.InspectionTypeFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.InspectionType.AddInspectionTypeDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.InspectionType.AddInspectionTypeDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.#ctor(SonoTracker.Application.Services.Lookup.MaintenanceType.IMaintenanceTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.MaintenanceType.Parameters.MaintenanceTypeFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.MaintenanceType.AddMaintenanceTypeDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.MaintenanceType.AddMaintenanceTypeDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Nationality
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.#ctor(SonoTracker.Application.Services.Lookup.Nationality.INationalityService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Nationality
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.Nationality.Parameters.NationalityFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.Nationality.AddNationalityDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.Nationality.AddNationalityDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.RoutesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.#ctor(SonoTracker.Application.Services.LookUp.Route.IRouteService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.Route.Parameters.RouteFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.AddAsync(SonoTracker.Common.DTO.Lookup.Route.AddRouteDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.Route.AddRouteDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.TownController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.#ctor(SonoTracker.Application.Services.Lookup.Town.ITownService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.Town.Parameters.TownFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.AddAsync(SonoTracker.Common.DTO.Lookup.Town.AddTownDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.UpdateAsync(SonoTracker.Common.DTO.Lookup.Town.AddTownDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.#ctor(SonoTracker.Application.Services.LookUp.UnitType.IUnitTypeService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.GetallAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.UnitType.Parameters.UnitTypeFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.AddAsync(SonoTracker.Common.DTO.Lookup.UnitType.AddUnitTypeDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.UpdateAsync(SonoTracker.Common.DTO.Lookup.UnitType.AddUnitTypeDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypeController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.#ctor(SonoTracker.Application.Services.Tracker.Accident.IAccidentService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Accident.Parameters.AccidentFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.AddAsync(SonoTracker.Common.DTO.Tracker.Accident.AddAccidentDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Accident.AddAccidentDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.#ctor(SonoTracker.Application.Services.Tracker.FloatingUnitOrganization.IFloatingUnitOrganizationService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.Parameters.FloatingUnitOrganizationFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.AddAsync(SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.AddFloatingUnitOrganizationDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.AddFloatingUnitOrganizationDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.#ctor(SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.FloatingUnit.Parameters.FloatingUnitFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.AddAsync(SonoTracker.Common.DTO.Tracker.FloatingUnit.AddFloatingUnitDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.FloatingUnit.AddFloatingUnitDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.#ctor(SonoTracker.Application.Services.Tracker.FloatingUnitStaff.IFloatingUnitStaffService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.Parameters.FloatingUnitStaffFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.AddAsync(SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.AddFloatingUnitStaffDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.AddFloatingUnitStaffDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.#ctor(SonoTracker.Application.Services.Tracker.GeneralInspection.IGeneralInspectionService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.GeneralInspection.Parameters.GeneralInspectionFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.AddAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.#ctor(SonoTracker.Application.Services.Tracker.GovernorateGeoPoint.IGovernorateGeoPointService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.GovernorateGeoPoint.Parameters.GovernorateGeoPointFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.AddAsync(SonoTracker.Common.DTO.Tracker.GovernorateGeoPoint.AddGovernorateGeoPointDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.GovernorateGeoPoint.AddGovernorateGeoPointDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernorateGeoPointsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.#ctor(SonoTracker.Application.Services.Tracker.Governorate.IGovernorateService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Governorate.Parameters.GovernorateFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.AddAsync(SonoTracker.Common.DTO.Tracker.Governorate.AddGovernorateDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Governorate.AddGovernorateDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.#ctor(SonoTracker.Application.Services.Tracker.LicenseApplication.ILicenseApplicationService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.LicenseApplication.Parameters.LicenseApplicationFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.AddAsync(SonoTracker.Common.DTO.Tracker.LicenseApplication.AddLicenseApplicationDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.LicenseApplication.AddLicenseApplicationDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.#ctor(SonoTracker.Application.Services.Tracker.MarinaOrganization.IMaintenanceService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Maintenance.Parameters.MaintenanceFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.AddAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.#ctor(SonoTracker.Application.Services.Tracker.MarinaOrganization.IMarinaOrganizationService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.MarinaOrganization.Parameters.MarinaOrganizationFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.AddAsync(SonoTracker.Common.DTO.Tracker.MarinaOrganization.AddMarinaOrganizationDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.MarinaOrganization.AddMarinaOrganizationDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.#ctor(SonoTracker.Application.Services.Tracker.MarinaTrip.IMarinaTripService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters.MarinaTripFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.AddAsync(SonoTracker.Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarina.ITouristMarinaService,SonoTracker.Application.Services.Lookup.Town.ITownService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters.TouristMarinaFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.AddAsync(SonoTracker.Common.DTO.Tracker.TouristMarina.AddTouristMarinaDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TouristMarina.AddTouristMarinaDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.#ctor(SonoTracker.Application.Services.Tracker.Organization.IOrganizationService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Organization.Parameters.OrganizationFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.AddAsync(SonoTracker.Common.DTO.Tracker.Organization.AddOrganizationDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Organization.AddOrganizationDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetProjectReportData(SonoTracker.Common.DTO.Reports.Org.FilterOrgReportDTO,System.Threading.CancellationToken)">
+            <summary>
+            Generates a project report based on the provided filter.
+            </summary>
+            <param name="filter">The filter containing report parameters.</param>
+            <param name="cancellationToken">Token to observe while waiting for the task to complete.</param>
+            <returns>A PDF file containing the generated report.</returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.#ctor(SonoTracker.Application.Services.Tracker.OrganizationStaffStaff.IOrganizationStaffService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters.OrganizationStaffFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.AddAsync(SonoTracker.Common.DTO.Tracker.OrganizationStaff.AddOrganizationStaffDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.OrganizationStaff.AddOrganizationStaffDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.#ctor(SonoTracker.Application.Services.Tracker.TripGeo.ITripGeoService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripGeo.Parameters.TripGeoFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.AddAsync(SonoTracker.Common.DTO.Tracker.TripGeo.AddTripGeoDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripGeo.AddTripGeoDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.#ctor(SonoTracker.Application.Services.Tracker.TripInformation.ITripInformationService,SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripInformation.Parameters.TripInformationFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter})">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.AddAsync(SonoTracker.Common.DTO.Tracker.TripInformation.AddTripInformationDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripInformation.AddTripInformationDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V2.Base.BaseController">
+            <inheritdoc />
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V2.Business.TestsController">
+            <summary>
+            Test Controller
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.#ctor(SonoTracker.Application.Services.Test.ITestService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.GetAsync(System.Guid)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.GetEditAsync(System.Guid)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.GetAllAsync">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Test.Parameters.TestFilter})">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.AddAsync(SonoTracker.Common.DTO.Test.AddTestDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.UpdateAsync(SonoTracker.Common.DTO.Test.AddTestDto)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.DeleteAsync(System.Guid)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V2.Business.TestsController.DeleteSoftAsync(System.Guid)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Extensions.ConfigureDependencyExtension">
+            <summary>
+            Dependency Extensions
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Register Extensions
+            </summary>
+            <param name="services"></param>
+            <param name="configuration"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterSignalR(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers SignalR services with custom options.
+            </summary>
+            <param name="services">The service collection to add SignalR to.</param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Add DbContext
+            </summary>
+            <param name="services"></param>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterApiMonitoring(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add DbContext
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.ConfigureAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Configure Authentication With Identity Server
+            </summary>
+            <param name="services"></param>
+            <param name="configuration"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterHttpClientHelpers(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Register Http Client Helpers
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterAutoMapper(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            register auto-mapper
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterLocalization(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            register auto-mapper
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterValidators(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Register Business Validators
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterIntegrationRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            register Integration Repositories
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterCustomRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            register Custom Repositories
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterApiVersioning(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Register Api Versioning
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterLowerCaseUrls(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Lower Case Urls
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterSwaggerConfig(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Swagger Config
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterCores(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Register Main Core
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="T:SonoTracker.Api.Extensions.ConfigureMiddlewareExtension">
+            <summary>
+            Pipeline Extensions
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Extensions.Swagger.Headers.LanguageHeader">
+            <summary>
+            Language Header
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.Swagger.Headers.LanguageHeader.Apply(Microsoft.OpenApi.Models.OpenApiOperation,Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext)">
+            <summary>
+            Apply
+            </summary>
+            <param name="operation"></param>
+            <param name="context"></param>
+        </member>
+        <member name="T:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions">
+            <summary>
+              Configures the Swagger generation options.
+            </summary>
+            <remarks>
+              This allows API versioning to define a Swagger document per API version after the <see
+              cref="T:Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider"/> service has been resolved from the service container.
+            </remarks>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.#ctor(Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
+            <summary>
+              Initializes a new instance of the <see cref="T:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions"/> class.
+            </summary>
+            <param name="provider">
+              The <see cref="T:Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider">provider</see> used to generate Swagger documents.
+            </param>
+        </member>
+        <member name="M:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="T:SonoTracker.Api.Hubs.GeoHub">
+            <summary>  
+            Represents a SignalR hub for managing geolocation-related communication.  
+            </summary> 
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.GeoHub.#ctor(Microsoft.AspNetCore.Identity.UserManager{SonoTracker.Domain.Entities.Identity.User},SonoTracker.Application.Services.Tracker.TripGeo.ITripGeoService,SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+            <summary>  
+            Represents a SignalR hub for managing geolocation-related communication.  
+            </summary> 
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.GeoHub.OnConnectedAsync">
+            <inheritdoc/>
+        </member>
+        <member name="T:SonoTracker.Api.MiddleWares.ExceptionMiddleware">
+            <summary>
+            Exception Middleware
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Invoke
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
+            <summary>
+            Handle
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.MiddleWares.LanguageMiddleware">
+            <summary>
+            Language Middleware
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.LanguageMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="next"></param>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.LanguageMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Invoke
+            </summary>
+            <param name="httpContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.MiddleWares.MiddlewareExtensions">
+            <summary>
+            Register Middleware
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.MiddlewareExtensions.ConfigureCustomMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Configure
+            </summary>
+            <param name="app"></param>
+        </member>
+        <member name="T:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware">
+            <summary>
+            Swagger Middleware
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Invoke
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsAuthorized(System.String,System.String)">
+             <summary>
+            
+             </summary>
+             <param name="username"></param>
+             <param name="password"></param>
+             <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsLocalRequest(Microsoft.AspNetCore.Http.HttpContext)">
+             <summary>
+            
+             </summary>
+             <param name="context"></param>
+             <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Program">
+            <summary>
+            Start Point
+            </summary>
+        </member>
+        <member name="P:SonoTracker.Api.Program.Configuration">
+            <summary>
+            Configuration Properties
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Program.Main(System.String[])">
+            <summary>
+            Kick Off
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Program.CreateHostBuilder(System.String[])">
+            <summary>
+            Web Host Builder
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Startup">
+            <summary>
+            Start Up Class
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="P:SonoTracker.Api.Startup.Configuration">
+            <summary>
+            Public Configuration Property
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configure Dependencies
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoTracker.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
+            <summary>
+            Configure Pipeline
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+            <param name="provider"></param>
+        </member>
+    </members>
+</doc>

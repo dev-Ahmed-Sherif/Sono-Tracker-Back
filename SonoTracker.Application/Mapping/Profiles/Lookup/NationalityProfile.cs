@@ -1,0 +1,15 @@
+﻿using SonoTracker.Common.DTO.Lookup.Nationality;
+using SonoTracker.Domain.Entities.Lookups;
+
+namespace SonoTracker.Application.Mapping
+{
+    public partial class MappingService
+    {
+        public void MapNationality()
+        {
+            CreateMap<Nationality, NationalityDto>().ReverseMap();
+            CreateMap<Nationality, EditNationalityDto>().ReverseMap();
+            CreateMap<Nationality, AddNationalityDto>().ReverseMap();
+        }
+    }
+}

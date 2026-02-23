@@ -1,0 +1,171 @@
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using SonoTracker.Api.Controllers.V1.Base;
+using SonoTracker.Application.Services.Identity.Account;
+using SonoTracker.Application.Services.Identity.Role;
+using SonoTracker.Common.Core;
+using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Identity.Role;
+using System.Net;
+
+namespace SonoTracker.Api.Controllers.V1.Identity
+{
+    /// <summary>
+    /// Controller for managing roles in the application.
+    /// </summary>
+    [Route("api/[controller]")]
+    [ApiController]
+    public class RolesController(RoleManager<IdentityRole> roleManager,IRoleService roleService) : BaseController
+    {
+        /// <summary>
+        /// Gets all roles in the application.
+        /// </summary>
+        /// <returns>A list of roles.</returns>
+        [HttpGet("getAll")]
+        public ActionResult<IFinalResult> GetAllRolesAsync()
+        {
+            var responseResult = new ResponseResult();
+
+            var roles = roleManager.Roles.Select(r => new RoleDto()
+            {
+                Id = r.Id,
+                NameAr = r.ConcurrencyStamp,
+                NameEn = r.Name,
+            }).ToList();
+
+            return Ok(responseResult.PostResult(roles, HttpStatusCode.OK, message: HttpStatusCode.OK.ToString()));
+        }
+        /// <summary>
+        /// Retrieves a paginated list of users in the application.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="ActionResult"/> containing a paginated list of roles if found, 
+        /// or a not found response if no users exist.
+        /// </returns> 
+        [HttpPost("getPaged")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public ActionResult<IFinalResult> GetPagedRolesAsync(BaseParam<FilterRoleDto> filter)
+        {
+            
+            var roles = roleService.GetAllPagedAsync(filter);
+
+            if (roles == null || roles.TotalCount == 0)
+            {
+                return NotFound("لا يوجد بيانات طبقا للبحث المطلوب");
+            }
+
+            return Ok(roles);
+        }
+        /// <summary>
+        /// Gets a role by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The role with the specified ID, or a not found result if the role does not exist.</returns>
+        [HttpGet("get/{id}")]
+        public async Task<ActionResult<IFinalResult>> GetRoleByIdAsync(string id)
+        {
+            var responseResult = new ResponseResult();
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
+                                  message: "Role Id Required"));
+            }
+
+            var role = await roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return NotFound(responseResult.PostResult(null, HttpStatusCode.NotFound,
+                                message: "Role not found."));
+            }
+
+            RoleDto roleDto = new()
+            {
+                Id = role.Id,
+                NameAr = role.ConcurrencyStamp,
+                NameEn = role.Name,
+            };
+
+            return Ok(responseResult.PostResult(roleDto, HttpStatusCode.OK,
+                      message: HttpStatusCode.OK.ToString()));
+        }
+
+        /// <summary>
+        /// Creates a new role in the application.
+        /// </summary>
+        /// <param name="roleDto">The role data transfer object containing role details.</param>
+        /// <returns>An ActionResult indicating the result of the role creation operation.</returns>
+        [HttpPost("add")]
+        public async Task<ActionResult<IFinalResult>> CreateRoleAsync([FromBody] AddRole roleDto)
+        {
+            var responseResult = new ResponseResult();
+
+            if (roleDto == null || 
+                string.IsNullOrWhiteSpace(roleDto.NameAr) || 
+                string.IsNullOrWhiteSpace(roleDto.NameEn))
+            {
+                return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
+                                  message: "Invalid Role Data."));
+            }
+
+            var role = new IdentityRole
+            {
+                Name = roleDto.NameEn,
+                NormalizedName = roleDto.NameEn.ToUpper(),
+                ConcurrencyStamp = roleDto.NameAr
+            };
+
+            var result = await roleManager.CreateAsync(role);
+
+            if (result.Succeeded)
+            {
+                return Ok(responseResult.PostResult(role.Id, HttpStatusCode.OK,
+                          message: HttpStatusCode.OK.ToString()));
+            }
+
+            return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
+                              message: "Failed to create role: " + 
+                              string.Join(", ", result.Errors.Select(e => e.Description))));
+
+        }        /// <summary>
+        /// Deletes a role from the application.
+        /// </summary>
+        /// /// </summary>
+        /// <param name="id"></param>
+        /// <returns>
+        /// <returns>An IActionResult indicating the result of the delete operation.</returns>
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult<IFinalResult>> DeleteRoleAsync(string id)
+        {
+            var responseResult = new ResponseResult();
+
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
+                                  message: "Role ID cannot be null or empty."));
+            }
+
+            var role = await roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return NotFound(responseResult.PostResult(null, HttpStatusCode.NotFound,
+                                message: "Role not found."));
+            }
+
+            var result = await roleManager.DeleteAsync(role);
+
+            if (result.Succeeded)
+            {
+                return Ok(responseResult.PostResult(result, HttpStatusCode.OK,
+                          message: "Role deleted successfully."));
+            }
+
+            return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
+                              message: "Failed to delete role: " + 
+                              string.Join(", ", result.Errors.Select(e => e.Description))));
+        }
+    }   
+}

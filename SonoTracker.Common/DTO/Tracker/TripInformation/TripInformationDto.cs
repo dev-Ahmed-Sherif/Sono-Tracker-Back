@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using SonoTracker.Common.Core;
+
+namespace SonoTracker.Common.DTO.Tracker.TripInformation
+{
+    public class TripInformationDto : IEntityDto<Guid?>
+    {
+        public Guid? Id { get; set; }
+    
+        public DateTime SartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
+
+        public string Code { get; set; }
+
+        public Guid FloatingUnitId { get; set; }
+
+        public string FloatingUnitNameAr { get; set; }
+        public string FloatingUnitNameEn { get; set; }
+        public string FloatingUnitCode { get; set; }
+
+        public int StaffNumber { get; set; }
+
+        public int PassengerNumber { get; set; }
+
+        public Guid RouteId { get; set; }
+
+        public string RouteName { get; set; }
+
+        public string PassengerAttachment { get; set; }
+
+
+    }
+}

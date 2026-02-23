@@ -1,0 +1,21 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using SonoTracker.Common.Core;
+
+namespace SonoTracker.Common.DTO.Base
+{
+    [ExcludeFromCodeCoverage]
+    public class LookupDto<T> : IEntityDto<T>
+    {
+        public T Id { get; set; }
+
+        [Required, RegularExpression("^[a-zA-Z\\-\\s]+$",
+         ErrorMessage = "NameEn should be English Letters Only No Numbers Or Special Chars Allowed")]
+        public string NameEn { get; set; }
+
+        [Required, RegularExpression("^[\u0600-\u06FF\\-\\s]+$", 
+         ErrorMessage = "NameAr should Arabic Letters Only No Numbers Or Special Chars Allowed")]
+        public string NameAr { get; set; }
+        public string Code { get; set; }
+    }
+}

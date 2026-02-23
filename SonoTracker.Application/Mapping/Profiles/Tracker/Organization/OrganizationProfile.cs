@@ -1,0 +1,27 @@
+﻿using SonoTracker.Common.DTO.Reports.Org;
+using SonoTracker.Common.DTO.Tracker.Organization;
+using SonoTracker.Domain.Entities.Tracker;
+
+namespace SonoTracker.Application.Mapping
+{
+    public partial class MappingService
+    {
+        public void MapOrganization()
+        {
+            CreateMap<Organization, OrganizationDto>()
+                 .ForMember(des => des.OrganizationType, opt => opt.MapFrom(src => src.OrganizationTypeId.GetName()))
+                 .ForMember(des => des.NationalityName, opt => opt.MapFrom(src => src.Nationality.NameAr))
+                 .ForMember(des => des.InspectionType, opt => opt.MapFrom(src => src.InspectionType.NameAr))
+                 .ReverseMap();
+            CreateMap<Organization, EditOrganizationDto>()
+                .ForMember(des => des.OrganizationType, opt => opt.MapFrom(src => src.OrganizationTypeId.GetName()))
+                 .ForMember(des => des.NationalityName, opt => opt.MapFrom(src => src.Nationality.NameAr))
+                 .ForMember(des => des.InspectionType, opt => opt.MapFrom(src => src.InspectionType.NameAr))
+                .ReverseMap();
+
+            CreateMap<Organization, AddOrganizationDto>().ReverseMap();
+
+            CreateMap<Organization, OrgReportDTO>().ReverseMap();
+        }
+    }
+}
