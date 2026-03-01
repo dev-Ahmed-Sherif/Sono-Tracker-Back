@@ -130,7 +130,7 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            SetEntityModifiedBaseProperties(entity);
+            //SetEntityModifiedBaseProperties(entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync();
 

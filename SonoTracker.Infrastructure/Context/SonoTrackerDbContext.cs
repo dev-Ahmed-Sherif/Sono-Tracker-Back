@@ -95,32 +95,9 @@ namespace SonoTracker.Infrastructure.Context
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasSequence<long>("TicketReference").StartsAt(1).IncrementsBy(1);
 
-            modelBuilder.ApplyConfiguration(new TestConfig());
             //modelBuilder.Entity<Action>().HasData(_dataInitializer.SeedActionsAsync());
             //modelBuilder.Entity<Status>().HasData(_dataInitializer.SeedStatusesAsync());
-            modelBuilder.Entity<LicenseApplication>(entity =>
-            {
-                modelBuilder.ApplyConfiguration(new BaseConfig<LicenseApplication,Guid>());
-
-                entity.HasOne(c => c.FromOrganization) // Navigation Property
-                       .WithMany(c => c.LicenseApplications)  // If Employee has no collection of Correspondence
-                       .HasForeignKey(k => k.FromOrganizationId) // Ensure there is a FK property
-                       .OnDelete(DeleteBehavior.NoAction);
-
-                //entity.HasOne(c => c.ToOrganization) // Navigation Property
-                //       .WithMany(c => c.LicenseApplications)  // If Employee has no collection of Correspondence
-                //       .HasForeignKey(k => k.ToOrganizationId) // Ensure there is a FK property
-                //       .OnDelete(DeleteBehavior.NoAction);
-            });
-            modelBuilder.Entity<OrganizationStaff>(entity =>
-            {
-                modelBuilder.ApplyConfiguration(new BaseConfig<OrganizationStaff,Guid>());
-
-                entity.HasOne(c => c.Organization) // Navigation Property
-                       .WithMany(c => c.OrganizationStaffs)  // If Employee has no collection of Correspondence
-                       .HasForeignKey(k => k.OrganizationId) // Ensure there is a FK property
-                       .OnDelete(DeleteBehavior.NoAction);
-            });
+            
         }
     }
 }

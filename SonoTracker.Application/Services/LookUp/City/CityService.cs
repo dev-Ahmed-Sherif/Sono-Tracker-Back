@@ -124,7 +124,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                     entity.Code = "01";
                 }
 
-                SetEntityCreatedBaseProperties(entity);
+                //SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
 
@@ -160,7 +160,7 @@ namespace SonoTracker.Application.Services.Lookup.City
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-                SetEntityModifiedBaseProperties(entity);
+                //SetEntityModifiedBaseProperties(entity);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
 

@@ -98,7 +98,7 @@ namespace SonoTracker.Application.Services.Base
             try
             {
                 T entity = Mapper.Map<TAddDto, T>(model);
-                SetEntityCreatedBaseProperties(entity);
+                //SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
                 if (affectedRows > 0)
@@ -155,7 +155,7 @@ namespace SonoTracker.Application.Services.Base
             {
                 T entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
                 var newEntity = Mapper.Map(model, entityToUpdate);
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
                 if (affectedRows > 0)
@@ -213,7 +213,7 @@ namespace SonoTracker.Application.Services.Base
 
                 if (entityToDelete != null)
                 {
-                    SetEntityModifiedBaseProperties(entityToDelete);
+                    //SetEntityModifiedBaseProperties(entityToDelete);
                     UnitOfWork.Repository.RemoveLogical(entityToDelete);
                     var affectedRows = await UnitOfWork.SaveChangesAsync();
                     if (affectedRows > 0)
@@ -238,27 +238,27 @@ namespace SonoTracker.Application.Services.Base
         }
    
 
-        protected virtual void SetEntityCreatedBaseProperties(BaseEntity<TKey> entity)
-        {
-            entity.CreatedById = ClaimData.UserId;
-            entity.CreatedByEmployeeId = ClaimData.EmployeeId;
-            entity.CreatedDate = DateTime.Now;
-            entity.CreatedByEmployeeEn = ClaimData.EmployeeEn;
-            entity.CreatedByEmployeeAr = ClaimData.EmployeeAr;
-            entity.IpAddress = ClaimData.IpAddress;
+        //protected virtual void SetEntityCreatedBaseProperties(BaseEntity<TKey> entity)
+        //{
+        //    entity.CreatedById = ClaimData.UserId;
+        //    entity.CreatedByEmployeeId = ClaimData.EmployeeId;
+        //    entity.CreatedDate = DateTime.Now;
+        //    entity.CreatedByEmployeeEn = ClaimData.EmployeeEn;
+        //    entity.CreatedByEmployeeAr = ClaimData.EmployeeAr;
+        //    entity.IpAddress = ClaimData.IpAddress;
 
-        }
+        //}
 
-        protected virtual void SetEntityModifiedBaseProperties(BaseEntity<TKey> entity)
-        {
-            entity.ModifiedById = ClaimData.UserId;
-            entity.ModifiedByEmployeeId = ClaimData.EmployeeId;
-            entity.ModifiedDate = DateTime.Now;
-            entity.ModifiedByEmployeeEn = ClaimData.EmployeeEn;
-            entity.ModifiedByEmployeeAr = ClaimData.EmployeeAr;
-            entity.IpAddress = ClaimData.IpAddress;
+        //protected virtual void SetEntityModifiedBaseProperties(BaseEntity<TKey> entity)
+        //{
+        //    entity.ModifiedById = ClaimData.UserId;
+        //    entity.ModifiedByEmployeeId = ClaimData.EmployeeId;
+        //    entity.ModifiedDate = DateTime.Now;
+        //    entity.ModifiedByEmployeeEn = ClaimData.EmployeeEn;
+        //    entity.ModifiedByEmployeeAr = ClaimData.EmployeeAr;
+        //    entity.IpAddress = ClaimData.IpAddress;
 
-        }
+        //}
     
         //protected virtual async Task<List<RoleDto>> GetRoles(string nationalId)
         //{

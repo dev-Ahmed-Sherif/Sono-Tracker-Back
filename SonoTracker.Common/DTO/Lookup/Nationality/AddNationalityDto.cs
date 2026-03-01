@@ -3,7 +3,7 @@ using System;
 
 namespace SonoTracker.Common.DTO.Lookup.Nationality
 {
-    public class AddNationalityDto : LookupDto<Guid?>
+    public class AddNationalityDto : LookupDto<string>
     {
     }
 }

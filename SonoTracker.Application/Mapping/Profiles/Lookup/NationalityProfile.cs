@@ -8,8 +8,12 @@ namespace SonoTracker.Application.Mapping
         public void MapNationality()
         {
             CreateMap<Nationality, NationalityDto>().ReverseMap();
+
             CreateMap<Nationality, EditNationalityDto>().ReverseMap();
-            CreateMap<Nationality, AddNationalityDto>().ReverseMap();
+            
+            CreateMap<Nationality, AddNationalityDto>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

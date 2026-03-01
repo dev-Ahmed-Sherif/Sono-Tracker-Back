@@ -58,23 +58,23 @@ namespace SonoTracker.Infrastructure.UnitOfWork
         }
         public void ApplyChangesDate()
         {
-            var entries = _context.ChangeTracker.Entries<BaseEntity<Guid>>();
+            var entries = _context.ChangeTracker.Entries<BaseAudit<string>>();
             foreach (var item in entries)
             {
                 switch (item.State)
                 {
                     case EntityState.Added:
-                        item.Entity.CreatedDate = DateTime.Now;
-                        item.Entity.CreatedById = _user.Id ?? null;
-                        item.Entity.CreatedByEmployeeAr = _user.Name ?? null;
-                        item.Entity.ModifiedDate = DateTime.Now;
-                        item.Entity.ModifiedById = _user.Id ?? null;
-                        item.Entity.ModifiedByEmployeeAr = _user.Name ?? null;
+                        item.Entity.CreatedDate = DateTime.UtcNow;
+                        item.Entity.CreatedById = _user.Id != "" ? _user.Id : "System";
+                        item.Entity.CreatedBy = _user.Name ?? null;
+                        item.Entity.ModifiedDate = DateTime.UtcNow;
+                        item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
+                        item.Entity.ModifiedBy = _user.Name ?? null;
                         break;
                     case EntityState.Modified:
-                        item.Entity.ModifiedDate = DateTime.Now;
-                        item.Entity.ModifiedById = _user.Id ?? null;
-                        item.Entity.ModifiedByEmployeeAr = _user.Name ?? null;
+                        item.Entity.ModifiedDate = DateTime.UtcNow;
+                        item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
+                        item.Entity.ModifiedBy = _user.Name ?? null;
                         break;
                 }
             }

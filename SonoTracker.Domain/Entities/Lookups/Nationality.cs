@@ -7,8 +7,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Lookups
 {
     [ExcludeFromCodeCoverage]
-    public class Nationality : Lookup<Guid>
+    public class Nationality : Lookup<string>
     {
+        public Nationality()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
         public virtual ICollection<Organization> Organizations { get; set; } = new HashSet<Organization>();
 
         public virtual ICollection<OrganizationStaff> OrganizationStaffs { get; set; } = new HashSet<OrganizationStaff>();

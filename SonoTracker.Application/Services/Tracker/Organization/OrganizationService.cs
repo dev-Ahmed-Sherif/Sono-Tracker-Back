@@ -173,7 +173,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            SetEntityModifiedBaseProperties(entity);
+            //SetEntityModifiedBaseProperties(entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync();
 

@@ -42,7 +42,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
         {
             var entity = await UnitOfWork.Repository
                     .LastOrDefaultAsync(x => x.TripInformation.FloatingUnitId == Guid.Parse(id.ToString()),
-                            orderBy: q => q.OrderByDescending(d => d.CreatedDate),
+                            //orderBy: q => q.OrderByDescending(d => d.),
                             include: src => src
                                        .Include(t => t.GeoPoint)
                                        .Include(t => t.TripInformation)

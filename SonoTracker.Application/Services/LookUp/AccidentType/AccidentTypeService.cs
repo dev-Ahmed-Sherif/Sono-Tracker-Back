@@ -133,7 +133,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentType
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            SetEntityModifiedBaseProperties(entity);
+            //SetEntityModifiedBaseProperties(entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync();
 

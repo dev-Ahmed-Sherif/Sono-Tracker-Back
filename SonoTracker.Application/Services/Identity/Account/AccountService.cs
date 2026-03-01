@@ -211,19 +211,16 @@ namespace SonoTracker.Application.Services.Identity.Account
             RefreshToken token = new()
             {
                 Token = refreshToken,
+                UserId = user.Id,
                 User = user,
                 ExpiryTime = DateTime.Now.AddDays(AuthConstants.RefreshTokenLife),
+                CreatedBy = user.FullName,
                 CreatedById = user.Id,
                 CreatedDate = DateTime.Now,
+                ModifiedBy = user.FullName,
                 ModifiedById = user.Id,
                 ModifiedDate = DateTime.Now,
-                CreatedByEmployeeAr = user.FullName,
-                CreatedByEmployeeEn = "",
-                CreatedByEmployeeId = "",
-                ModifiedByEmployeeAr = user.FullName,
                 IsDeleted = false,
-                ModifiedByEmployeeEn = "",
-                ModifiedByEmployeeId = "",
                 IpAddress = ""
             };
 

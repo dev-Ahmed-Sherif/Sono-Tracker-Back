@@ -276,7 +276,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                                           message: MessagesConstants.NotFound);
                 }
 
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 

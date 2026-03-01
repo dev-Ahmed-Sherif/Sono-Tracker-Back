@@ -89,3 +89,9 @@
 /SonoTracker.Domain/bin/Release/net8.0
 /SonoTracker.Infrastructure/bin/Release/net8.0
 /SonoTracker.Integration/bin/Release/net8.0
+/SonoTracker.Api/bin/Debug/net9.0
+/SonoTracker.Application/bin/Debug/net9.0
+/SonoTracker.Common/bin/Debug/net9.0
+/SonoTracker.Domain/bin/Debug/net9.0
+/SonoTracker.Infrastructure/bin/Debug/net9.0
+/SonoTracker.Integration/bin/Debug/net9.0

@@ -8,7 +8,7 @@ using SonoTracker.Common.DTO.Lookup.Nationality.Parameters;
 
 namespace SonoTracker.Application.Services.Lookup.Nationality
 {
-    public interface INationalityService : IBaseService<Domain.Entities.Lookups.Nationality, AddNationalityDto, EditNationalityDto, NationalityDto, Guid, Guid?>
+    public interface INationalityService : IBaseService<Domain.Entities.Lookups.Nationality, AddNationalityDto, EditNationalityDto, NationalityDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<NationalityFilter> filter);
 

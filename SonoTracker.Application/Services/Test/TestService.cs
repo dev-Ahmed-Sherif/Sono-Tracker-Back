@@ -55,10 +55,10 @@ namespace SonoTracker.Application.Services.Test
         static Expression<Func<Entities.Test, bool>> PredicateBuilderFunction(TestFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Test>(x => x.IsDeleted == filter.IsDeleted);
-            if (!string.IsNullOrWhiteSpace(filter?.NameAr))
-            {
-                predicate = predicate.And(b => b.CreatedByEmployeeAr.ToLower().Contains(filter.NameAr.ToLower()));
-            }
+            //if (!string.IsNullOrWhiteSpace(filter?.NameAr))
+            //{
+            //    predicate = predicate.And(b => b.CreatedByEmployeeAr.ToLower().Contains(filter.NameAr.ToLower()));
+            //}
             return predicate;
         }
 

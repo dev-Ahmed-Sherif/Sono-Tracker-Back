@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Nationality
 {
-    public class NationalityService(IServiceBaseParameter<Domain.Entities.Lookups.Nationality> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Nationality, AddNationalityDto, EditNationalityDto, NationalityDto, Guid, Guid?>(businessBaseParameter), INationalityService
+    public class NationalityService(IServiceBaseParameter<Domain.Entities.Lookups.Nationality> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Nationality, AddNationalityDto, EditNationalityDto, NationalityDto, string, string>(businessBaseParameter), INationalityService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Nationality, bool>> predicate = null)
         {
@@ -119,7 +119,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
                     entity.Code = "0001";
                 }
 
-                SetEntityCreatedBaseProperties(entity);
+                //SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
 
@@ -154,7 +154,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            SetEntityModifiedBaseProperties(entity);
+            //SetEntityModifiedBaseProperties(entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync();
 

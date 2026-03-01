@@ -34,8 +34,8 @@ namespace SonoTracker.Domain.Entities.Audit
                 OldValues = OldValues.Count == 0 ? null : JsonConvert.SerializeObject(OldValues),
                 NewValues = NewValues.Count == 0 ? null : JsonConvert.SerializeObject(NewValues),
                 AffectedColumns = ChangedColumns.Count == 0 ? null : JsonConvert.SerializeObject(ChangedColumns),
-                CreatedById = UserId,
-                ModifiedById = UserId
+                //CreatedById = UserId,
+                //ModifiedById = UserId
             };
             return audit;
         }

@@ -166,7 +166,7 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
                     _uploaderConfiguration.DeleteFile(entityToUpdate.ImageUrl);
                 }
 
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
                 if (affectedRows > 0)

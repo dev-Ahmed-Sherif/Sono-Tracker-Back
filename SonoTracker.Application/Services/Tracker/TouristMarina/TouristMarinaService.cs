@@ -173,7 +173,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
                 var newEntity = Mapper.Map(dto, entityToUpdate);
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
                 if (affectedRows > 0)

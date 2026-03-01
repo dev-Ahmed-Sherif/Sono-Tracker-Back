@@ -184,7 +184,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
                     newEntity.InspectionAttachment = entityRes.InspectionAttachment;
                 }
 
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();
                 if (affectedRows > 0)

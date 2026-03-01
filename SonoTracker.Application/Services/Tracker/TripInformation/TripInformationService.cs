@@ -214,7 +214,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                     newEntity.PassengerAttachment = entityRes.PassengerAttachment;
                 }
 
-                SetEntityModifiedBaseProperties(newEntity);
+                //SetEntityModifiedBaseProperties(newEntity);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 
