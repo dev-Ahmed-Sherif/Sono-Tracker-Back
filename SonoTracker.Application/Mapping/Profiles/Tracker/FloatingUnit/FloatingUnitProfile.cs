@@ -8,8 +8,8 @@ namespace SonoTracker.Application.Mapping
         public void MapFloatingUnit()
         {
             CreateMap<FloatingUnit, FloatingUnitDto>()
-                 .ForMember(des => des.UnitCategoryName, opt => opt.MapFrom(src => src.UnitCategory.GetName()))
-                 .ForMember(des => des.UnitTypeName, opt => opt.MapFrom(src => src.UnitType.NameAr))
+                 .ForMember(des => des.UnitCategory, opt => opt.MapFrom(src => src.UnitType.UnitCategory.GetName()))
+                 .ForMember(des => des.UnitType, opt => opt.MapFrom(src => src.UnitType.NameAr))
                  .ReverseMap();
             CreateMap<FloatingUnit, EditFloatingUnitDto>().ReverseMap();
             CreateMap<FloatingUnit, AddFloatingUnitDto>().ReverseMap();

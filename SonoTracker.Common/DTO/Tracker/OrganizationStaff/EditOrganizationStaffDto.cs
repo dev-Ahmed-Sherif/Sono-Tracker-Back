@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -7,9 +7,9 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
 {
 
     [ExcludeFromCodeCoverage]
-    public class EditOrganizationStaffDto : IEntityDto<Guid?>
+    public class EditOrganizationStaffDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public string Name { get; set; }
 

@@ -11,7 +11,7 @@ using SonoTracker.Common.DTO.Lookup.InspectionType;
 
 namespace SonoTracker.Application.Services.LookUp.InspectionType
 {
-    public interface IInspectionTypeService : IBaseService<Entities.Lookups.InspectionType, AddInspectionTypeDto, EditInspectionTypeDto, InspectionTypeDto, Guid, Guid?>
+    public interface IInspectionTypeService : IBaseService<Entities.Lookups.InspectionType, AddInspectionTypeDto, EditInspectionTypeDto, InspectionTypeDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionTypeFilter> filter);
 

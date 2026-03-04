@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.Maintenance;
@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
 {
-   public  interface IMaintenanceService : IBaseService<Domain.Entities.Tracker.Maintenance, AddMaintenanceDto, EditMaintenanceDto, MaintenanceDto, Guid,Guid?>
+   public  interface IMaintenanceService : IBaseService<Domain.Entities.Tracker.Maintenance, AddMaintenanceDto, EditMaintenanceDto, MaintenanceDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceFilter> Filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }
 }

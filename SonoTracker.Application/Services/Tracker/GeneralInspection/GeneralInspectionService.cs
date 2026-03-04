@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace SonoTracker.Application.Services.Tracker.GeneralInspection
 {
-    public class GeneralInspectionService : BaseService<Entities.Tracker.Inspection, AddGeneralInspectionDto, EditGeneralInspectionDto, GeneralInspectionDto, Guid, Guid?>, IGeneralInspectionService
+    public class GeneralInspectionService : BaseService<Entities.Tracker.Inspection, AddGeneralInspectionDto, EditGeneralInspectionDto, GeneralInspectionDto, string, string>, IGeneralInspectionService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
@@ -35,7 +35,8 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
 
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.Organization)
                 .Include(t => t.TripInformation)
@@ -47,7 +48,8 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
               include: src => src
                 .Include(t => t.Organization)
                 .Include(t => t.TripInformation)
@@ -94,13 +96,13 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.Inspection>(x => x.IsDeleted == filter.IsDeleted);
            
-            if (filter.OrganizationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.OrganizationId))
             {
-                predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId.Value);
+                predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId);
             }
-            if (filter.TripInformationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.TripInformationId))
             {
-                predicate = predicate.And(x => x.TripInformationId == filter.TripInformationId.Value);
+                predicate = predicate.And(x => x.TripInformationId == filter.TripInformationId);
             }
             if (filter.InspectionDate.HasValue)
             {
@@ -110,9 +112,9 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             {
                 predicate = predicate.And(x => x.IsInspected == filter.IsInspected);
             }
-            if (filter.FloatingUnitId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
-                predicate = predicate.And(x => x.TripInformation.FloatingUnitId == filter.FloatingUnitId.Value);
+                predicate = predicate.And(x => x.TripInformation.FloatingUnitId == filter.FloatingUnitId);
             }
 
             
@@ -122,9 +124,10 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
         }
       
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

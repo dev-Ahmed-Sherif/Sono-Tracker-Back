@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.City
 {
-    public interface ICityService : IBaseService<Domain.Entities.Lookups.City, AddCityDto, EditCityDto, CityDto, Guid, Guid?>
+    public interface ICityService : IBaseService<Domain.Entities.Lookups.City, AddCityDto, EditCityDto, CityDto, string, string>
     {
     Task<PagingResult> GetAllPagedAsync(BaseParam<CityFilter> filter);
 

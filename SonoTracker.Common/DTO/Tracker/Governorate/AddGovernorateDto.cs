@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
@@ -7,9 +7,9 @@ using SonoTracker.Common.Core;
 namespace SonoTracker.Common.DTO.Tracker.Governorate
 {
     [ExcludeFromCodeCoverage]
-    public class AddGovernorateDto : IEntityDto<Guid?>
+    public class AddGovernorateDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string Id { get; set; }
 
         [MaxLength(100),Required]
         public required string Name { get; set; }

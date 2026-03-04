@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization;
+using SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization;
 using SonoTracker.Domain.Entities.Tracker;
 
 namespace SonoTracker.Application.Mapping

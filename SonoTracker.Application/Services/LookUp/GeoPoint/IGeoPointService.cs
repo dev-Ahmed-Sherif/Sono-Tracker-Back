@@ -8,7 +8,7 @@ using SonoTracker.Common.DTO.Lookup.GeoPoint;
 
 namespace SonoTracker.Application.Services.LookUp.GeoPoint
 {
-    public interface IGeoPointService : IBaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, Guid, Guid?>
+    public interface IGeoPointService : IBaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter);
 

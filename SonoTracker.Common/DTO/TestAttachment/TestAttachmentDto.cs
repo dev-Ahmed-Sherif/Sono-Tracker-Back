@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Common.DTO.TestAttachment
@@ -6,7 +6,7 @@ namespace SonoTracker.Common.DTO.TestAttachment
     [ExcludeFromCodeCoverage]
     public class TestAttachmentDto
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public Guid FileId { get; set; }
 

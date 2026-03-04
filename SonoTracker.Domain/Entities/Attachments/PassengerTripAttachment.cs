@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Tracker;
 
 namespace SonoTracker.Domain.Entities.Attachments
 {
-    public class PassengerTripAttachment : BaseEntity<Guid>
+    public class PassengerTripAttachment : BaseEntity<string>
     {
-        public Guid FileId { get; set; }
+        public PassengerTripAttachment()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+
+        [MaxLength(50)]
+        public string FileId { get; set; }
 
         public string FileName { get; set; }
 
@@ -24,8 +31,9 @@ namespace SonoTracker.Domain.Entities.Attachments
 
         public string Url { get; set; }
 
-        public Guid TripInformationId { get; set; }
-
-        public TripInformation TripInformation { get; set; }
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(TripInformation))]
+        public required string TripInformationId { get; set; }
+        public virtual TripInformation? TripInformation { get; set; }
     }
 }

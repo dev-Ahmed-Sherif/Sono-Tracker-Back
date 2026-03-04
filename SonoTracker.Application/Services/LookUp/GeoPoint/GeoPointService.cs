@@ -20,14 +20,8 @@ using SonoTracker.Common.DTO.Lookup.AccidentType;
 
 namespace SonoTracker.Application.Services.LookUp.GeoPoint
 {
-    public class GeoPointService : BaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, Guid, Guid?>, IGeoPointService
+    public class GeoPointService(IServiceBaseParameter<Entities.Lookups.GeoPoint> businessBaseParameter) : BaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, string, string>(businessBaseParameter), IGeoPointService
     {
-
-        public GeoPointService(IServiceBaseParameter<Entities.Lookups.GeoPoint> businessBaseParameter) : base(businessBaseParameter)
-        {
-
-
-        }
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.GeoPoint, bool>> predicate = null)
         {
             // Retrieve all entities
@@ -70,10 +64,6 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
-
-
-
-       
 
         static Expression<Func<Entities.Lookups.GeoPoint, bool>> PredicateBuilderFunction(GeoPointFilter filter)
         {

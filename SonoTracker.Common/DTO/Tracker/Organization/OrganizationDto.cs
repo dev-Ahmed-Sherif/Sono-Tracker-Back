@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
@@ -6,9 +6,9 @@ using SonoTracker.Domain.Enum;
 namespace SonoTracker.Common.DTO.Tracker.Organization
 {
     [ExcludeFromCodeCoverage]
-    public class OrganizationDto : IEntityDto<Guid?>
+    public class OrganizationDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
         public string Code { get; set; }
         public string NameAr { get; set; }
         public string NameEn { get; set; }
@@ -17,12 +17,12 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         public string Fax { get; set; }
         public string Mobile { get; set; }
         public string Email { get; set; }
-        public Guid NationalityId { get; set; }
+        public string? NationalityId { get; set; }
         public string NationalityName { get; set; }
         public OrganizationType OrganizationTypeId { get; set; }
         public EnumResult OrganizationType { get; set; }
         public AppliedOn AppliedOn { get; set; }
-        public Guid InspectionTypeId { get; set; }
+        public string? InspectionTypeId { get; set; }
         public string InspectionType { get; set; }
         public DateTime CreationDate { get; set; }
         public string CommercialRegistrationNumber { get; set; }

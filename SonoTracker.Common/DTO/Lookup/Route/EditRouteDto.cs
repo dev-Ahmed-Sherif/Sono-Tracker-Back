@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Base;
 using SonoTracker.Domain.Entities.Base;
 using System;
 using System.Collections.Generic;
@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Common.DTO.Lookup.Route
 {
-    [ExcludeFromCodeCoverage]
-  public class EditRouteDto : LookupDto<Guid?>
+  [ExcludeFromCodeCoverage]
+  public class EditRouteDto : LookupDto<string>
   {
   }
 }

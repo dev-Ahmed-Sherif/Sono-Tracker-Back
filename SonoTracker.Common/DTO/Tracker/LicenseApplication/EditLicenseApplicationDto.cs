@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Common.DTO.Tracker.LicenseApplication
 {
     [ExcludeFromCodeCoverage]
-    public class EditLicenseApplicationDto : IEntityDto<Guid?>
+    public class EditLicenseApplicationDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
         public int LicenseNumber { get; set; }
         public string Insurance { get; set; }
         public string CommercialRegister { get; set; }

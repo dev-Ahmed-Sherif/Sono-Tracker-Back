@@ -1,15 +1,30 @@
-﻿using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Base;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class MarinaTrip : BaseEntity<Guid>
+    public class MarinaTrip : BaseEntity<string>
     {
-        public Guid TouristMarinaId { get; set; }
-        public TouristMarina TouristMarina { get; set; }
-        public Guid TripInformationId { get; set; }
-        public TripInformation TripInformation { get; set; }
+        public MarinaTrip()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(TouristMarina))]
+        public required string TouristMarinaId { get; set; }
+        public virtual TouristMarina? TouristMarina { get; set; }
+
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(TripInformation))]
+        public required string TripInformationId { get; set; }
+        public virtual TripInformation? TripInformation { get; set; }
     }
 }

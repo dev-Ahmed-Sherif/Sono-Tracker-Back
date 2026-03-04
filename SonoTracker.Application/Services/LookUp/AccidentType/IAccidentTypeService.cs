@@ -11,7 +11,7 @@ using SonoTracker.Common.DTO.Lookup.AccidentType.Parameters;
 
 namespace SonoTracker.Application.Services.LookUp.AccidentType
 {
-    public interface IAccidentTypeService : IBaseService<Entities.Lookups.AccidentType, AddAccidentTypeDto, EditAccidentTypeDto, AccidentTypeDto,Guid, Guid?>
+    public interface IAccidentTypeService : IBaseService<Entities.Lookups.AccidentType, AddAccidentTypeDto, EditAccidentTypeDto, AccidentTypeDto,string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentTypeFilter> filter);
 

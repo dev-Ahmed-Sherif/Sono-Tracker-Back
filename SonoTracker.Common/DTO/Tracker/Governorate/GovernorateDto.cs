@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -10,9 +10,9 @@ using SonoTracker.Common.Core;
 namespace SonoTracker.Common.DTO.Tracker.Governorate
 {
     [ExcludeFromCodeCoverage]
-    public class GovernorateDto : IEntityDto<Guid?>
+    public class GovernorateDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string Code { get; set; }
         public string Url { get; set; }

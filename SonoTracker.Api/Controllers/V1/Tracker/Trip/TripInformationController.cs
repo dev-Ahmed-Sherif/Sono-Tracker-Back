@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
@@ -156,6 +156,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="ids">PK</param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids) => await tripInformationService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await tripInformationService.DeleteRangeAsync(ids);
     }
 }

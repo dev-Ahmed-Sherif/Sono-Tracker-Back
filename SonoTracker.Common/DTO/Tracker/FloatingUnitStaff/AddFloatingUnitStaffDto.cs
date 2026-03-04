@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
@@ -8,9 +8,9 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff
 {
     [ExcludeFromCodeCoverage]
 
-    public class AddFloatingUnitStaffDto : IEntityDto<Guid?>
+    public class AddFloatingUnitStaffDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
        
         public string Name { get; set; }
 
@@ -28,9 +28,9 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff
 
         public string Identity { get; set; }
 
-        public Guid NationalityId { get; set; }
+        public string NationalityId { get; set; }
 
-        public Guid FloatingUnitId { get; set; }
+        public string FloatingUnitId { get; set; }
 
         public bool IsDelegate { get; set; }
 

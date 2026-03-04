@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.DTO.Identity.Role
+namespace SonoTracker.Common.DTO.Identity.Role
 {
     public class AddRole
     {

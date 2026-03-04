@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Tracker;
+using SonoTracker.Domain.Entities.Tracker;
 using System.ComponentModel.DataAnnotations;
 using System;
 using SonoTracker.Domain.Entities.Lookups;
@@ -8,10 +8,10 @@ namespace SonoTracker.Common.DTO.Reports.TouristMarina
 {
     public class FilterTouristMarinaReportDto : BaseReportSearch
     {
-        public Guid? TouristMarinaId { get; set; }
+        public string? TouristMarinaId { get; set; }
 
-        public Guid? OrganizationId { get; set; }
-        public Guid? TownId { get; set; }
+        public string? OrganizationId { get; set; }
+        public string? TownId { get; set; }
          public bool IsDeleted { get; set; } = false;
 
     }

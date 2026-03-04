@@ -1,17 +1,19 @@
-﻿using System;
+using SonoTracker.Common.Core;
+using SonoTracker.Common.DTO.Base;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SonoTracker.Common.DTO.Base;
 
 namespace SonoTracker.Common.DTO.Lookup.GeoPoint
 {
     [ExcludeFromCodeCoverage]
-    public class EditGeoPointDto : LookupDto<Guid?>
+    public class EditGeoPointDto : IEntityDto<string>
     {
-        public string North { get; set; } = string.Empty;
-        public string East { get; set; } = string.Empty;
+        public string Id { get; set; }
+        public string North { get; set; }
+        public string East { get; set; }
     }
 }

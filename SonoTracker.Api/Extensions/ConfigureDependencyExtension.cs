@@ -1,5 +1,6 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -13,19 +14,18 @@ using SonoTracker.Application.Helper;
 using SonoTracker.Application.Mapping;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Application.Services.Test;
+using SonoTracker.Application.Services.Lookup.Nationality;
+using SonoTracker.Application.Services.Tracker.Organization;
 using SonoTracker.Application.Services.Validators.Base;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Extensions;
 using SonoTracker.Common.Helpers.HttpClient.RestSharp;
 using SonoTracker.Common.Helpers.JsonHelper;
-using SonoTracker.Common.Infrastructure.Repository.Company;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain.Entities.Identity;
 using SonoTracker.Infrastructure.Context;
 using SonoTracker.Infrastructure.DataInitializer;
-using SonoTracker.Infrastructure.Repository.Company;
 using SonoTracker.Infrastructure.UnitOfWork;
 using SonoTracker.Integration.CacheRepository;
 using SonoTracker.Integration.FileRepository;
@@ -106,9 +106,10 @@ namespace SonoTracker.Api.Extensions
                 options.SignIn.RequireConfirmedAccount = false;
                 options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultEmailProvider;
 
-            }).AddRoles<IdentityRole>().AddEntityFrameworkStores<SonoTrackerDbContext>()
+            })
+            .AddRoles<Role>().AddEntityFrameworkStores<SonoTrackerDbContext>()
             .AddApiEndpoints()
-          .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders();
             services.AddHttpContextAccessor();
             // Read User Data from HttpContext
             services.AddTransient(provider =>
@@ -202,7 +203,11 @@ namespace SonoTracker.Api.Extensions
                 options.UseSqlServer(configuration.GetConnectionString(ConnectionStringName));
             });
             services.AddScoped<DbContext, SonoTrackerDbContext>();
-            services.AddSingleton<IDataInitializer, DataInitializer>();
+            services.AddSingleton<IDataInitializer>(sp =>
+            {
+                var env = sp.GetRequiredService<IWebHostEnvironment>();
+                return new DataInitializer(env.ContentRootPath);
+            });
         }
         /// <summary>
         /// Add DbContext
@@ -319,7 +324,7 @@ namespace SonoTracker.Api.Extensions
         /// <param name="services"></param>
         private static void RegisterCustomRepositories(this IServiceCollection services)
         {
-            services.AddScoped<ICompanyCustomRepository, CompanyCustomRepository>();
+            //services.AddScoped<ICompanyCustomRepository, CompanyCustomRepository>();
         }
 
 
@@ -407,7 +412,7 @@ namespace SonoTracker.Api.Extensions
             services.AddTransient(typeof(IBaseService<,,,,,>), typeof(BaseService<,,,,,>));
             services.AddTransient(typeof(IServiceBaseParameter<>), typeof(ServiceBaseParameter<>));
             services.AddTransient(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-            var servicesToScan = Assembly.GetAssembly(typeof(TestService)); //..or whatever assembly you need
+            var servicesToScan = Assembly.GetAssembly(typeof(OrganizationService)); //..or whatever assembly you need
             services.RegisterAssemblyPublicNonGenericClasses(servicesToScan)
                 .Where(c => c.Name.EndsWith("Service"))
                 .AsPublicImplementedInterfaces();

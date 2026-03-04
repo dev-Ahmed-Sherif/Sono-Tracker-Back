@@ -8,8 +8,8 @@ namespace SonoTracker.Application.Mapping
         public void MapTown()
         {
             CreateMap<Town, TownDto>()
-                .ForMember(dest => dest.CityName, cfg => cfg.MapFrom(src => src.City.NameAr))
-                .ForMember(dest => dest.GovernorateName, cfg => cfg.MapFrom(src => src.Governorate.Name));
+                .ForMember(dest => dest.City, cfg => cfg.MapFrom(src => src.City.NameAr))
+                .ForMember(dest => dest.Governorate, cfg => cfg.MapFrom(src => src.City.Governorate.Name));
 
             CreateMap<Town, EditTownDto>().ReverseMap();
             CreateMap<Town, AddTownDto>().ReverseMap();

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Common.Core;
 
 namespace SonoTracker.Common.DTO.Identity.Role

@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -85,6 +85,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         /// <param name="ids">PK</param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids) => await generalInspectionService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await generalInspectionService.DeleteRangeAsync(ids);
     }
 }

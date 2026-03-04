@@ -6,7 +6,6 @@ namespace SonoTracker.Application.Mapping
     {
         public MappingService()
         {
-            MapCompany();
             MapAccidentType();
             MapCity();
             MapTown();
@@ -17,7 +16,6 @@ namespace SonoTracker.Application.Mapping
             MapInspectionType();
             MapGeoPoint();
             MapGovernorate();
-            MapGovernorateGeoPoint();
             MapOrganization();
             MapOrganizationStaff();
             MapFloatingUnit();
@@ -33,7 +31,6 @@ namespace SonoTracker.Application.Mapping
             MapMaintenance();
             MapAccident();
             MapUser();
-
         }
     }
 }

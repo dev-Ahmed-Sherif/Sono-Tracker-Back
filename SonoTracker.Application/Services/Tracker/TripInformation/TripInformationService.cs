@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TripInformation
 {
-    public class TripInformationService : BaseService<Entities.Tracker.TripInformation, AddTripInformationDto, EditTripInformationDto, TripInformationDto, Guid, Guid?>, ITripInformationService
+    public class TripInformationService : BaseService<Entities.Tracker.TripInformation, AddTripInformationDto, EditTripInformationDto, TripInformationDto, string, string>, ITripInformationService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
@@ -33,7 +33,8 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                .Include(x => x.Route)
@@ -43,7 +44,8 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         }
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                .Include(x => x.Route));
@@ -111,13 +113,13 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TripInformation>(x => x.IsDeleted == filter.IsDeleted);
 
-            if (filter.FloatingUnitId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
-                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId.Value);
+                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
             }
-            if (filter.RouteId.HasValue)
+            if (!string.IsNullOrEmpty(filter.RouteId))
             {
-                predicate = predicate.And(x => x.RouteId == filter.RouteId.Value);
+                predicate = predicate.And(x => x.RouteId == filter.RouteId);
             }
             if (filter.SartDate.HasValue)
             {
@@ -144,9 +146,10 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
             }
             return predicate;
         }
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

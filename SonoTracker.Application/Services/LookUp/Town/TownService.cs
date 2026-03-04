@@ -16,25 +16,25 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Town
 {
-    public class TownService(IServiceBaseParameter<Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, Guid, Guid?>(businessBaseParameter), ITownService
+    public class TownService(IServiceBaseParameter<Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>(businessBaseParameter), ITownService
     {
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
                 .Include(t => t.City)
-               .Include(x => x.Governorate)
-                );
+                .ThenInclude(x => x.Governorate));
+
             var mapped = Mapper.Map<Domain.Entities.Lookups.Town, EditTownDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
                 .Include(t => t.City)
-               .Include(x => x.Governorate));
+                .ThenInclude(x => x.Governorate));
             var mapped = Mapper.Map<Domain.Entities.Lookups.Town, TownDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -44,7 +44,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                                                     .Include(t => t.City)
-                                                    .Include(x => x.Governorate) ,
+                                                    .ThenInclude(x => x.Governorate) ,
                                                     disableTracking: disableTracking);
             var filteredEntities = entity.Where(e => !e.IsDeleted);
 
@@ -67,7 +67,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 filter.OrderByValue,
                 include: src => src
                                .Include(t => t.City)
-                               .Include(x=>x.Governorate));
+                               .ThenInclude(x=>x.Governorate));
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Item2.Where(x => x.IsDeleted != true));
 

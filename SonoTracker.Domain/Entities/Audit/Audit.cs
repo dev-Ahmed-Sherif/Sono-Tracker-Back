@@ -1,12 +1,20 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Domain.Entities.Base;
 
 namespace SonoTracker.Domain.Entities.Audit
 {
     [ExcludeFromCodeCoverage]
-    public class Audit : BaseEntity<Guid>
+    public class Audit : BaseEntity<string>
     {
+        public Audit()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+
         public string UserId { get; set; }
         public string Type { get; set; }
         public string TableName { get; set; }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
 {
     [ExcludeFromCodeCoverage]
-    public class AddOrganizationStaffDto : IEntityDto<Guid?>
+    public class AddOrganizationStaffDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         [Required, MaxLength(100), 
          RegularExpression("^[A-Za-z\u0600-\u06FF\u0660-\u0669\\s]{1,50}$",

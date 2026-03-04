@@ -7,8 +7,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Lookups
 {
     [ExcludeFromCodeCoverage]
-    public class AccidentType : Lookup<Guid>
+    public class AccidentType : Lookup<string>
     {
-        public virtual ICollection<Accident> Accidents { get; set; } = new HashSet<Accident>();
+        public AccidentType()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+        public virtual HashSet<Accident> Accidents { get; set; } = [];
     }
 }

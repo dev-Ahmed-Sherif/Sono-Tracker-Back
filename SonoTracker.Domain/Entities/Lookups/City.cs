@@ -1,11 +1,26 @@
 ﻿using SonoTracker.Domain.Entities.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SonoTracker.Domain.Entities.Lookups
 {
-    public class City : Lookup<Guid>
+    public class City : Lookup<string>
     {
-        public virtual ICollection<Town> Towns { get; set; } = new HashSet<Town>();
+        public City()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
+
+        public virtual HashSet<Town> Towns { get; set; } = [];
     }
 }

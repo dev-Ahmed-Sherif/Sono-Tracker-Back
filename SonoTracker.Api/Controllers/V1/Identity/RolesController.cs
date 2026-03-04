@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Identity.Account;
@@ -6,6 +6,7 @@ using SonoTracker.Application.Services.Identity.Role;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.Role;
+using SonoTracker.Domain.Entities.Identity;
 using System.Net;
 
 namespace SonoTracker.Api.Controllers.V1.Identity
@@ -15,7 +16,7 @@ namespace SonoTracker.Api.Controllers.V1.Identity
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class RolesController(RoleManager<IdentityRole> roleManager,IRoleService roleService) : BaseController
+    public class RolesController(RoleManager<Role> roleManager, IRoleService roleService) : BaseController
     {
         /// <summary>
         /// Gets all roles in the application.
@@ -29,8 +30,8 @@ namespace SonoTracker.Api.Controllers.V1.Identity
             var roles = roleManager.Roles.Select(r => new RoleDto()
             {
                 Id = r.Id,
-                NameAr = r.ConcurrencyStamp,
-                NameEn = r.Name,
+                NameAr = r.NameAr,
+                NameEn = r.Name ?? "",
             }).ToList();
 
             return Ok(responseResult.PostResult(roles, HttpStatusCode.OK, message: HttpStatusCode.OK.ToString()));
@@ -110,11 +111,19 @@ namespace SonoTracker.Api.Controllers.V1.Identity
                                   message: "Invalid Role Data."));
             }
 
-            var role = new IdentityRole
+            var now = DateTime.UtcNow;
+            var role = new Role
             {
                 Name = roleDto.NameEn,
-                NormalizedName = roleDto.NameEn.ToUpper(),
-                ConcurrencyStamp = roleDto.NameAr
+                NormalizedName = roleDto.NameEn.ToUpperInvariant(),
+                NameAr = roleDto.NameAr,
+                CreatedAt = now,
+                ModifiedAt = now,
+                CreatedById = "System",
+                CreatedBy = "System",
+                ModifiedById = "System",
+                ModifiedBy = "System",
+                IsDeleted = false
             };
 
             var result = await roleManager.CreateAsync(role);
@@ -129,7 +138,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
                               message: "Failed to create role: " + 
                               string.Join(", ", result.Errors.Select(e => e.Description))));
 
-        }        /// <summary>
+        }
+
+        /// <summary>
         /// Deletes a role from the application.
         /// </summary>
         /// /// </summary>

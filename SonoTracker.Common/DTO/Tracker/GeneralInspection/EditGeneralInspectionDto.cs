@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +9,9 @@ using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Common.DTO.Tracker.Inspection
 {
-   public class EditGeneralInspectionDto : IEntityDto<Guid?>
+   public class EditGeneralInspectionDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public DateTime InspectionDate { get; set; }
 

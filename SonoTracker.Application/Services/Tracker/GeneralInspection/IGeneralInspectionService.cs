@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SonoTracker.Application.Services.Base;
@@ -10,11 +10,11 @@ using SonoTracker.Common.DTO.Tracker.GeneralInspection;
 
 namespace SonoTracker.Application.Services.Tracker.GeneralInspection
 {
-    public interface IGeneralInspectionService : IBaseService<Entities.Tracker.Inspection, AddGeneralInspectionDto, EditGeneralInspectionDto, GeneralInspectionDto, Guid, Guid?>
+    public interface IGeneralInspectionService : IBaseService<Entities.Tracker.Inspection, AddGeneralInspectionDto, EditGeneralInspectionDto, GeneralInspectionDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<GeneralInspectionFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
        
     }
 }

@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.Accident;
@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.Accident
 {
-   public  interface IAccidentService : IBaseService<Entities.Tracker.Accident, AddAccidentDto, EditAccidentDto, AccidentDto, Guid,Guid?>
+   public  interface IAccidentService : IBaseService<Entities.Tracker.Accident, AddAccidentDto, EditAccidentDto, AccidentDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentFilter> Filter);
         Task<IFinalResult> GetAllFilterAsync(AccidentFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }
 }

@@ -6,17 +6,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SonoTracker.Domain.Entities.Lookups
 {
-    public class GeoPoint : Lookup<Guid>
+    public class GeoPoint : Lookup<string>
     {
-        [MaxLength(50)]
-        public string North { get; set; }
+        public GeoPoint()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
 
-        [MaxLength(50)]
-        public string East { get; set; }
+        [Required, MaxLength(50)]
+        public required string North { get; set; }
 
-        public virtual ICollection<GovernorateGeoPoint> GovernorateGeoPoints { get; set; } = new HashSet<GovernorateGeoPoint>();
+        [Required, MaxLength(50)]
+        public required string East { get; set; }
 
-        public virtual ICollection<TouristMarina> TouristMarinas { get; set; } = new HashSet<TouristMarina>();
-        public virtual ICollection<Accident> Accidents { get; set; } = new HashSet<Accident>();
+        public virtual HashSet<TouristMarina> TouristMarinas { get; set; } = [];
+        public virtual HashSet<Accident> Accidents { get; set; } = [];
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,11 +11,11 @@ namespace SonoTracker.Common.DTO.Tracker.GeneralInspection.Parameters
 
         public DateTime? InspectionDate { get; set; }
 
-        public Guid? TripInformationId { get; set; }
+        public string? TripInformationId { get; set; }
 
-        public Guid? OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
 
-        public Guid? FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public bool IsInspected { get; set; }
 
         public bool IsDeleted { get; set; } = false;

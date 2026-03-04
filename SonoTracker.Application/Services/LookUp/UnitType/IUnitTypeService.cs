@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.UnitType
 {
-    public interface IUnitTypeService : IBaseService<Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto,Guid, Guid?>
+    public interface IUnitTypeService : IBaseService<Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto,string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<UnitTypeFilter> Filter);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);

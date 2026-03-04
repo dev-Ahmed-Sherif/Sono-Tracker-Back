@@ -1,4 +1,4 @@
-﻿using DeputyOffice.Common.Helpers;
+using DeputyOffice.Common.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
@@ -144,7 +144,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="ids">PK</param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids) => await organizationService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await organizationService.DeleteRangeAsync(ids);
 
         /// <summary>
         /// Generates a project report based on the provided filter.

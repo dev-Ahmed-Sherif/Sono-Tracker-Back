@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -27,7 +27,7 @@ using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Application.Services.Tracker.Organization
 {
-    public class OrganizationService : BaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, Guid, Guid?>, IOrganizationService
+    public class OrganizationService : BaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>, IOrganizationService
     {
         private readonly UserData _user;
         private readonly IFloatingUnitOrganizationService _floatingUnitOrganizationService;
@@ -75,7 +75,8 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(x=>x.InspectionType)
                 .Include(x => x.Nationality));
@@ -259,9 +260,10 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         // get all entities at once using search first (FindAsync)
         // then use remove range
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

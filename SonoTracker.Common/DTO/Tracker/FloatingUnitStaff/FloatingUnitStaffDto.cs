@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -7,9 +7,9 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff
 {
     [ExcludeFromCodeCoverage]
 
-    public class FloatingUnitStaffDto : IEntityDto<Guid?>
+    public class FloatingUnitStaffDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public string Name { get; set; }
 
@@ -31,11 +31,11 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff
 
         public string Identity { get; set; }
 
-        public Guid NationalityId { get; set; }
+        public string NationalityId { get; set; }
       
         public string NationalityName { get; set; }
 
-        public Guid FloatingUnitId { get; set; }
+        public string FloatingUnitId { get; set; }
 
         public string FloatingUnitNameAr { get; set; }
 

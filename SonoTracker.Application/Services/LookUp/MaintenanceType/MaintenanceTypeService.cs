@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.MaintenanceType
 {
-    public class MaintenanceTypeService(IServiceBaseParameter<Entities.Lookups.MaintenanceType> businessBaseParameter) : BaseService<Entities.Lookups.MaintenanceType, AddMaintenanceTypeDto, EditMaintenanceTypeDto, MaintenanceTypeDto, Guid, Guid?>(businessBaseParameter), IMaintenanceTypeService
+    public class MaintenanceTypeService(IServiceBaseParameter<Entities.Lookups.MaintenanceType> businessBaseParameter) : BaseService<Entities.Lookups.MaintenanceType, AddMaintenanceTypeDto, EditMaintenanceTypeDto, MaintenanceTypeDto, string, string>(businessBaseParameter), IMaintenanceTypeService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.MaintenanceType, bool>> predicate = null)
         {

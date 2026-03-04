@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +13,11 @@ using SonoTracker.Common.DTO.Tracker.LicenseApplication.Parameters;
 
 namespace SonoTracker.Application.Services.Tracker.LicenseApplication
 {
-    public interface ILicenseApplicationService : IBaseService<Entities.Tracker.LicenseApplication, AddLicenseApplicationDto, EditLicenseApplicationDto, LicenseApplicationDto, Guid, Guid?>
+    public interface ILicenseApplicationService : IBaseService<Entities.Tracker.LicenseApplication, AddLicenseApplicationDto, EditLicenseApplicationDto, LicenseApplicationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<LicenseApplicationFilter> filter);
         Task<IFinalResult> GetAllFilterAsync(LicenseApplicationFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }
 }

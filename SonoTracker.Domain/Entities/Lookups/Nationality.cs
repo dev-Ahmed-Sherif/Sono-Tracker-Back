@@ -16,13 +16,13 @@ namespace SonoTracker.Domain.Entities.Lookups
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-        public virtual ICollection<Organization> Organizations { get; set; } = new HashSet<Organization>();
+        public virtual HashSet<Organization> Organizations { get; set; } = [];
 
-        public virtual ICollection<OrganizationStaff> OrganizationStaffs { get; set; } = new HashSet<OrganizationStaff>();
+        public virtual HashSet<OrganizationStaff> OrganizationStaffs { get; set; } = [];
 
-        public virtual ICollection<FloatingUnitStaff> FloatingUnitStaffs { get; set; } = new HashSet<FloatingUnitStaff>();
+        public virtual HashSet<FloatingUnitStaff> FloatingUnitStaffs { get; set; } = [];
 
-        public virtual ICollection<NationalityTrip> NationalityTrips { get; set; } = new HashSet<NationalityTrip>();
+        public virtual HashSet<NationalityTrip> NationalityTrips { get; set; } = [];
 
     }
 }

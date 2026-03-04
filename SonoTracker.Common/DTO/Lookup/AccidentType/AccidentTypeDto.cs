@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -9,7 +9,7 @@ using SonoTracker.Common.DTO.Base;
 namespace SonoTracker.Common.DTO.Lookup.AccidentType
 {
     [ExcludeFromCodeCoverage]
-    public class AccidentTypeDto : LookupDto<Guid?>
+    public class AccidentTypeDto : LookupDto<string>
     {
         public DateTime CreatedDate { get; set; }
     }

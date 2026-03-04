@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarina
 {
-   public  interface ITouristMarinaService : IBaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, Guid,Guid?>
+   public  interface ITouristMarinaService : IBaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, string, string>
    {
         Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> Filter);
         Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
    }
 }

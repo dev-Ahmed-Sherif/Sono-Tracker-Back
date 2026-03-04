@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +27,7 @@ using SonoTracker.Common.DTO.Tracker.Organization;
 
 namespace SonoTracker.Application.Services.Tracker.LicenseApplication
 {
-    public class LicenseApplicationService : BaseService<Entities.Tracker.LicenseApplication, AddLicenseApplicationDto, EditLicenseApplicationDto, LicenseApplicationDto, Guid, Guid?>, ILicenseApplicationService
+    public class LicenseApplicationService : BaseService<Entities.Tracker.LicenseApplication, AddLicenseApplicationDto, EditLicenseApplicationDto, LicenseApplicationDto, string, string>, ILicenseApplicationService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
@@ -42,7 +42,8 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                  include: src => src
                                  .Include(t => t.FromOrganization)
                                  .Include(t => t.ToOrganization));
@@ -54,7 +55,8 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                                 .Include(t => t.FromOrganization)
                                 .Include(t => t.ToOrganization));
@@ -122,11 +124,11 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
             {
                 predicate = predicate.And(x => x.LicenseDate < filter.EndDate);
             }
-            if (filter.FromOrganizationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FromOrganizationId))
             {
                 predicate = predicate.And(x => x.FromOrganizationId == filter.FromOrganizationId);
             }
-            if (filter.ToOrganizationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.ToOrganizationId))
             {
                 predicate = predicate.And(x => x.ToOrganizationId == filter.ToOrganizationId);
             }
@@ -149,9 +151,10 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

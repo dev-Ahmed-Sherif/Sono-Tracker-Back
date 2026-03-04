@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -8,9 +8,9 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnit
 {
     [ExcludeFromCodeCoverage]
 
-    public class FloatingUnitDto : IEntityDto<Guid?>
+    public class FloatingUnitDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string Id { get; set; }
 
         [MaxLength(100)]
         public string NameAr { get; set; }
@@ -37,12 +37,12 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnit
 
         public DateTime? NextMaintenanceDate { get; set; }
 
-        public UnitCategory unitCategory { get; set; }
+        //public UnitCategory unitCategory { get; set; }
 
-        public EnumResult UnitCategoryName { get; set; }
+        public EnumResult UnitCategory { get; set; }
 
-        public Guid UnitTypeId { get; set; }
+        public string UnitTypeId { get; set; }
 
-        public string UnitTypeName { get; set; }
+        public string UnitType { get; set; }
     }
 }

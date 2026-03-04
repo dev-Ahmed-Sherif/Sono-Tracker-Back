@@ -7,7 +7,7 @@ namespace SonoTracker.Common.DTO.Reports.Org
     public class FilterOrgReportDTO : BaseReportSearch
     {
       
-        public Guid[]? OrganizationIds { get; set; } = [];
+        public string[]? OrganizationIds { get; set; } = [];
 
         public string NameAr { get; set; } = string.Empty;
 

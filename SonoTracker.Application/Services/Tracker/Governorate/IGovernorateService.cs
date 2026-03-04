@@ -11,11 +11,10 @@ using SonoTracker.Common.DTO.Tracker.Governorate;
 
 namespace SonoTracker.Application.Services.Tracker.Governorate
 {
-    public interface IGovernorateService : IBaseService<Domain.Entities.Tracker.Governorate, AddGovernorateDto, EditGovernorateDto, GovernorateDto, Guid, Guid?>
+    public interface IGovernorateService : IBaseService<Entities.Lookups.Governorate, AddGovernorateDto, EditGovernorateDto, GovernorateDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<GovernorateFilter> filter);
-
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }
 }

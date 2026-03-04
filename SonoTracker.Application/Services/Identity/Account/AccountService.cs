@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -28,7 +28,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<IdentityRole> roleManager,
+                 RoleManager<SonoTracker.Domain.Entities.Identity.Role> roleManager,
                  SonoTrackerDbContext context,
                  UserData auditUser,
                  IConfiguration configuration,
@@ -47,8 +47,10 @@ namespace SonoTracker.Application.Services.Identity.Account
                     Email = request.Email,
                     UserName = request.Email,
                     FullName = request.Username,
+                    CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     CreatedById = auditUser.Id != "" ? auditUser.Id : "",
                     CreatedAt = DateTime.Now,
+                    ModifiedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     ModifiedById = auditUser.Id != "" ? auditUser.Id : "",
                     ModifiedAt = DateTime.Now,
                 };
@@ -64,18 +66,17 @@ namespace SonoTracker.Application.Services.Identity.Account
                 user.CreatedAt = DateTime.Now;
                 user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
                 user.ModifiedAt = DateTime.Now;
-                
 
                 await userManager.UpdateAsync(user);
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    IdentityRole role = await roleManager.FindByIdAsync(request.RoleId);
+                    SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
 
                     if (role == null)
                     {
                         //return "null";
-                        IdentityRole userRole = await roleManager.FindByNameAsync(Roles.User);
+                        SonoTracker.Domain.Entities.Identity.Role userRole = await roleManager.FindByNameAsync(Roles.User);
 
                         await userManager.AddToRoleAsync(user, userRole.Name!);
 
@@ -90,7 +91,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 }
                 else
                 {
-                    IdentityRole role = await roleManager.FindByNameAsync(Roles.User);
+                    SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
                   
                     await userManager.AddToRoleAsync(user, role.Name!);
                     
@@ -150,7 +151,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                IdentityRole roleName = await roleManager.FindByNameAsync(userRole[i]);
+                SonoTracker.Domain.Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 
@@ -315,7 +316,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 return "null";
             }
 
-            IdentityRole role = await roleManager.FindByIdAsync(roleId);
+            SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
                 return "null";

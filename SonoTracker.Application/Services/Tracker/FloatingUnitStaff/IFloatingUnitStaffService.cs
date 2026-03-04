@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.FloatingUnitStaff;
@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 {
-    public interface IFloatingUnitStaffService : IBaseService<Domain.Entities.Tracker.FloatingUnitStaff, AddFloatingUnitStaffDto, EditFloatingUnitStaffDto, FloatingUnitStaffDto, Guid, Guid?>
+    public interface IFloatingUnitStaffService : IBaseService<Domain.Entities.Tracker.FloatingUnitStaff, AddFloatingUnitStaffDto, EditFloatingUnitStaffDto, FloatingUnitStaffDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<FloatingUnitStaffFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
 

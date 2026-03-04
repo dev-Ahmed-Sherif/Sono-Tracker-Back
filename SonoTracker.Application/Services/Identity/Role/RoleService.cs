@@ -1,15 +1,14 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Identity;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.Role;
 using SonoTracker.Domain;
-
 namespace SonoTracker.Application.Services.Identity.Role
 {
 
-    public class RoleService(RoleManager<IdentityRole> roleManager) : IRoleService
+    public class RoleService(RoleManager<SonoTracker.Domain.Entities.Identity.Role> roleManager) : IRoleService
     {
         public PagingResult GetAllPagedAsync(BaseParam<FilterRoleDto> filter)
         {
@@ -29,7 +28,7 @@ namespace SonoTracker.Application.Services.Identity.Role
             var dataRes = roles.Select(r => new RoleDto
             {
                 Id = r.Id,
-                NameAr = r.ConcurrencyStamp,
+                NameAr = r.NameAr ?? "",
                 NameEn = r.Name,
             });
 

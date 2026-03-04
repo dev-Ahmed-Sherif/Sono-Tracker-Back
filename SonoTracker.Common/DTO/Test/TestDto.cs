@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Common.Core;
@@ -7,9 +7,9 @@ using SonoTracker.Common.DTO.TestAttachment;
 namespace SonoTracker.Common.DTO.Test
 {
     [ExcludeFromCodeCoverage]
-    public  class TestDto : IEntityDto<Guid?>
+    public  class TestDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public string NameEn { get; set; }
 

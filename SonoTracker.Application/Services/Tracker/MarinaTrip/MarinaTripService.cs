@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 {
-    public class MarinaTripService : BaseService<Entities.Tracker.MarinaTrip, Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, Guid, Guid?>, IMarinaTripService
+    public class MarinaTripService : BaseService<Entities.Tracker.MarinaTrip, Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>, IMarinaTripService
     {
 
         public MarinaTripService(IServiceBaseParameter<Entities.Tracker.MarinaTrip> businessBaseParameter) : base(businessBaseParameter)
@@ -25,7 +25,8 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.TouristMarina)
                .Include(x => x.TripInformation)
@@ -36,7 +37,8 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
@@ -80,27 +82,28 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.MarinaTrip>(x => x.IsDeleted == filter.IsDeleted);
 
-            if (filter.TouristMarinaId.HasValue)
+            if (!string.IsNullOrEmpty(filter.TouristMarinaId))
             {
-                predicate = predicate.And(x => x.TouristMarinaId == filter.TouristMarinaId.Value);
+                predicate = predicate.And(x => x.TouristMarinaId == filter.TouristMarinaId);
             }
-            if (filter.TripInformationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.TripInformationId))
             {
-                predicate = predicate.And(x => x.TripInformationId == filter.TripInformationId.Value);
+                predicate = predicate.And(x => x.TripInformationId == filter.TripInformationId);
             }
 
-            if (filter.FloatingUnitId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
-                predicate = predicate.And(x => x.TripInformation.FloatingUnitId == filter.FloatingUnitId.Value);
+                predicate = predicate.And(x => x.TripInformation.FloatingUnitId == filter.FloatingUnitId);
             }
 
             return predicate;
         }
 
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

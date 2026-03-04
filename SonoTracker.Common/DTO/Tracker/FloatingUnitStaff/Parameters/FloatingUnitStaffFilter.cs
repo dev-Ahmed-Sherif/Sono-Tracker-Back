@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Enum;
+using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -22,9 +22,9 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.Parameters
 
         public string Identity { get; set; }
 
-        public Guid? FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
 
-        public Guid? NationalityId { get; set; }
+        public string? NationalityId { get; set; }
 
         public bool? IsDeleted { get; set; }
 

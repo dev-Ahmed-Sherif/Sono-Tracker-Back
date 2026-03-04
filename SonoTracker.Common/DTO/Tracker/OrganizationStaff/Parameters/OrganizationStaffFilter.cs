@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Enum;
+using SonoTracker.Domain.Enum;
 using System;
 
 namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters
@@ -15,9 +15,9 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters
 
         public string Identity { get; set; } = string.Empty;
 
-        public Guid? NationalityId { get; set; }
+        public string? NationalityId { get; set; }
 
-        public Guid? OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
 
         public bool IsDeleted { get; set; } = false;
 

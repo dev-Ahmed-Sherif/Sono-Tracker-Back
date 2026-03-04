@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -8,20 +8,30 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class LicenseApplication : BaseEntity<Guid>
+    public class LicenseApplication : BaseEntity<string>
     {
+        public LicenseApplication()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+
         [MaxLength(100)]
         public required string LicenseNumber { get; set; }
         public DateTime? LicenseDate { get; set; } = DateTime.Now;
 
 
-        [ForeignKey("FromOrganization")]
-        public Guid FromOrganizationId { get; set; }
-        public virtual Organization FromOrganization { get; set; }
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(FromOrganization))]
+        public required string FromOrganizationId { get; set; }
+        public virtual Organization? FromOrganization { get; set; }
 
-        [ForeignKey("ToOrganization")]
-        public Guid ToOrganizationId { get; set; }
-        public virtual Organization ToOrganization { get; set; }
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(ToOrganization))]
+        public required string ToOrganizationId { get; set; }
+        public virtual Organization? ToOrganization { get; set; }
 
         public string? Text { get; set; }
         public Status Status { get; set; } = Status.Pending;

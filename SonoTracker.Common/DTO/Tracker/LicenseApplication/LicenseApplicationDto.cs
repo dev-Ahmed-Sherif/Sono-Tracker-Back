@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -8,14 +8,14 @@ namespace SonoTracker.Common.DTO.Tracker.LicenseApplication
 {
     [ExcludeFromCodeCoverage]
 
-    public class LicenseApplicationDto : IEntityDto<Guid?>
+    public class LicenseApplicationDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
         public string LicenseNumber { get; set; }
         public DateTime? LicenseDate { get; set; }
-        public Guid FromOrganizationId { get; set; }
+        public string FromOrganizationId { get; set; }
         public string FromOrganizationNameAr { get; set; }
-        public Guid ToOrganizationId { get; set; }
+        public string ToOrganizationId { get; set; }
         public string ToOrganizationNameAr { get; set; }
         public string Text { get; set; }
         public string Status { get; set; }

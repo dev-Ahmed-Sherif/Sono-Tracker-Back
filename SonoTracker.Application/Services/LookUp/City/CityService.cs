@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.City
 {
-    public class CityService(IServiceBaseParameter<Domain.Entities.Lookups.City> businessBaseParameter) : BaseService<Domain.Entities.Lookups.City, AddCityDto, EditCityDto, CityDto, Guid, Guid?>(businessBaseParameter), ICityService
+    public class CityService(IServiceBaseParameter<Domain.Entities.Lookups.City> businessBaseParameter) : BaseService<Domain.Entities.Lookups.City, AddCityDto, EditCityDto, CityDto, string, string>(businessBaseParameter), ICityService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false ,Expression<Func<Domain.Entities.Lookups.City, bool>> predicate = null)
         {

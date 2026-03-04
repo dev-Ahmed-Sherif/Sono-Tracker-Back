@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 {
-    public class FloatingUnitStaffService : BaseService<Entities.Tracker.FloatingUnitStaff, AddFloatingUnitStaffDto, EditFloatingUnitStaffDto, FloatingUnitStaffDto, Guid, Guid?>, IFloatingUnitStaffService
+    public class FloatingUnitStaffService : BaseService<Entities.Tracker.FloatingUnitStaff, AddFloatingUnitStaffDto, EditFloatingUnitStaffDto, FloatingUnitStaffDto, string, string>, IFloatingUnitStaffService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
@@ -36,7 +36,8 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
             
                 .Include(t => t.Nationality));
@@ -46,7 +47,8 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                 .Include(t => t.Nationality));
@@ -123,13 +125,13 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
             {
                 predicate = predicate.And(x => x.IDType == filter.IDType.Value);
             }
-            if (filter.FloatingUnitId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
-                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId.Value);
+                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
             }
-            if (filter.NationalityId.HasValue)
+            if (!string.IsNullOrEmpty(filter.NationalityId))
             {
-                predicate = predicate.And(x => x.NationalityId == filter.NationalityId.Value);
+                predicate = predicate.And(x => x.NationalityId == filter.NationalityId);
             }
             if (filter.IsDelegate.HasValue)
             {
@@ -149,9 +151,10 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

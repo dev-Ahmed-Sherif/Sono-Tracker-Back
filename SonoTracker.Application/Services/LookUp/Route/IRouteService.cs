@@ -8,7 +8,7 @@ using SonoTracker.Common.DTO.Lookup.Route.Parameters;
 
 namespace SonoTracker.Application.Services.LookUp.Route
 {
-    public interface IRouteService : IBaseService<Entities.Lookups.Route, AddRouteDto, EditRouteDto, RouteDto, Guid, Guid?>
+    public interface IRouteService : IBaseService<Entities.Lookups.Route, AddRouteDto, EditRouteDto, RouteDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<RouteFilter> filter);
 

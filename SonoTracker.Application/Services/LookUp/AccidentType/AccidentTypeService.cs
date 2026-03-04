@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.AccidentType
 {
-    public class AccidentTypeService(IServiceBaseParameter<Entities.Lookups.AccidentType> businessBaseParameter) : BaseService<Entities.Lookups.AccidentType, AddAccidentTypeDto, EditAccidentTypeDto, AccidentTypeDto, Guid, Guid?>(businessBaseParameter), IAccidentTypeService
+    public class AccidentTypeService(IServiceBaseParameter<Entities.Lookups.AccidentType> businessBaseParameter) : BaseService<Entities.Lookups.AccidentType, AddAccidentTypeDto, EditAccidentTypeDto, AccidentTypeDto, string, string>(businessBaseParameter), IAccidentTypeService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.AccidentType, bool>> predicate = null)
         {

@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoTracker.Common.DTO.Identity.User
 {
     public class LoginResponseDto
     {

@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore.ValueGeneration;
 using SonoTracker.Domain.Enum;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SonoTracker.Common.DTO.Reports.Org
@@ -9,7 +7,7 @@ namespace SonoTracker.Common.DTO.Reports.Org
     {
       
         
-        public Guid Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string Code { get; set; }
         public string NameAr { get; set; }
 

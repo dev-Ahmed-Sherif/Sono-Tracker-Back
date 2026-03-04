@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters;
@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.OrganizationStaffStaff
 {
-    public interface IOrganizationStaffService : IBaseService<Domain.Entities.Tracker.OrganizationStaff, AddOrganizationStaffDto, EditOrganizationStaffDto, OrganizationStaffDto, Guid, Guid?>
+    public interface IOrganizationStaffService : IBaseService<Domain.Entities.Tracker.OrganizationStaff, AddOrganizationStaffDto, EditOrganizationStaffDto, OrganizationStaffDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }
 }

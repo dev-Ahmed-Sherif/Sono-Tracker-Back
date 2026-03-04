@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Enum;
+using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,7 +18,7 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnit.Parameters
 
         public UnitCategory? unitCategory { get; set; }
 
-        public Guid? UnitTypeId { get; set; }
+        public string? UnitTypeId { get; set; }
 
         public bool IsDeleted { get; set; } = false;
 

@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Enum;
+using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
 

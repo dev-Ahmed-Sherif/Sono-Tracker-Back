@@ -1,30 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SonoTracker.Common.Core;
 
 namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
 {
-    public class AddOrganizationAttachmentDto : IEntityDto<Guid?>
+    public class AddOrganizationAttachmentDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
-
-        public Guid FileId { get; set; }
-
-        public string FileName { get; set; }
-
-        public string Extension { get; set; }
-
-        public string Size { get; set; }
-
+        public string? Id { get; set; }
+        public string FileId { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
         public bool IsPublic { get; set; }
-
-        public string Url { get; set; }
-
-        public string AttachmentDisplaySize { get; set; }
-
-        public Guid OrganizationId { get; set; }
+        public string Url { get; set; } = string.Empty;
+        public string AttachmentDisplaySize { get; set; } = string.Empty;
+        public string OrganizationId { get; set; } = string.Empty;
     }
 }

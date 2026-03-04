@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Route
 {
-    public class RouteService(IServiceBaseParameter<Entities.Lookups.Route> businessBaseParameter) : BaseService<Entities.Lookups.Route, AddRouteDto, EditRouteDto, RouteDto, Guid, Guid?>(businessBaseParameter), IRouteService
+    public class RouteService(IServiceBaseParameter<Entities.Lookups.Route> businessBaseParameter) : BaseService<Entities.Lookups.Route, AddRouteDto, EditRouteDto, RouteDto, string, string>(businessBaseParameter), IRouteService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Route, bool>> predicate = null)
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,9 +14,9 @@ namespace SonoTracker.Common.DTO.Tracker.TripInformation.Parameters
 
         public string Code { get; set; }
 
-        public Guid? FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
 
-        public Guid? RouteId { get; set; }
+        public string? RouteId { get; set; }
 
         public bool IsDeleted { get; set; } = false;
 

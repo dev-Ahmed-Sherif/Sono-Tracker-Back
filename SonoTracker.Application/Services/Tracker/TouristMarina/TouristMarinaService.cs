@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarina
 {
-    public class MarinaOrganizationService : BaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, Guid, Guid?>, ITouristMarinaService
+    public class MarinaOrganizationService : BaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, string, string>, ITouristMarinaService
     {
         public MarinaOrganizationService(IServiceBaseParameter<Entities.Tracker.TouristMarina> businessBaseParameter) : base(businessBaseParameter)
         {
@@ -23,7 +23,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.Town)
                .Include(x => x.GeoPoint)
@@ -34,7 +35,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.Town)
                .Include(x => x.GeoPoint));
@@ -105,9 +107,9 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TouristMarina>(x => x.IsDeleted == filter.IsDeleted);
 
-            if (filter.TownId.HasValue)
+            if (!string.IsNullOrEmpty(filter.TownId))
             {
-                predicate = predicate.And(x => x.TownId == filter.TownId.Value);
+                predicate = predicate.And(x => x.TownId == filter.TownId);
             }
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
@@ -131,9 +133,10 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

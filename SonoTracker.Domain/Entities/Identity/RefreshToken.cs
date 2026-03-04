@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Tracker;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -15,11 +15,12 @@ namespace SonoTracker.Domain.Entities.Identity
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-        public string? Token { get; set; }
+        [Required, MaxLength(70)]
+        public required string Token { get; set; }
         public DateTime ExpiryTime { get; set; }
 
-        [Required, MaxLength(50)]
-        [ForeignKey(nameof(Organization))]
+        [Required]
+        [MaxLength(50), ForeignKey(nameof(User))]
         public required string UserId { get; set; }
         public virtual User? User { get; set; }
     }

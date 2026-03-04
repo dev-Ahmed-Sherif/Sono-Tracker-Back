@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.InspectionType
 {
-    public class InspectionTypeService(IServiceBaseParameter<Entities.Lookups.InspectionType> businessBaseParameter) : BaseService<Entities.Lookups.InspectionType, AddInspectionTypeDto, EditInspectionTypeDto, InspectionTypeDto, Guid, Guid?>(businessBaseParameter), IInspectionTypeService
+    public class InspectionTypeService(IServiceBaseParameter<Entities.Lookups.InspectionType> businessBaseParameter) : BaseService<Entities.Lookups.InspectionType, AddInspectionTypeDto, EditInspectionTypeDto, InspectionTypeDto, string, string>(businessBaseParameter), IInspectionTypeService
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.InspectionType, bool>> predicate = null)
         {

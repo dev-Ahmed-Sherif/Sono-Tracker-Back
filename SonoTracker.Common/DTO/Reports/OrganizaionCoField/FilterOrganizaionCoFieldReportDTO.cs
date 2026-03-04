@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
+namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
 {
     public class FilterOrganizaionCoFieldReportDTO 
     {

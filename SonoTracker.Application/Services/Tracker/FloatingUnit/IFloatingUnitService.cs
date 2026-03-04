@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnit
 {
-    public interface IFloatingUnitService : IBaseService<Domain.Entities.Tracker.FloatingUnit, AddFloatingUnitDto, EditFloatingUnitDto, FloatingUnitDto, Guid, Guid?>
+    public interface IFloatingUnitService : IBaseService<Domain.Entities.Tracker.FloatingUnit, AddFloatingUnitDto, EditFloatingUnitDto, FloatingUnitDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<FloatingUnitFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
       
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
     }

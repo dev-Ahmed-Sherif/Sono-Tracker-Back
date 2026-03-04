@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Common.DTO.Tracker.TripGeo
 {
-    public class AddTripGeoDto : IEntityDto<Guid?>
+    public class AddTripGeoDto : IEntityDto<string>
     {
-        public Guid? Id { get ; set; }
-        public Guid GeoPointId { get; set; }
-        public Guid TripInformationId { get; set; }   
+        public string? Id { get; set; }
+        public string GeoPointId { get; set; }
+        public string TripInformationId { get; set; }   
 
     }
 }

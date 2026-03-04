@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -88,6 +88,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <param name="ids">PK</param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids) => await marinaTripService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await marinaTripService.DeleteRangeAsync(ids);
     }
 }

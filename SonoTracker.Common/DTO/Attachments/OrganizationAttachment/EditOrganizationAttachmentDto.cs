@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,9 +7,9 @@ using SonoTracker.Common.Core;
 
 namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
 {
-    public class EditOrganizationAttachmentDto : IEntityDto<Guid?>
+    public class EditOrganizationAttachmentDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public Guid FileId { get; set; }
 

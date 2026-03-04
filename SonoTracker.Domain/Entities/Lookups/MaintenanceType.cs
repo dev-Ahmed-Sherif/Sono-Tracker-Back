@@ -2,11 +2,20 @@
 using SonoTracker.Domain.Entities.Tracker;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Domain.Entities.Lookups
 {
-    public class MaintenanceType : Lookup<Guid>
+    [ExcludeFromCodeCoverage]
+    public class MaintenanceType : Lookup<string>
     {
-        public virtual ICollection<Maintenance> Maintenances { get; set; } = new HashSet<Maintenance>();
+        public MaintenanceType()
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = Guid.CreateVersion7().ToString();
+            }
+        }
+        public virtual HashSet<Maintenance> Maintenances { get; set; } = [];
     }
 }

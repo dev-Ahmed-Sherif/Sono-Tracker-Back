@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,11 +13,11 @@ using SonoTracker.Common.DTO.Tracker.Organization.Parameters;
 
 namespace SonoTracker.Application.Services.Tracker.Organization
 {
-    public interface IOrganizationService : IBaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, Guid, Guid?>
+    public interface IOrganizationService : IBaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
 
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
 

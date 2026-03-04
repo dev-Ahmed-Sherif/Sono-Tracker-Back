@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +8,9 @@ using SonoTracker.Common.Core;
 
 namespace SonoTracker.Common.DTO.Tracker.TripInformation
 {
-    public class AddTripInformationDto : IEntityDto<Guid?>
+    public class AddTripInformationDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public DateTime SartDate { get; set; }
 
@@ -18,13 +18,13 @@ namespace SonoTracker.Common.DTO.Tracker.TripInformation
 
         public string Code { get; set; }
 
-        public Guid FloatingUnitId { get; set; }
+        public string FloatingUnitId { get; set; }
 
         public int StaffNumber { get; set; }
 
         public int PassengerNumber { get; set; }
 
-        public Guid RouteId { get; set; }
+        public string RouteId { get; set; }
         //[MaxFileSize(5 * 1024 * 1024)]
         public IFormFile? PassengerAttachment { get; set; }
     }

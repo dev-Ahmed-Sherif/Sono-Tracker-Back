@@ -1,4 +1,4 @@
-﻿using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using System;
@@ -9,11 +9,11 @@ using SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.Parameters;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 {
-    public interface IFloatingUnitOrganizationService : IBaseService<Domain.Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, Guid, Guid?>
+    public interface IFloatingUnitOrganizationService : IBaseService<Domain.Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<FloatingUnitOrganizationFilter> filter);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
 
     }
 }

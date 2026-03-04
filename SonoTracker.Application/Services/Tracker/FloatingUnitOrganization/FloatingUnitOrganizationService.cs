@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 {
-    public class FloatingUnitOrganizationService : BaseService<Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, Guid, Guid?>, IFloatingUnitOrganizationService
+    public class FloatingUnitOrganizationService : BaseService<Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, string, string>, IFloatingUnitOrganizationService
     {
 
         public FloatingUnitOrganizationService(IServiceBaseParameter<Entities.Tracker.FloatingUnitOrganization> businessBaseParameter) : base(businessBaseParameter)
@@ -26,7 +26,8 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                 .Include(t => t.Organization));
@@ -36,7 +37,8 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 
         public override async Task<IFinalResult> GetByIdAsync(object id)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == Guid.Parse(id.ToString()),
+            var idStr = id?.ToString();
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                 .Include(t => t.Organization));
@@ -76,25 +78,26 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.FloatingUnitOrganization>(x => x.IsDeleted == false);
 
-            if (filter.OrganizationId.HasValue)
+            if (!string.IsNullOrEmpty(filter.OrganizationId))
             {
-                predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId.Value);
+                predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId);
             }
             if (filter.OrganizationType.HasValue)
             {
                 predicate = predicate.And(x => x.Organization.OrganizationTypeId == filter.OrganizationType);
             }
-            if (filter.FloatingUnitId.HasValue)
+            if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
-                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId.Value);
+                predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
             }
 
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<Guid> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
         {
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => ids.Contains(d.Id));
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters
     public  class TouristMarinaFilter
     {
         public string Code { get; set; }
-        public Guid? TownId { get; set; }
+        public string? TownId { get; set; }
         public string Name { get; set; }
         public bool IsDeleted { get; set; } = false;
 

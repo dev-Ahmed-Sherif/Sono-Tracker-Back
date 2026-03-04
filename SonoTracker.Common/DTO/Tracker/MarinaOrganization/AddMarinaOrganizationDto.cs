@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Common.DTO.Tracker.MarinaOrganization
 {
-    public class AddMarinaOrganizationDto : IEntityDto<Guid?>
+    public class AddMarinaOrganizationDto : IEntityDto<string>
     {
-        public Guid? Id { get ; set; }
+        public string? Id { get; set; }
        
-        public Guid TouristMarinaId { get; set; }
-        public Guid OrganizationId { get; set; }
+        public string TouristMarinaId { get; set; }
+        public string OrganizationId { get; set; }
         public bool IsActive { get; set; }
 
         [MaxLength(100)]

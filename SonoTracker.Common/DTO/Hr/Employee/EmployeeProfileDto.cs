@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Common.Core;
@@ -9,9 +9,9 @@ using SonoTracker.Domain.Enum;
 namespace SonoTracker.Common.DTO.Hr.Employee
 {
     [ExcludeFromCodeCoverage]
-    public class EmployeeProfileDto : IEntityDto<Guid?>
+    public class EmployeeProfileDto : IEntityDto<string>
     {
-        public Guid? Id { get; set; }
+        public string? Id { get; set; }
 
         public string PhoneNumber { get; set; }
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.MaintenanceType
 {
-    public interface IMaintenanceTypeService : IBaseService<Entities.Lookups.MaintenanceType, AddMaintenanceTypeDto, EditMaintenanceTypeDto, MaintenanceTypeDto, Guid, Guid?>
+    public interface IMaintenanceTypeService : IBaseService<Entities.Lookups.MaintenanceType, AddMaintenanceTypeDto, EditMaintenanceTypeDto, MaintenanceTypeDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceTypeFilter> filter);
 

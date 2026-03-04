@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Enum;
+using SonoTracker.Domain.Enum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -13,11 +13,11 @@ namespace SonoTracker.Common.DTO.Tracker.Accident.Parameters
     {
         public int? Number { get; set; }
         public DateTime? AccidentDate { get; set; }
-        public Guid? TownId { get; set; }
-        public Guid? AccidentTypeId { get; set; }
+        public string? TownId { get; set; }
+        public string? AccidentTypeId { get; set; }
         public Case? CaseId { get; set; }
-        public Guid? OrganizationId { get; set; }
-        public Guid? FloatingUnitId { get; set; }
+        public string? OrganizationId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public bool IsDeleted { get; set; } = false;
 
 

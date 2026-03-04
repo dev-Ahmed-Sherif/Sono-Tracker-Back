@@ -1,17 +1,17 @@
-﻿using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Base;
 using System;
 
 namespace SonoTracker.Common.DTO.Lookup.Town
 {
-    public class TownDto : LookupDto<Guid?>
+    public class TownDto : LookupDto<string>
     {
-        public Guid CityId { get; set; }
+        public string CityId { get; set; }
 
-        public Guid GovernorateId { get; set; }
+        public string GovernorateId { get; set; }
       
-        public string CityName { get; set; } = string.Empty;
+        public string City { get; set; }
       
-        public string GovernorateName { get; set; } = string.Empty;
+        public string Governorate { get; set; }
        
         public DateTime CreatedDate { get; set; }
     }
