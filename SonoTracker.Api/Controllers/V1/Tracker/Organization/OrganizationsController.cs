@@ -10,6 +10,7 @@ using SonoTracker.Common.DTO.Tracker.Organization;
 using SonoTracker.Common.DTO.Tracker.Organization.Parameters;
 using System.Net;
 using System.Net.Mime;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
 {
@@ -25,126 +26,166 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await organizationService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await organizationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await organizationService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await organizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await organizationService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await organizationService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<OrganizationFilter> filter) => await organizationService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await organizationService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await organizationService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await organizationService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("add")]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddOrganizationDto dto)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddOrganizationDto dto, CancellationToken cancellationToken = default)
         {
-            var model = await organizationService.AddAsync(dto);
+            IFinalResult res = await organizationService.AddAsync(dto, cancellationToken);
 
-            if (model.Status == HttpStatusCode.Conflict)
-            {
-                return BadRequest(model);
-            }
-            if (model.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(model);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(model);
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
         }
 
         /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPut("update")]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddOrganizationDto model)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
-            var entity = await organizationService.UpdateAsync(model);
+            IFinalResult res = await organizationService.UpdateAsync(model, cancellationToken);
 
-            if (entity.Status == HttpStatusCode.Conflict)
-            {
-                return BadRequest(entity);
-            }
-            if (entity.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(entity);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(entity);
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
         }
+
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("delete/{id}")]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var model = await organizationService.DeleteAsync(id);
+            IFinalResult res = await organizationService.DeleteAsync(id, cancellationToken);
 
-            if (model.Status == HttpStatusCode.NotFound)
-            {
-                return BadRequest("هذا البيان غير موجود");
-            }
+            if (res.Status == HttpStatusCode.NotFound) return BadRequest("هذا البيان غير موجود");
 
-            return Ok(model);
+            return Accepted(res);
         }
 
         /// <summary>
         /// Soft Remove by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var model = await organizationService.DeleteSoftAsync(id);
+            IFinalResult res = await organizationService.DeleteSoftAsync(id, cancellationToken);
 
-            if (model.Status == HttpStatusCode.NotFound)
-            {
-                return BadRequest("هذا البيان غير موجود");
-            }
+            if (res.Status == HttpStatusCode.NotFound) return BadRequest("هذا البيان غير موجود");
 
-            return Ok(model);
+            return Accepted(res);
         }
 
         /// <summary>
         /// Remove Range by Organization Ids
         /// </summary>
         /// <param name="ids">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await organizationService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+                                        => await organizationService.DeleteRangeAsync(ids);
 
         /// <summary>
         /// Generates a project report based on the provided filter.

@@ -1,19 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Tracker.FloatingUnitStaff;
-using SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.Parameters;
+using SonoTracker.Common.Core;
+using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.FloatingUnitStaff;
-using Microsoft.AspNetCore.Authorization;
+using SonoTracker.Common.DTO.Tracker.FloatingUnitStaff.Parameters;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
 {
     /// <summary>
     /// Constructor
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class FloatingUnitStaffsController(IFloatingUnitStaffService floatingUnitStaffsService) : BaseController
     {
@@ -21,47 +24,96 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await floatingUnitStaffsService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await floatingUnitStaffsService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await floatingUnitStaffsService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await floatingUnitStaffsService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await floatingUnitStaffsService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
         
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<FloatingUnitStaffFilter> filter) => await floatingUnitStaffsService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<FloatingUnitStaffFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await floatingUnitStaffsService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromForm] AddFloatingUnitStaffDto dto) => await floatingUnitStaffsService.AddAsync(dto);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddFloatingUnitStaffDto dto, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.AddAsync(dto, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
+        }
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await floatingUnitStaffsService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await floatingUnitStaffsService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
 
 
@@ -69,24 +121,60 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromForm] AddFloatingUnitStaffDto model) => await floatingUnitStaffsService.UpdateAsync(model);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddFloatingUnitStaffDto model, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.UpdateAsync(model, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await floatingUnitStaffsService.DeleteAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.DeleteAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await floatingUnitStaffsService.DeleteSoftAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.DeleteSoftAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
     }
 }

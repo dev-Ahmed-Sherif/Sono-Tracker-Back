@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Net;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -57,54 +58,54 @@ namespace SonoTracker.Application.Services.Base
         }
 
     
-        public virtual async Task<IFinalResult> GetByIdAsync(object id)
+        public virtual async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            T query = await UnitOfWork.Repository.GetAsync(id);
+            T query = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
             var data = Mapper.Map<T, TGetDto>(query);
-            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK,
-                message: MessagesConstants.Success);
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                             message: MessagesConstants.Success);
 
         }
 
-        public virtual async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public virtual async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
-            T query = await UnitOfWork.Repository.GetAsync(id);
+            T query = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
             var data = Mapper.Map<T, TEditDto>(query);
-            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK,
-                message: MessagesConstants.Success);
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                             message: MessagesConstants.Success);
         }
 
-        public virtual async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<T, bool>> predicate = null)
+        public virtual async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
 
             IEnumerable<T> query;
             if (predicate != null)
             {
-                query = await UnitOfWork.Repository.FindAsync(predicate);
+                query = await UnitOfWork.Repository.FindAsync(predicate, cancellationToken: cancellationToken);
             }
             else
             {
-                query = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+                query = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
             }
 
             var data = Mapper.Map<IEnumerable<T>, IEnumerable<TGetDto>>(query);
-            return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
 
         }
 
-        public virtual async Task<IFinalResult> AddAsync(TAddDto model)
+        public virtual async Task<IFinalResult> AddAsync(TAddDto model, CancellationToken cancellationToken = default)
         {
             try
             {
                 T entity = Mapper.Map<TAddDto, T>(model);
                 //SetEntityCreatedBaseProperties(entity);
-                await UnitOfWork.Repository.AddAsync(entity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
-                    Result = new ResponseResult(result: null, status: HttpStatusCode.Created,
-                        message: MessagesConstants.AddSuccess);
+                    Result = new ResponseResult(result: null, status: HttpStatusCode.Created, exception: null,
+                                                message: MessagesConstants.AddSuccess);
                     Result.Data = new
                     {
                         Id = entity.Id, // Adjust this according to your entity's ID property
@@ -123,18 +124,18 @@ namespace SonoTracker.Application.Services.Base
 
         }
         
-        public virtual async Task<IFinalResult> AddListAsync(List<TAddDto> model)
+        public virtual async Task<IFinalResult> AddListAsync(List<TAddDto> model, CancellationToken cancellationToken = default)
         {
 
             try
             {
                 List<T> entities = Mapper.Map<List<TAddDto>, List<T>>(model);
                 UnitOfWork.Repository.AddRange(entities);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
-                    Result = new ResponseResult(result: null, status: HttpStatusCode.Created,
-                        message: MessagesConstants.AddError);
+                    Result = new ResponseResult(result: null, status: HttpStatusCode.Created, exception: null,
+                                                message: MessagesConstants.AddError);
                 }
                 Result.Data = model;
                 return Result;
@@ -148,95 +149,97 @@ namespace SonoTracker.Application.Services.Base
 
         }
         
-        public virtual async Task<IFinalResult> UpdateAsync(TAddDto model)
+        public virtual async Task<IFinalResult> UpdateAsync(TAddDto model, CancellationToken cancellationToken = default)
         {
-
             try
             {
-                T entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+                T entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
                 var newEntity = Mapper.Map(model, entityToUpdate);
-                //SetEntityModifiedBaseProperties(newEntity);
+
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.UpdateSuccess);
-                }
 
-                return Result;
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+               
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.UpdateSuccess); 
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
-                _logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.UpdateError);
+                //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
+                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
+                //throw;
             }
-
         }
        
-        public virtual async Task<IFinalResult> DeleteAsync(object id)
+        public virtual async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
+
+                UnitOfWork.Repository.Remove(entityToDelete);
+               
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 
-                if (entityToDelete != null)
-                {
-                    UnitOfWork.Repository.Remove(entityToDelete);
-                    var affectedRows = await UnitOfWork.SaveChangesAsync();
-                    if (affectedRows > 0)
-                    {
-                        Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                            message: MessagesConstants.DeleteSuccess);
-                    }
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.DeleteError);
 
-                    return Result;
-                }
-
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,
-                            message: MessagesConstants.DeleteError);
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.DeleteSuccess);
             }
             catch (Exception e)
             {
-                _logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
-                _logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: e,
+                                                 message: MessagesConstants.DeleteError);
+                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
+                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
+                //throw;
             }
         }
       
-        public virtual async Task<IFinalResult> DeleteSoftAsync(object id)
+        public virtual async Task<IFinalResult> DeleteSoftAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
-                if (entityToDelete != null)
-                {
-                    //SetEntityModifiedBaseProperties(entityToDelete);
-                    UnitOfWork.Repository.RemoveLogical(entityToDelete);
-                    var affectedRows = await UnitOfWork.SaveChangesAsync();
-                    if (affectedRows > 0)
-                    {
-                        Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                            message: MessagesConstants.DeleteSuccess);
-                    }
+                UnitOfWork.Repository.RemoveLogical(entityToDelete);
+                
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                    return Result;
-                }
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.DeleteError);
 
-                   return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,
-                            message: MessagesConstants.DeleteError);
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                   message: MessagesConstants.DeleteSuccess);
             }
             catch (Exception e)
             {
-                _logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteSoftAsync)}");
-                _logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: e,
+                                                 message: MessagesConstants.DeleteError);
+                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteSoftAsync)}");
+                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
+                //throw;
             }
 
         }
-   
+
+        public virtual async Task<IFinalResult> GetLastRecordAsync(CancellationToken cancellationToken = default)
+        {
+            T query = await UnitOfWork.Repository.GetLast(cancellationToken);
+            var data = Mapper.Map<T, TGetDto>(query);
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                             message: MessagesConstants.Success);
+        }
 
         //protected virtual void SetEntityCreatedBaseProperties(BaseEntity<TKey> entity)
         //{
@@ -259,7 +262,7 @@ namespace SonoTracker.Application.Services.Base
         //    entity.IpAddress = ClaimData.IpAddress;
 
         //}
-    
+
         //protected virtual async Task<List<RoleDto>> GetRoles(string nationalId)
         //{
         //    AppCodes.Add(Configuration["AppCodes:ReviewersServices"]);
@@ -269,7 +272,7 @@ namespace SonoTracker.Application.Services.Base
         //}
 
 
-       
+
         private TokenClaimDto GetTokenClaimDto(ClaimsPrincipal claims)
         {
             var claimData = new TokenClaimDto()

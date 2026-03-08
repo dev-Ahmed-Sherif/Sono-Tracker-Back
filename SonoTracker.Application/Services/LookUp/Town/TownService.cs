@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
@@ -12,13 +12,14 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Town
 {
     public class TownService(IServiceBaseParameter<Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>(businessBaseParameter), ITownService
     {
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
@@ -29,7 +30,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
@@ -40,7 +41,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Lookups.Town, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Lookups.Town, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                                                     .Include(t => t.City)
@@ -54,7 +55,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 message: HttpStatusCode.OK.ToString());
         }
 
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<TownFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<TownFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -67,22 +68,22 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 filter.OrderByValue,
                 include: src => src
                                .Include(t => t.City)
-                               .ThenInclude(x=>x.Governorate));
+                               .ThenInclude(x=>x.Governorate),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -113,7 +114,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddTownDto model)
+        public override async Task<IFinalResult> AddAsync(AddTownDto model, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -165,7 +166,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
         }
 
-        public override async Task<IFinalResult> UpdateAsync(AddTownDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddTownDto model, CancellationToken cancellationToken = default)
         {
             //var nameEnRegex = new Regex("^[a-zA-Z]+$");
 

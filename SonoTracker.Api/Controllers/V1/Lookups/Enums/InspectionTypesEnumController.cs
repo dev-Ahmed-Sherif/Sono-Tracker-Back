@@ -1,20 +1,18 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Enums.InspectionTypes;
-using SonoTracker.Application.Services.Enums.OrganizationTypes;
 using SonoTracker.Common.Core;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
 {
-
     /// <summary>
     /// Constructor
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class InspectionTypesEnumController(IInspectionTypeService inspectionType) : BaseController
     {
@@ -23,6 +21,6 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
         /// </summary>
         /// <returns></returns>
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await inspectionType.GetAllAsync();
+        public async Task<IFinalResult> GetAllAsync(CancellationToken cancellationToken = default) => await inspectionType.GetAllAsync();
     }
 }

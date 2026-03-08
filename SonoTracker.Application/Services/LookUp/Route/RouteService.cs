@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.LookUp.Route;
 using SonoTracker.Common.Core;
@@ -6,22 +6,24 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.Route;
 using SonoTracker.Common.DTO.Lookup.Route.Parameters;
 using SonoTracker.Common.DTO.Lookup.Town;
+using SonoTracker.Common.DTO.Lookup.UnitType;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Route
 {
     public class RouteService(IServiceBaseParameter<Entities.Lookups.Route> businessBaseParameter) : BaseService<Entities.Lookups.Route, AddRouteDto, EditRouteDto, RouteDto, string, string>(businessBaseParameter), IRouteService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Route, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Route, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
             // Filter out deleted records
             var filteredEntities = entity.Where(e => !e.IsDeleted);
@@ -32,29 +34,28 @@ namespace SonoTracker.Application.Services.Lookup.Route
                 message: HttpStatusCode.OK.ToString());
         }
 
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<RouteFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<RouteFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
   
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -88,14 +89,14 @@ namespace SonoTracker.Application.Services.Lookup.Route
             return predicate;
         }
 
-        public override async Task<IFinalResult> AddAsync(AddRouteDto model)
+        public override async Task<IFinalResult> AddAsync(AddRouteDto model, CancellationToken cancellationToken = default)
         {
             try
             {
                 var IsExisted = await UnitOfWork.Repository.Any(x =>
                                     x.NameAr == model.NameAr &&
                                     x.NameEn == model.NameEn &&
-                                    x.IsDeleted != true);
+                                    x.IsDeleted != true, cancellationToken);
 
                 if (IsExisted)
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict,
@@ -103,18 +104,17 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
                 var entity = Mapper.Map<Entities.Lookups.Route>(model);
 
-                var data = await GetAllAsync();
+                IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
-                var dataCollection = data.Data as ICollection<RouteDto>;
-
-                if (dataCollection?.Count > 0)
+                if (lastEntity.Data != null)
                 {
-                    if (int.TryParse(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.
-                        AsSpan(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.Length - 1),
-                        out int num))
+                    if (lastEntity.Data is UnitTypeDto unitType)
                     {
-                        int newCode = ++num;
-                        entity.Code = newCode.ToString("D2");
+                        if (int.TryParse(unitType.Code.AsSpan(unitType.Code.Length - 2), out int num))
+                        {
+                            ++num;
+                            entity.Code = num.ToString("D2");
+                        }
                     }
                 }
                 else
@@ -122,9 +122,9 @@ namespace SonoTracker.Application.Services.Lookup.Route
                     entity.Code = "01";
                 }
 
-                //SetEntityCreatedBaseProperties(entity);
-                await UnitOfWork.Repository.AddAsync(entity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
 
@@ -139,13 +139,13 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
         }
 
-        public override async Task<IFinalResult> UpdateAsync(AddRouteDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddRouteDto model, CancellationToken cancellationToken = default)
         {
             var IsExisted = await UnitOfWork.Repository.Any(x =>
                                    x.NameAr == model.NameAr &&
                                    x.NameEn == model.NameEn &&
                                    x.Id != model.Id &&
-                                   x.IsDeleted != true);
+                                   x.IsDeleted != true, cancellationToken);
 
             if (IsExisted)
                 return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
@@ -158,7 +158,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
             //SetEntityModifiedBaseProperties(entity);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
 

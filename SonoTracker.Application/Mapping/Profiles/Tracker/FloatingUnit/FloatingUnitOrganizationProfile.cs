@@ -12,9 +12,11 @@ namespace SonoTracker.Application.Mapping
             .ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
             .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
             .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
-            .ForMember(des => des.OrganizationType, opt => opt.MapFrom(src => src.Organization.OrganizationTypeId.GetName()))
+            .ForMember(des => des.OrganizationType, opt => opt.MapFrom(src => src.Organization.OrganizationType.GetName()))
             .ReverseMap();
+
             CreateMap<FloatingUnitOrganization, EditFloatingUnitOrganizationDto>().ReverseMap();
+
             CreateMap<FloatingUnitOrganization, AddFloatingUnitOrganizationDto>().ReverseMap();
         }
     }

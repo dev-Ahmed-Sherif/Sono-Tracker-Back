@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -18,9 +19,9 @@ namespace SonoTracker.Infrastructure.UnitOfWork
         private DbContext _context;
         private IDbContextTransaction _transaction;
         private Dictionary<string, dynamic> _repositories;
-        private readonly UserData _user;
+        private readonly UserDataDto _user;
         public IRepository<T> Repository { get; }
-        public UnitOfWork(DbContext context,UserData user)
+        public UnitOfWork(DbContext context,UserDataDto user)
         {
             _context = context;
             _user = user;
@@ -51,10 +52,10 @@ namespace SonoTracker.Infrastructure.UnitOfWork
         /// Save Changes Async
         /// </summary>
         /// <returns></returns>
-        public async Task<int> SaveChangesAsync()
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             ApplyChangesDate();
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync(cancellationToken);
         }
         public void ApplyChangesDate()
         {
@@ -64,15 +65,15 @@ namespace SonoTracker.Infrastructure.UnitOfWork
                 switch (item.State)
                 {
                     case EntityState.Added:
-                        item.Entity.CreatedDate = DateTime.UtcNow;
+                        item.Entity.CreatedAt = DateTime.UtcNow;
                         item.Entity.CreatedById = _user.Id != "" ? _user.Id : "System";
                         item.Entity.CreatedBy = _user.Name ?? null;
-                        item.Entity.ModifiedDate = DateTime.UtcNow;
+                        item.Entity.ModifiedAt = DateTime.UtcNow;
                         item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
                         item.Entity.ModifiedBy = _user.Name ?? null;
                         break;
                     case EntityState.Modified:
-                        item.Entity.ModifiedDate = DateTime.UtcNow;
+                        item.Entity.ModifiedAt = DateTime.UtcNow;
                         item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
                         item.Entity.ModifiedBy = _user.Name ?? null;
                         break;

@@ -11,7 +11,7 @@ namespace SonoTracker.Application.Mapping
 
             CreateMap<Nationality, EditNationalityDto>().ReverseMap();
             
-            CreateMap<Nationality, AddNationalityDto>()
+            CreateMap<AddNationalityDto, Nationality>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
         }

@@ -8,8 +8,12 @@ namespace SonoTracker.Application.Mapping
         public void MapCity()
         {
             CreateMap<City, CityDto>().ReverseMap();
+            
             CreateMap<City, EditCityDto>().ReverseMap();
-            CreateMap<City, AddCityDto>().ReverseMap();
+
+            CreateMap<AddCityDto, City>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

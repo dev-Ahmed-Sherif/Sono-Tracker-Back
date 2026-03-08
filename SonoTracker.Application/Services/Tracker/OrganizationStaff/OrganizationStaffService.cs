@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
@@ -38,7 +39,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
             _organizationService = organizationService;
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -50,7 +51,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -63,7 +64,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.OrganizationStaff, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.OrganizationStaff, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
              .Include(t => t.Nationality)
@@ -73,32 +74,31 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, 
-             include: src => src
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
+                include: src => src
              .Include(t => t.Nationality)
-             .Include(x => x.Organization)
-                );
+             .Include(x => x.Organization),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -163,7 +163,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
-        public override async Task<IFinalResult> AddAsync(AddOrganizationStaffDto model)
+        public override async Task<IFinalResult> AddAsync(AddOrganizationStaffDto model, CancellationToken cancellationToken = default)
         {
             var entity = Mapper.Map<Entities.Tracker.OrganizationStaff>(model);
 
@@ -207,7 +207,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
         }
-        public override async Task<IFinalResult> UpdateAsync(AddOrganizationStaffDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddOrganizationStaffDto model, CancellationToken cancellationToken = default)
         {
             Domain.Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
 
@@ -252,7 +252,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
-        public override async Task<IFinalResult> DeleteAsync(object id)
+        public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {

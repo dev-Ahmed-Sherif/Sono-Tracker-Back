@@ -9,6 +9,8 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.FloatingUnit;
 using SonoTracker.Common.DTO.Tracker.TripInformation;
 using SonoTracker.Common.DTO.Tracker.TripInformation.Parameters;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
 {
@@ -26,51 +28,87 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await tripInformationService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await tripInformationService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await tripInformationService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await tripInformationService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<TripInformationFilter> filter) => await tripInformationService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TripInformationFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await tripInformationService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await tripInformationService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await tripInformationService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromForm] AddTripInformationDto dto)
+        public async Task<IFinalResult> AddAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
         {
             string floatingUnitCode, TripCode = "";
 
-            var floatingUnit = await floatingUnitService.GetByIdAsync(dto.FloatingUnitId);
+            var floatingUnit = await floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
 
             // Fix: Cast the floatingUnit.Data to the appropriate type that contains the 'Code' property.
             if (floatingUnit.Data is FloatingUnitDto floatingUnitDto)
@@ -121,7 +159,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
                 PassengerAttachment = dto.PassengerAttachment
             };
 
-            var res = await tripInformationService.AddAsync(addTripInformation);
+            var res = await tripInformationService.AddAsync(addTripInformation, cancellationToken);
 
             return res;
         }
@@ -132,30 +170,37 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="model">Object content</param>
         /// <returns></returns>
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromForm] AddTripInformationDto model) => await tripInformationService.UpdateAsync(model);
+        public async Task<IFinalResult> UpdateAsync([FromForm] AddTripInformationDto model, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.UpdateAsync(model, cancellationToken);
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await tripInformationService.DeleteAsync(id);
+        public async Task<IFinalResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.DeleteAsync(id, cancellationToken);
 
         /// <summary>
         /// Soft Remove by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await tripInformationService.DeleteSoftAsync(id);
+        public async Task<IFinalResult> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.DeleteSoftAsync(id, cancellationToken);
 
         /// <summary>
         /// Remove Range by Organization Ids
         /// </summary>
         /// <param name="ids">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids) => await tripInformationService.DeleteRangeAsync(ids);
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+                                        => await tripInformationService.DeleteRangeAsync(ids);
     }
 }

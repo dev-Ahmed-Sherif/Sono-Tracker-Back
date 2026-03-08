@@ -17,7 +17,7 @@ namespace SonoTracker.Application.Mapping
             
             CreateMap<InspectionType, EditInspectionTypeDto>().ReverseMap();
 
-            CreateMap<InspectionType, AddInspectionTypeDto>()
+            CreateMap<AddInspectionTypeDto, InspectionType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
         }

@@ -5,6 +5,7 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -36,7 +37,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
             _floatingUnitService = floatingUnitService;
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(),
                 include: src => src
@@ -47,7 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             var mapped = Mapper.Map<Domain.Entities.Tracker.Accident, EditAccidentDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(),
                                include: src => src
@@ -60,7 +61,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Accident, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Accident, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                                          .Include(t => t.FloatingUnit)
@@ -75,36 +76,36 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), 
-                    pageNumber: offset, 
-                    pageSize: limit, 
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter),
+                    pageNumber: offset,
+                    pageSize: limit,
                     filter.OrderByValue,
                     include: src => src
                       .Include(t => t.FloatingUnit)
                       .Include(x => x.AccidentType)
                       .Include(x => x.Organization)
-                      .Include(a => a.Town));
+                      .Include(a => a.Town),
+                    cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Accident>, IEnumerable<AccidentDto>>(query.Item2);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Accident>, IEnumerable<AccidentDto>>(query.Item2);
 
@@ -165,7 +166,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
-        public override async Task<IFinalResult> AddAsync([FromForm] AddAccidentDto dto)
+        public override async Task<IFinalResult> AddAsync([FromForm] AddAccidentDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -240,7 +241,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             }
             
         }
-        public override async Task<IFinalResult> UpdateAsync([FromForm] AddAccidentDto dto)
+        public override async Task<IFinalResult> UpdateAsync([FromForm] AddAccidentDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -299,7 +300,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             }
 
         }
-        public override async Task<IFinalResult> DeleteAsync(object id)
+        public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {

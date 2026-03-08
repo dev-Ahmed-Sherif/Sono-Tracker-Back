@@ -12,14 +12,15 @@ using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
 {
    public  interface IMaintenanceService : IBaseService<Domain.Entities.Tracker.Maintenance, AddMaintenanceDto, EditMaintenanceDto, MaintenanceDto, string, string>
     {
-        Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceFilter> Filter);
+        Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceFilter> Filter, CancellationToken cancellationToken = default);
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
-        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
+        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

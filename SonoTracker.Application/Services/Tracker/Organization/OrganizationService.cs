@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using LinqKit;
 using Microsoft.AspNetCore.Hosting;
@@ -29,13 +30,13 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 {
     public class OrganizationService : BaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>, IOrganizationService
     {
-        private readonly UserData _user;
+        private readonly UserDataDto _user;
         private readonly IFloatingUnitOrganizationService _floatingUnitOrganizationService;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
         public OrganizationService(
-            IServiceBaseParameter<Domain.Entities.Tracker.Organization> businessBaseParameter, UserData user,
+            IServiceBaseParameter<Domain.Entities.Tracker.Organization> businessBaseParameter, UserDataDto user,
             IFloatingUnitOrganizationService floatingUnitOrganizationService,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request) : base(businessBaseParameter)
         {
@@ -45,7 +46,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Organization, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
              .Include(t => t.Nationality)
@@ -55,7 +56,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -65,15 +66,16 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
-                 include: src => src
+                include: src => src
                .Include(t => t.InspectionType)
-               .Include(x => x.Nationality));
+               .Include(x => x.Nationality),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query.Result);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data,status:HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -84,7 +86,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> AddAsync(AddOrganizationDto model)
+        public override async Task<IFinalResult> AddAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
             var IsExisted = await UnitOfWork.Repository.Any(x => 
                                                 x.NameAr == model.NameAr &&
@@ -136,7 +138,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
         }
-        public override async Task<IFinalResult> UpdateAsync(AddOrganizationDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
             var IsExisted = await UnitOfWork.Repository.Any(x => 
                                         x.NameAr == model.NameAr &&
@@ -182,7 +184,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
-        public override async Task<IFinalResult> DeleteAsync(object id)
+        public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -228,18 +230,18 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             {
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
             }
-            if (filter.TouristMarinaNumber.HasValue)
-            {
-                predicate = predicate.And(x => x.TouristMarinaNumber == filter.TouristMarinaNumber.Value);
-            }
+            //if (filter.TouristMarinaNumber.HasValue)
+            //{
+            //    predicate = predicate.And(x => x.TouristMarinaNumber == filter.TouristMarinaNumber.Value);
+            //}
             if (filter.OrganizationTypeId.HasValue)
             {
-                predicate = predicate.And(x => x.OrganizationTypeId == filter.OrganizationTypeId.Value);
+                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
             }
-            if (filter.AppliedOn.HasValue)
-            {
-                predicate = predicate.And(x => x.AppliedOn == filter.AppliedOn.Value);
-            }
+            //if (filter.AppliedOn.HasValue)
+            //{
+            //    predicate = predicate.And(x => x.AppliedOn == filter.AppliedOn.Value);
+            //}
 
             return predicate;
         }
@@ -272,16 +274,15 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
 
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -330,7 +331,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             }
             if (filter.OrganizationTypeId.HasValue)
             {
-                predicate = predicate.And(x => x.OrganizationTypeId == filter.OrganizationTypeId.Value);
+                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
             }
             
 

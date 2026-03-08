@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
@@ -15,13 +16,14 @@ namespace SonoTracker.Api.Controllers.V1.Identity
     /// Controller for managing user accounts, including registration, login, and role updates.
     /// </summary>
     /// <remarks>
-    /// Initializes a new instance of the <see cref="AccountController"/> class.
+    /// Initializes a new instance of the <see cref="AccountsController"/> class.
     /// </remarks>
     /// <param name="accountService">Service for handling account-related operations.</param>
     /// <param name="userData">Data of the currently logged-in user.</param>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController(IAccountService accountService, UserData userData) : BaseController
+
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    public class AccountsController(IAccountService accountService, UserDataDto userData) : BaseController
     {
 
         /// <summary>
@@ -32,24 +34,20 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// An <see cref="ActionResult"/> containing a success message if the registration is successful, 
         /// or a conflict response if the registration fails.
         /// </returns>
+        
         [HttpPost("register")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<IFinalResult>> RegisterAsync([FromBody] RegisterDto user)
         {
-            var loginResult = await accountService.RegisterAsync(user);
+            IFinalResult res = await accountService.RegisterAsync(user);
 
-            if (loginResult?.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(loginResult);
-            }
-            else if(loginResult?.Status == HttpStatusCode.Conflict)
-            {
-                return Conflict(loginResult);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+            
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
-            return Ok(loginResult);
+            return Ok(res);
         }
 
         /// <summary>
@@ -60,41 +58,35 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// An <see cref="IFinalResult"/> containing a <see cref="IFinalResult"/> if the login is successful, 
         /// or an unauthorized response if the login fails.
         /// </returns>
+        
         [HttpPost("login")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IFinalResult>> LoginAsync([FromBody] LoginRequestDto user)
         {
-            var loginResult = await accountService.LoginAsync(user);
+            IFinalResult res = await accountService.LoginAsync(user);
 
-            // Fix: Cast the Data property to the appropriate type that contains the IsLogedIn property
-            if (loginResult?.Data is LoginResponseDto loginData && loginData.IsLogedIn)
-            {
-                return Ok(loginResult);
-            }
-
-            return Unauthorized(loginResult);
+            if (res.Status == HttpStatusCode.Unauthorized)  return Unauthorized(res);
+            
+            return Ok(res);
         }
 
         /// <summary>
         /// Logs out the user with the specified user ID.
         /// </summary>
-        /// <param name="userId">The ID of the user to log out.</param>
         /// <returns>An IActionResult indicating the result of the logout operation.</returns>
+        
         [HttpPost("logout"), Authorize]
-        public async Task<ActionResult<IFinalResult>> Logout(string userId)
+        //[HttpGet("logout"), Authorize]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<IFinalResult>> Logout(Guid id)
         {
-            var responseResult = new ResponseResult();
+            IFinalResult res = await accountService.LogoutAsync(userData.Id);
 
-            User? user = await accountService.LogoutAsync(userId);
+            if (res.Status == HttpStatusCode.Unauthorized) return Unauthorized(res);
 
-            if (user != null)
-            {
-                return Ok(responseResult.PostResult(user.Id, HttpStatusCode.OK,
-                          message: HttpStatusCode.OK.ToString()));
-            }
-
-            return Unauthorized();
+            return Ok(res);
         }
 
         /// <summary>
@@ -105,6 +97,7 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// An <see cref="ActionResult"/> containing a <see cref="LoginResponseDto"/> if successful, 
         /// or an unauthorized response if the refresh operation fails.
         /// </returns>
+        
         [HttpPost("refresh"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
@@ -129,7 +122,8 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// <summary>
         /// Retrieves the data of the currently logged-in user from the access token.
         /// </summary>
-        /// <returns>An <see cref="ActionResult"/> containing the <see cref="UserData"/> of the logged-in user.</returns>
+        /// <returns>An <see cref="ActionResult"/> containing the <see cref="UserDataDto"/> of the logged-in user.</returns>
+        
         [HttpGet("tokenData"), Authorize]
         public ActionResult<IFinalResult> AccessTokenData()
         {
@@ -150,42 +144,30 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [HttpGet("get/{id}"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IFinalResult>> GetUserByIdAsync(string id)
+        public async Task<ActionResult<IFinalResult>> GetUserByIdAsync(Guid id)
         {
-            var responseResult = new ResponseResult();
+            IFinalResult res = await accountService.GetUserByIdAsync(id.ToString());
 
-            var user = await accountService.GetUserByIdAsync(id);
-
-            if (user == null)
-            {
-                return NotFound(responseResult.PostResult(null, HttpStatusCode.NotFound,
-                                message: "المستخدم غير موجود"));
-            }
-
-            return Ok(responseResult.PostResult(user, HttpStatusCode.OK,
-                      message: HttpStatusCode.OK.ToString()));
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+            
+            return Ok(res);
         }
+        
         /// <summary>
         /// Gets all users in the application.
         /// </summary>
         /// <returns>A list of users.</returns>
+        
         [HttpGet("getAllUsers"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public ActionResult<IFinalResult> GetAllUsersAsync()
+        public async Task<ActionResult<IFinalResult>> GetAllUsersAsync()
         {
-            var responseResult = new ResponseResult();
+            IFinalResult users = await accountService.GetUsersAsync();
 
-            var users = accountService.GetUsersAsync();
+            if (users.Status == HttpStatusCode.NotFound) return NotFound(users);
 
-            if (users == null || !users.Any())
-            {
-                return NotFound(responseResult.PostResult(null, HttpStatusCode.NotFound,
-                                message: "لا يوجد مستخدمين"));
-            }
-
-            return Ok(responseResult.PostResult(users, HttpStatusCode.OK,
-                      message: HttpStatusCode.OK.ToString()));
+            return Ok(users);
         }
 
         /// <summary>
@@ -218,52 +200,17 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// An <see cref="IActionResult"/> indicating the result of the update operation. 
         /// Returns a success message if the update is successful, or a bad request response if the operation fails.
         /// </returns>
+        
         [HttpPut("updateUserPersonalData"), Authorize]
-        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromBody] ChangeUserPersonalDataDto changeUserPersonalDataDto)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromBody] UpdateUserDto changeUserPersonalDataDto)
         {
-            var responseResult = new ResponseResult();
+            IFinalResult res = await accountService.UpdateUser(changeUserPersonalDataDto);
 
-            string userId = userData.Id!;
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            var result = await accountService.UpdateUserPersonalData(userId, changeUserPersonalDataDto);
-
-            if (!result.Succeeded)
-                return BadRequest(responseResult.PostResult(null, 
-                    HttpStatusCode.BadRequest,
-                    message: "Failed to Update User Data : " +
-                    string.Join(", ", result.Errors.Select(e => e.Description))));
-
-
-            return Ok(responseResult.PostResult(result, HttpStatusCode.OK,
-                      message: HttpStatusCode.OK.ToString()));
-
-        }
-
-        /// <summary>
-        /// Updates the role of a user.
-        /// </summary>
-        /// <param name="user">The user role update request containing user ID and role ID.</param>
-        /// <returns>
-        /// An <see cref="ActionResult"/> containing a success message if the role update is successful, 
-        /// or a bad request response if the operation fails.
-        /// </returns>
-        [HttpPut("updateUserRole"), Authorize]
-        //[ProducesResponseType<string>(StatusCodes.Status200OK)]
-        //[ProducesResponseType<string>(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IFinalResult>> UpdateUserRoleAsync([FromBody] UpdateUserRoleDto user)
-        {
-            var responseResult = new ResponseResult();
-
-            var result = await accountService.UpdateUserRole(user.UserId, user.RoleId);
-
-            if (result != "null")
-            {
-                return Ok(responseResult.PostResult(result, HttpStatusCode.OK,
-                          message: HttpStatusCode.OK.ToString()));
-            }
-
-            return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
-                              message: "المستخدم غير موجود أو خطأ فى تعديل الصلاحية"));
+            return Accepted(res);
         }
 
         /// <summary>
@@ -273,23 +220,17 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// <returns>
         /// An <see cref="ActionResult"/> indicating whether the user was successfully removed.
         /// </returns>
+
         [HttpDelete("delete/{id}"), Authorize]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IFinalResult>> RemoveUser(string id)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DelereUser(Guid id)
         {
-            var responseResult = new ResponseResult();
+            IFinalResult res = await accountService.DeleteUser(id.ToString());
 
-            var res = await accountService.RemoveUser(id);
-
-            if (!res)
-            {
-                return NotFound(responseResult.PostResult(res, HttpStatusCode.NotFound,
-                                message: HttpStatusCode.NotFound.ToString()));
-            }
-
-            return Ok(responseResult.PostResult(res, HttpStatusCode.OK,
-                      message: HttpStatusCode.OK.ToString()));
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+            
+            return Ok(res);
         }
     }
 }

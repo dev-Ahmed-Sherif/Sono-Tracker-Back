@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
@@ -9,6 +9,7 @@ using SonoTracker.Common.DTO.Lookup.Nationality;
 using SonoTracker.Common.DTO.Lookup.Nationality.Parameters;
 using SonoTracker.Domain.Entities.Lookups;
 using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Lookups
 {
@@ -27,118 +28,155 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await nationalityService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
+                                        => await nationalityService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await nationalityService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+                                        => await nationalityService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await nationalityService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await nationalityService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
         
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<NationalityFilter> filter) => await nationalityService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<NationalityFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await nationalityService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("add")]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddNationalityDto dto)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddNationalityDto dto, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await nationalityService.AddAsync(dto);
+            IFinalResult res = await nationalityService.AddAsync(dto, cancellationToken);
 
-            if (res.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(res);
-            }
-            else if (res.Status == HttpStatusCode.Conflict)
-            {
-                return Conflict(res);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(res);
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
         }
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await nationalityService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await nationalityService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPut("update")]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddNationalityDto model)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddNationalityDto model, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await nationalityService.UpdateAsync(model);
+            IFinalResult res = await nationalityService.UpdateAsync(model, cancellationToken);
 
-            if (res.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(res);
-            }
-            else if (res.Status == HttpStatusCode.Conflict)
-            {
-                return Conflict(res);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(res);
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
         }
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("delete/{id}")]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await nationalityService.DeleteAsync(id);
+            IFinalResult res = await nationalityService.DeleteAsync(id, cancellationToken);
 
-            if (res.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(res);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(res);
+            return Accepted(res);
         }
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await nationalityService.DeleteSoftAsync(id);
+            IFinalResult res = await nationalityService.DeleteSoftAsync(id, cancellationToken);
 
-            if (res.Status == HttpStatusCode.BadRequest)
-            {
-                return BadRequest(res);
-            }
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            return Ok(res);
+            return Accepted(res);
         }
     }
 }

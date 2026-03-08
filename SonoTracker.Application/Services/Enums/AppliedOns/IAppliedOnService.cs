@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Enums.AppliedOns

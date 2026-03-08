@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Api.Controllers.V1.Base;
@@ -6,6 +6,8 @@ using SonoTracker.Application.Services.Tracker.OrganizationStaffStaff;
 using SonoTracker.Common.DTO.Tracker.OrganizationStaff;
 using SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters;
 using Microsoft.AspNetCore.Authorization;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
 {
@@ -36,15 +38,34 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// </summary>
         /// <returns></returns>
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await organizationStaffService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await organizationStaffService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<OrganizationStaffFilter> filter) => await organizationStaffService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await organizationStaffService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
@@ -58,10 +79,20 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await organizationStaffService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await organizationStaffService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Update  

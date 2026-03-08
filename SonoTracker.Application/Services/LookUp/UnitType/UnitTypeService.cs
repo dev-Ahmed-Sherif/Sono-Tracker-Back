@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -10,52 +10,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.UnitType
 {
     public class UnitTypeService(IServiceBaseParameter<Entities.Lookups.UnitType> businessBaseParameter) : BaseService<Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto, string, string>(businessBaseParameter), IUnitTypeService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.UnitType, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.UnitType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+            IEnumerable<Entities.Lookups.UnitType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            // Filter out deleted records
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            if (entities == null || !entities.Any())
+                return ResponseResult.PostResult(result: entities, status: HttpStatusCode.NotFound, exception: null,
+                                                 message: MessagesConstants.NotFound);
+            
+            IEnumerable<UnitTypeDto> mapped = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(entities.Where(e => !e.IsDeleted));
 
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filteredEntities);
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<UnitTypeFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<UnitTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            (int Count, IEnumerable<Entities.Lookups.UnitType> Result) = await UnitOfWork.Repository
+                .FindPagedAsync(
+                     predicate: PredicateBuilderFunction(filter.Filter),
+                     pageNumber: offset,
+                     pageSize: limit,
+                     filter.OrderByValue,
+                     cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            if (Result == null || !Result.Any())
+                return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: Count, result: null,
+                                        status: HttpStatusCode.NotFound, message: MessagesConstants.NotFound);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(Result.Where(x => x.IsDeleted != true));
+
+            return new PagingResult(pageNumber: filter.PageNumber,pageSize: filter.PageSize, totalCount: Count, result: data,
+                                    status: HttpStatusCode.OK, message: MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(query.Result.Where(x => x.IsDeleted != true));
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
         static Expression<Func<Entities.Lookups.UnitType, bool>> PredicateBuilderFunction(UnitTypeFilter filter)
@@ -82,79 +92,78 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddUnitTypeDto model)
+        public override async Task<IFinalResult> AddAsync(AddUnitTypeDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x =>
-               (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted);
-
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, 
-                           message: MessagesConstants.Existed);
-
-            var entity = Mapper.Map<Entities.Lookups.UnitType>(model);
-
-            var data = await GetAllAsync();
-
-            var dataCollection = data.Data as ICollection<UnitTypeDto>;
-
-            if (dataCollection?.Count > 0)
+            try
             {
-                if (int.TryParse(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.
-                    AsSpan(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.Length - 1),
-                    out int num))
+                var IsExisted = await UnitOfWork.Repository.Any(x =>
+               (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted, cancellationToken);
+
+                if (IsExisted)
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                           message: MessagesConstants.Existed);
+
+                var entity = Mapper.Map<Entities.Lookups.UnitType>(model);
+
+                IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
+
+                if (lastEntity.Data != null)
                 {
-                    int newCode = ++num;
-                    entity.Code = newCode.ToString("D2");
+                    if (lastEntity.Data is UnitTypeDto unitType)
+                    {
+                        if (int.TryParse(unitType.Code.AsSpan(unitType.Code.Length - 2), out int num))
+                        {
+                            ++num;
+                            entity.Code = num.ToString("D2");
+                        }
+                    }
                 }
+                else
+                {
+                    entity.Code = "01";
+                }
+
+            var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
             }
-            else
+            catch(Exception e)
             {
-                entity.Code = "01";
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: e,
+                                                 message: MessagesConstants.AddError + e.Message);
             }
-
-            var result = await UnitOfWork.Repository.AddAsync(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.Conflict, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            
         }
-        public override async Task<IFinalResult> UpdateAsync(AddUnitTypeDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddUnitTypeDto model, CancellationToken cancellationToken = default)
         {
-            //var nameEnRegex = new Regex("^[a-zA-Z]+$");
-
-            //var nameArRegex = new Regex("^[\u0600-\u06FF\\s]+$");
-
-            //if (nameEnRegex.Match(model.NameEn) == Match.Empty ||
-            //    nameArRegex.Match(model.NameAr) == Match.Empty)
-            //{
-            //    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.BadRequest,
-            //                                message: "NameAr should Arabic and NameEn should be English and No Numbers allowed");
-            //}
-
             var IsExisted = await UnitOfWork.Repository.Any(x =>
-                                   x.NameAr == model.NameAr &&
-                                   x.NameEn == model.NameEn &&
-                                   x.Id != model.Id &&
-                                   x.IsDeleted != true);
+                (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && x.IsDeleted != true, cancellationToken);
 
             if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                       message: MessagesConstants.Existed);
 
-            Entities.Lookups.UnitType entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Entities.Lookups.UnitType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            //SetEntityModifiedBaseProperties(entity);
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            if (affectedRows <= 0) 
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                 message: MessagesConstants.UpdateError);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                                             message: MessagesConstants.UpdateSuccess);
         }
     }
 }

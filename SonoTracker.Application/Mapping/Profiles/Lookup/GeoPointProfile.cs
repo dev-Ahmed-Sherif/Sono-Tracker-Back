@@ -14,8 +14,12 @@ namespace SonoTracker.Application.Mapping
         public void MapGeoPoint()
         {
             CreateMap<GeoPoint, GeoPointDto>().ReverseMap();
+            
             CreateMap<GeoPoint, EditGeoPointDto>().ReverseMap();
-            CreateMap<GeoPoint, AddGeoPointDto>().ReverseMap();
+
+            CreateMap<AddGeoPointDto, GeoPoint>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

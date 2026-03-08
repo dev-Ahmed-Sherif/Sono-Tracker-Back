@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -11,13 +11,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.InspectionType
 {
     public class InspectionTypeService(IServiceBaseParameter<Entities.Lookups.InspectionType> businessBaseParameter) : BaseService<Entities.Lookups.InspectionType, AddInspectionTypeDto, EditInspectionTypeDto, InspectionTypeDto, string, string>(businessBaseParameter), IInspectionTypeService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.InspectionType, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.InspectionType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
@@ -30,28 +31,27 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionTypeFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -82,7 +82,7 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddInspectionTypeDto model)
+        public override async Task<IFinalResult> AddAsync(AddInspectionTypeDto model, CancellationToken cancellationToken = default)
         {
             var IsExisted = await UnitOfWork.Repository.Any(x => 
                                   (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted);
@@ -121,7 +121,7 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
             return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null,
                                   message: MessagesConstants.AddSuccess);
         }
-        public override async Task<IFinalResult> UpdateAsync(AddInspectionTypeDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddInspectionTypeDto model, CancellationToken cancellationToken = default)
         {
             var IsExisted = await UnitOfWork.Repository.Any(x => 
                           (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && !x.IsDeleted);

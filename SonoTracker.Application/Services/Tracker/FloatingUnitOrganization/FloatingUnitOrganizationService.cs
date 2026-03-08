@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.Parameters;
 using SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization;
@@ -24,7 +25,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 
 
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -35,7 +36,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -47,7 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
        
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.FloatingUnitOrganization, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.FloatingUnitOrganization, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                 .Include(t => t.FloatingUnit)
@@ -58,16 +59,17 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
                 message: HttpStatusCode.OK.ToString());
         }
 
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FloatingUnitOrganizationFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FloatingUnitOrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
-                 include: src => src
+                include: src => src
                 .Include(t => t.FloatingUnit)
-                .Include(t => t.Organization));
+                .Include(t => t.Organization),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnitOrganization>, IEnumerable<FloatingUnitOrganizationDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -84,7 +86,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             }
             if (filter.OrganizationType.HasValue)
             {
-                predicate = predicate.And(x => x.Organization.OrganizationTypeId == filter.OrganizationType);
+                predicate = predicate.And(x => x.Organization.OrganizationType == filter.OrganizationType);
             }
             if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {

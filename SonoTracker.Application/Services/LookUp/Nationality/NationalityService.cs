@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -11,13 +11,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Nationality
 {
     public class NationalityService(IServiceBaseParameter<Domain.Entities.Lookups.Nationality> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Nationality, AddNationalityDto, EditNationalityDto, NationalityDto, string, string>(businessBaseParameter), INationalityService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Nationality, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Nationality, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
@@ -30,7 +31,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<NationalityFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<NationalityFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -39,22 +40,22 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
             var query = await UnitOfWork.Repository.FindPagedAsync
                 (predicate: PredicateBuilderFunction(filter.Filter),
                 pageNumber: offset,
-                pageSize: limit, filter.OrderByValue);
+                pageSize: limit, filter.OrderByValue,
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Nationality>, IEnumerable<NationalityDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Nationality>, IEnumerable<NationalityDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -85,7 +86,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddNationalityDto model)
+        public override async Task<IFinalResult> AddAsync(AddNationalityDto model, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -136,7 +137,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
 
         }
 
-        public override async Task<IFinalResult> UpdateAsync(AddNationalityDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddNationalityDto model, CancellationToken cancellationToken = default)
         {
 
             var IsExisted = await UnitOfWork.Repository.Any(x =>

@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.DTO.Lookup.UnitType;
+using SonoTracker.Common.DTO.Lookup.UnitType;
 using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.Collections.Generic;
@@ -13,8 +13,12 @@ namespace SonoTracker.Application.Mapping
         public void MapUnitType()
         {
             CreateMap<UnitType, UnitTypeDto>().ReverseMap();
-            CreateMap<UnitType, AddUnitTypeDto>().ReverseMap();
+            
             CreateMap<UnitType, EditUnitTypeDto>().ReverseMap();
+
+            CreateMap<AddUnitTypeDto, UnitType>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

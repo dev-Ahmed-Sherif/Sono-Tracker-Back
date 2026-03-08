@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -10,13 +10,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.MaintenanceType
 {
     public class MaintenanceTypeService(IServiceBaseParameter<Entities.Lookups.MaintenanceType> businessBaseParameter) : BaseService<Entities.Lookups.MaintenanceType, AddMaintenanceTypeDto, EditMaintenanceTypeDto, MaintenanceTypeDto, string, string>(businessBaseParameter), IMaintenanceTypeService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.MaintenanceType, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.MaintenanceType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
@@ -29,28 +30,27 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceTypeFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.MaintenanceType>, IEnumerable<MaintenanceTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.MaintenanceType>, IEnumerable<MaintenanceTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -81,7 +81,7 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddMaintenanceTypeDto model)
+        public override async Task<IFinalResult> AddAsync(AddMaintenanceTypeDto model, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
 
         }
         
-        public override async Task<IFinalResult> UpdateAsync(AddMaintenanceTypeDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddMaintenanceTypeDto model, CancellationToken cancellationToken = default)
         {
 
             var IsExisted = await UnitOfWork.Repository.Any(x =>

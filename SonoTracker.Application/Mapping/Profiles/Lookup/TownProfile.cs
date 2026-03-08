@@ -9,10 +9,14 @@ namespace SonoTracker.Application.Mapping
         {
             CreateMap<Town, TownDto>()
                 .ForMember(dest => dest.City, cfg => cfg.MapFrom(src => src.City.NameAr))
-                .ForMember(dest => dest.Governorate, cfg => cfg.MapFrom(src => src.City.Governorate.Name));
+                .ForMember(dest => dest.Governorate, cfg => cfg.MapFrom(src => src.City.Governorate.NameAr))
+                .ReverseMap();
 
             CreateMap<Town, EditTownDto>().ReverseMap();
-            CreateMap<Town, AddTownDto>().ReverseMap();
+
+            CreateMap<AddTownDto, Town>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

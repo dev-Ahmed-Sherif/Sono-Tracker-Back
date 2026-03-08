@@ -7,7 +7,7 @@ namespace SonoTracker.Domain.Entities.Base
     [ExcludeFromCodeCoverage]
     public class BaseAudit<TKey> : BaseEntity<TKey>
     {   
-        public required DateTime CreatedDate { get; set; }
+        public required DateTime CreatedAt { get; set; }
         
         [MaxLength(50)]
         public required string CreatedById { get; set; }
@@ -15,7 +15,7 @@ namespace SonoTracker.Domain.Entities.Base
         [MaxLength(70)]
         public required string CreatedBy { get; set; }
         
-        public required DateTime ModifiedDate { get; set; }
+        public required DateTime ModifiedAt { get; set; }
         
         [MaxLength(50)]
         public required string ModifiedById { get; set; }

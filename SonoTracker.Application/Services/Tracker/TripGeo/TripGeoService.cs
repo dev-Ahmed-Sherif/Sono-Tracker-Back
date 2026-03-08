@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using LinqKit;
 using SonoTracker.Application.Services.Base;
@@ -17,7 +18,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
 {
     public class TripGeoService(IServiceBaseParameter<Entities.Tracker.TripGeo> businessBaseParameter) : BaseService<Entities.Tracker.TripGeo, AddTripGeoDto, EditTripGeoDto, TripGeoDto, string, string>(businessBaseParameter), ITripGeoService
     {
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -28,7 +29,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -55,18 +56,18 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.TripGeo, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.TripGeo, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src.Include(t => t.GeoPoint)
              .Include(t => t.TripInformation)
              .ThenInclude(t => t.FloatingUnit)
-            );
+,               cancellationToken: cancellationToken);
             var filteredEntities = entity.Where(e => e.IsDeleted != true);
             var mapped = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<TripGeoFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<TripGeoFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -76,23 +77,22 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
                 pageNumber: offset, pageSize: limit,
                 filter.OrderByValue,
                 include: src => src.Include(t => t.GeoPoint)
-                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit)
-                );
+                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(query.Item2.Where(x => x.IsDeleted != true));
 

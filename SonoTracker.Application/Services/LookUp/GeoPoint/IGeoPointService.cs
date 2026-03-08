@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
@@ -10,9 +11,9 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 {
     public interface IGeoPointService : IBaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, string, string>
     {
-        Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter);
+        Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter, CancellationToken cancellationToken = default);
 
-        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
+        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
 
     }
 }

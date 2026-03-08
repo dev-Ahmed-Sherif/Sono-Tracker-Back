@@ -14,7 +14,7 @@ namespace SonoTracker.Application.Mapping
 
             CreateMap<Route, EditRouteDto>().ReverseMap();
 
-            CreateMap<Route, AddRouteDto>()
+            CreateMap<AddRouteDto, Route>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
         }

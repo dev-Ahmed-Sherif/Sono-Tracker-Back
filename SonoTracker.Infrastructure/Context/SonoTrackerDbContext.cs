@@ -1,15 +1,11 @@
-using SonoTracker.Domain.Entities.Lookups;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using SonoTracker.Common.Services;
-using SonoTracker.Domain.Entities.Attachments;
-using SonoTracker.Domain.Entities.Identity;
-using SonoTracker.Domain.Entities.Tracker;
-using SonoTracker.Infrastructure.Configuration;
-using SonoTracker.Infrastructure.DataInitializer;
-using System;
-using SonoTracker.Domain.Entities.TrackerNotification;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using SonoTracker.Domain.Entities.Tracker;
+using SonoTracker.Domain.Entities.Lookups;
+using SonoTracker.Domain.Entities.Identity;
+using SonoTracker.Domain.Entities.Attachments;
+using SonoTracker.Domain.Entities.TrackerNotification;
 
 namespace SonoTracker.Infrastructure.Context
 {
@@ -72,6 +68,7 @@ namespace SonoTracker.Infrastructure.Context
         public virtual DbSet<InspectionType> InspectionTypes { get; set; }
         public virtual DbSet<MaintenanceType> MaintenanceTypes { get; set; }
         public virtual DbSet<Nationality> Nationalities { get; set; }
+        public virtual DbSet<OrganizationCategory> OrganizationCategories { get; set; }
         public virtual DbSet<Route> Routes { get; set; }
         public virtual DbSet<UnitType> UnitTypes { get; set; }
 
@@ -258,7 +255,7 @@ namespace SonoTracker.Infrastructure.Context
             // Governorate -> City -> Town hierarchy
             modelBuilder.Entity<City>()
                 .HasOne(c => c.Governorate)
-                .WithMany()
+                .WithMany(g => g.Cities)
                 .HasForeignKey(c => c.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -296,6 +293,12 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureIdentityAndNotificationRelations(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Role>()
+                        .Ignore(r => r.ConcurrencyStamp);
+
+            modelBuilder.Entity<User>()
+                        .Ignore(r => r.ConcurrencyStamp);
+
             // User -> RefreshTokens
             modelBuilder.Entity<User>()
                 .HasMany(u => u.RefreshTokens)

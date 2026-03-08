@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.User;
@@ -13,13 +13,12 @@ namespace SonoTracker.Application.Services.Identity.Account
     {
         Task<IFinalResult> RegisterAsync(RegisterDto request);
         Task<IFinalResult> LoginAsync(LoginRequestDto request);
+        Task<IFinalResult> LogoutAsync(string id);
         Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request);
-        Task<IdentityResult> UpdateUserPersonalData(string userId, ChangeUserPersonalDataDto changePersonalData);
-        Task<User> LogoutAsync(string id);
-        Task<string> UpdateUserRole(string userId, string roleId);
-        Task<UserDto> GetUserByIdAsync(string userId);
-        IEnumerable<UserDto> GetUsersAsync();
+        Task<IFinalResult> GetUserByIdAsync(string userId);
+        Task<IFinalResult> GetUsersAsync();
         Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter);
-        Task<bool> RemoveUser(string userId);
+        Task<IFinalResult> UpdateUser(UpdateUserDto changePersonalData);
+        Task<IFinalResult> DeleteUser(string userId);
     }
 }

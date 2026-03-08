@@ -11,7 +11,7 @@ namespace SonoTracker.Application.Mapping
 
             CreateMap<AccidentType, EditAccidentTypeDto>().ReverseMap();
             
-            CreateMap<AccidentType, AddAccidentTypeDto>()
+            CreateMap<AddAccidentTypeDto, AccidentType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
         }

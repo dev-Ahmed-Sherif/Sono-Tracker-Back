@@ -1,4 +1,4 @@
-﻿using LinqKit;
+using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -10,13 +10,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.City
 {
     public class CityService(IServiceBaseParameter<Domain.Entities.Lookups.City> businessBaseParameter) : BaseService<Domain.Entities.Lookups.City, AddCityDto, EditCityDto, CityDto, string, string>(businessBaseParameter), ICityService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false ,Expression<Func<Domain.Entities.Lookups.City, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false ,Expression<Func<Domain.Entities.Lookups.City, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
@@ -30,7 +31,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                 message: HttpStatusCode.OK.ToString());
         }
        
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<CityFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<CityFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -39,23 +40,23 @@ namespace SonoTracker.Application.Services.Lookup.City
              var (Count, Result) = await UnitOfWork.Repository.FindPagedAsync
                                         (predicate: PredicateBuilderFunction(filter.Filter),
                                         pageNumber: offset,
-                                        pageSize: limit, filter.OrderByValue);
+                                        pageSize: limit, filter.OrderByValue,
+                                        cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.City>, IEnumerable<CityDto>>(Result.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
        
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.City>, IEnumerable<CityDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -90,7 +91,7 @@ namespace SonoTracker.Application.Services.Lookup.City
             return predicate;
         }
 
-        public override async Task<IFinalResult> AddAsync(AddCityDto model)
+        public override async Task<IFinalResult> AddAsync(AddCityDto model, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -141,7 +142,7 @@ namespace SonoTracker.Application.Services.Lookup.City
 
         }
 
-        public override async Task<IFinalResult> UpdateAsync(AddCityDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddCityDto model, CancellationToken cancellationToken = default)
         {
             try
             {

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using SonoTracker.Common.Core;
 
@@ -12,14 +13,16 @@ namespace SonoTracker.Application.Services.Base
         where TEditDto : IEntityDto<TKeyDto>
         where TGetDto : IEntityDto<TKeyDto>
     {
-        Task<IFinalResult> GetByIdAsync(object id);
-        Task<IFinalResult> GetByIdForEditAsync(object id);
-        Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<T, bool>> predicate = null);
-        Task<IFinalResult> AddAsync(TAddDto model);
-        Task<IFinalResult> AddListAsync(List<TAddDto> model);
-        Task<IFinalResult> UpdateAsync(TAddDto model);
-        Task<IFinalResult> DeleteAsync(object id);
-        Task<IFinalResult> DeleteSoftAsync(object id);
-      
+        Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default);
+        Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default);
+        Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default);
+        Task<IFinalResult> AddAsync(TAddDto model, CancellationToken cancellationToken = default);
+        Task<IFinalResult> AddListAsync(List<TAddDto> model, CancellationToken cancellationToken = default);
+        Task<IFinalResult> UpdateAsync(TAddDto model, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteSoftAsync(object id, CancellationToken cancellationToken = default);
+
+        Task<IFinalResult> GetLastRecordAsync(CancellationToken cancellationToken = default);
+
     }
 }

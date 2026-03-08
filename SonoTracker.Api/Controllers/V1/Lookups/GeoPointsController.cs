@@ -1,91 +1,181 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.LookUp.GeoPoint;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.GeoPoint.Parameters;
 using SonoTracker.Common.DTO.Lookup.GeoPoint;
-using SonoTracker.Api.Controllers.V1.Base;
-using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
+using SonoTracker.Common.DTO.Lookup.GeoPoint.Parameters;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Lookups
 {
     /// <summary>
-    /// Constructor
+    /// GeoPoints Controller
     /// </summary>
+    /// <remarks>
+    /// Constructor
+    /// </remarks>
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class GeoPointsController(IGeoPointService geoPointService) : BaseController
-    {  
+    {
         /// <summary>
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await geoPointService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
+                                        => await geoPointService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await geoPointService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+                                        => await geoPointService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await geoPointService.GetAllAsync();
-        
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await geoPointService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
+
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<GeoPointFilter> filter) => await geoPointService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<GeoPointFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await geoPointService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromBody] AddGeoPointDto dto) => await geoPointService.AddAsync(dto);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddGeoPointDto dto, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await geoPointService.AddAsync(dto, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
+        }
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await geoPointService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await geoPointService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync(AddGeoPointDto model) => await geoPointService.UpdateAsync(model);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddGeoPointDto model, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await geoPointService.UpdateAsync(model, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await geoPointService.DeleteAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await geoPointService.DeleteAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await geoPointService.DeleteSoftAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await geoPointService.DeleteSoftAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
     }
 }

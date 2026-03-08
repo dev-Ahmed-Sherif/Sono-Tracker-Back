@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using LinqKit;
 using SonoTracker.Application.Services.Base;
@@ -23,7 +24,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 
 
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -35,7 +36,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -47,7 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.MarinaTrip, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.MarinaTrip, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                .Include(t => t.TouristMarina)
@@ -58,7 +59,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<Common.DTO.Tracker.MarinaTrip.Parameters.MarinaTripFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<Common.DTO.Tracker.MarinaTrip.Parameters.MarinaTripFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -69,8 +70,8 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
                 filter.OrderByValue, include: src => src
                 .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
-              .ThenInclude(x => x.FloatingUnit)
-                );
+              .ThenInclude(x => x.FloatingUnit),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.MarinaTrip>, IEnumerable<MarinaTripDto>>(query.Item2.Where(x => x.IsDeleted != true));
 

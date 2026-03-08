@@ -28,18 +28,19 @@ namespace SonoTracker.Application.Services.Identity.Account
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<SonoTracker.Domain.Entities.Identity.Role> roleManager,
+                 RoleManager<Entities.Identity.Role> roleManager,
                  SonoTrackerDbContext context,
-                 UserData auditUser,
+                 UserDataDto auditUser,
                  IConfiguration configuration,
-                 SignInManager<User> signInManager,
                  IUnitOfWork<User> UnitOfWork,
                  IMapper Mapper) : IAccountService
     {
         public async Task<IFinalResult> RegisterAsync(RegisterDto request)
         {
-            var responseResult = new ResponseResult();
+            ResponseResult responseResult = new();
+
             User checkUser = await userManager.FindByEmailAsync(request.Email);
+            
             if (checkUser == null)
             {
                 User user = new()
@@ -49,97 +50,277 @@ namespace SonoTracker.Application.Services.Identity.Account
                     FullName = request.Username,
                     CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     CreatedById = auditUser.Id != "" ? auditUser.Id : "",
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     ModifiedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     ModifiedById = auditUser.Id != "" ? auditUser.Id : "",
-                    ModifiedAt = DateTime.Now,
+                    ModifiedAt = DateTime.UtcNow,
                 };
 
                 IdentityResult result = await userManager.CreateAsync(user, request.Password);
 
                 if (!result.Succeeded)
-                    return responseResult.PostResult(user, status: HttpStatusCode.BadRequest,
-                        message: "Failed to Create User : " +
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                    return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.AddError + "User : " +
+                                                     string.Join(", ", result.Errors.Select(e => e.Description)));
 
                 user.CreatedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
-                user.CreatedAt = DateTime.Now;
+                user.CreatedAt = DateTime.UtcNow;
                 user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
-                user.ModifiedAt = DateTime.Now;
+                user.ModifiedAt = DateTime.UtcNow;
 
                 await userManager.UpdateAsync(user);
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
+                    Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
 
-                    if (role == null)
-                    {
-                        //return "null";
-                        SonoTracker.Domain.Entities.Identity.Role userRole = await roleManager.FindByNameAsync(Roles.User);
+                    IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
-                        await userManager.AddToRoleAsync(user, userRole.Name!);
+                    if (!result.Succeeded)
+                        return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.AddError + "User : " +
+                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                        return responseResult.PostResult(user.Id, status: HttpStatusCode.Accepted,
-                                message: HttpStatusCode.OK.ToString());
-                    }
-
-                    await userManager.AddToRoleAsync(user, role.Name!);
-
-                    return responseResult.PostResult(user.Id, status: HttpStatusCode.OK,
-                        message: HttpStatusCode.OK.ToString());
+                    return responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception: null,
+                                                     message: MessagesConstants.AddSuccess);
                 }
                 else
                 {
-                    SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
+                    Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
                   
-                    await userManager.AddToRoleAsync(user, role.Name!);
-                    
-                    return  responseResult.PostResult(user.Id, status: HttpStatusCode.Accepted,
-                            message: HttpStatusCode.OK.ToString()); 
-                }
+                    IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
+                    if (!result.Succeeded)
+                        return responseResult.PostResult(user, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.AddError + "User : " +
+                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
+
+                    return  responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception:null,
+                                                      message: MessagesConstants.AddSuccess); 
+                }
             }
 
-            return responseResult.PostResult(null,status: HttpStatusCode.Conflict,
-                   message: "User Already Exist");
+            return responseResult.PostResult(result: null,status: HttpStatusCode.Conflict, exception: null,
+                                             message: MessagesConstants.Existed);
         }
         public async Task<IFinalResult> LoginAsync(LoginRequestDto request)
         {
-            LoginResponseDto response = new();
-            var responseResult = new ResponseResult();
-            User user = await userManager.FindByEmailAsync(request.Email);
-            if (user != null)
-            {
-                var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-            }
-            else
-            {
-                return responseResult.PostResult(response, status: HttpStatusCode.Unauthorized,
-                    message: "Invalid email or password");
-            }
-           
+            ResponseResult responseResult = new();
 
-            user!.IsLogedIn = true;
-            string userName = user.FullName;
-            user.ModifiedById = userName;
-            user.ModifiedAt = DateTime.Now;
+            LoginResponseDto response = new();
+
+            User user = await userManager.FindByEmailAsync(request.Email);
 
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
-            {
-                //return response;
-                // Create an instance of ResponseResult to call the PostResult method
-                return responseResult.PostResult(response, status: HttpStatusCode.Unauthorized,
-                     message: "Invalid email or password");
-            }
+                return responseResult.PostResult(result: response, status: HttpStatusCode.Unauthorized, exception: null,
+                                                 message: "Invalid email or password");
+
+            user.IsLogedIn = true;
+            user.ModifiedBy = user.FullName;
+            user.ModifiedById = user.Id;
+            user.ModifiedAt = DateTime.UtcNow;
 
             await userManager.UpdateAsync(user);
 
             response = await CreateTokenResponse(user);
 
-            //return response;
-            return responseResult.PostResult(response, status: HttpStatusCode.OK,
-                    message: HttpStatusCode.OK.ToString());
+            return responseResult.PostResult(result: response, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
+        }
+        public async Task<IFinalResult> LogoutAsync(string id)
+        {
+            ResponseResult responseResult = new();
+
+            User user = await userManager.FindByIdAsync(id);
+
+            if (user is not null)
+            {
+                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync();
+                if (refreshToken is not null)
+                {
+                    await RemoveOldRefreshToken(id, refreshToken!.Token);
+                    user.IsLogedIn = false;
+                    await userManager.UpdateAsync(user);
+                    return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                                                     message: MessagesConstants.Success);
+                }
+            }
+
+            return responseResult.PostResult(result: false, status: HttpStatusCode.Unauthorized, exception: null,
+                                                     message: HttpStatusCode.Unauthorized.ToString());
+
+        }
+        public async Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request)
+        {
+            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            if (user is null) return null;
+
+            return await CreateTokenResponse(user);
+        }
+        public async Task<IFinalResult> UpdateUser(UpdateUserDto updateUser)
+        {
+            var responseResult = new ResponseResult();
+
+            User user = await userManager.FindByIdAsync(updateUser.Id);
+
+            user.Email = updateUser.Email;
+            user.UserName = updateUser.Email;
+            user.FullName = updateUser.UserName;
+            user.OrganizationId = updateUser.OrganizationId?.ToString();
+
+            user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
+            user.ModifiedAt = DateTime.UtcNow;
+
+            if (updateUser.NewPassword != "" && updateUser.NewPassword is not null)
+            {
+                if (auditUser.Role == Roles.SuperAdmin)
+                {
+                    IdentityResult resRemoveOldPassword = await userManager.RemovePasswordAsync(user);
+
+                    if (!resRemoveOldPassword.Succeeded)
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.UpdateError);
+
+                    IdentityResult setNewPassword = await userManager.AddPasswordAsync(user, updateUser.NewPassword);
+
+                    if (!setNewPassword.Succeeded)
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.UpdateError);
+                }
+                else
+                {
+                    IdentityResult updatePassword = await userManager.ChangePasswordAsync
+                                                    (user, updateUser.OldPassword, updateUser.NewPassword);
+                    if (!updatePassword.Succeeded)
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.UpdateError + "Wrong Old Password !");
+                }
+            }
+
+            Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
+
+            if (role != null)
+            {
+                IList<string> userRole = await userManager.GetRolesAsync(user);
+
+                if (userRole.Count > 0)
+                {
+                    await userManager.RemoveFromRolesAsync(user, userRole);
+                }
+
+                await userManager.AddToRoleAsync(user, role.Name);
+
+                IdentityResult res = await userManager.UpdateAsync(user);
+
+                if (!res.Succeeded)
+
+                    return responseResult.PostResult(user, status: HttpStatusCode.BadRequest,
+                                message: "Failed to Update User : " +
+                                string.Join(", ", res.Errors.Select(e => e.Description)));
+            }
+
+            return responseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                             message: MessagesConstants.UpdateSuccess);
+        }
+        public async Task<IFinalResult> GetUserByIdAsync(string Id)
+        {
+            ResponseResult responseResult = new();
+
+            User user = await userManager.FindByIdAsync(Id);
+
+            UserDto userDto = new()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.FullName,
+                Role = userManager.GetRolesAsync(user).Result.FirstOrDefault() ?? "",
+                FloatingUnitId = user.FloatingUnitId ?? "",
+                OrganizationId = user.OrganizationId ?? "",
+            };
+
+            userDto.RoleId = roleManager.Roles.Where(r => r.Name == userDto.Role)
+                                              .Select(r => r.Id).FirstOrDefault() ?? "";
+
+            return responseResult.PostResult(result: userDto, status: HttpStatusCode.OK, exception: null,
+                                             message: MessagesConstants.Success);
+        }
+        public async Task<IFinalResult> GetUsersAsync()
+        {
+            ResponseResult responseResult = new();
+
+            List<User> userList = await userManager.Users.ToListAsync();
+
+            List<UserDto> users = [];
+
+            foreach (var u in userList)
+            {
+                IList<string> roles = await userManager.GetRolesAsync(u);
+
+                users.Add(new UserDto
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    UserName = u.FullName,
+                    Role = roles.FirstOrDefault() ?? "",
+                    RoleId = "",
+                    OrganizationId = u.OrganizationId ?? "",
+                    CreatedAt = u.CreatedAt,
+                    CreatedBy = u.CreatedBy,
+                    ModifiedAt = u.ModifiedAt,
+                    ModifiedBy = u.ModifiedBy
+                });
+            }
+
+            if (users == null)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.NotFound, exception: null,
+                                                 message: MessagesConstants.NotFound);
+
+            for (int i = 0; i < users.Count; i++)
+            {
+                users[i].RoleId = roleManager.Roles.Where(r => r.Name == users[i].Role)
+                                                      .Select(r => r.Id).FirstOrDefault() ?? "";
+            }
+
+            return responseResult.PostResult(result: users, status: HttpStatusCode.OK, exception: null, 
+                                             message: MessagesConstants.Success);
+        }
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter)
+        {
+            var limit = filter.PageSize;
+
+            var offset = --filter.PageNumber * filter.PageSize;
+
+            var (Count, Result) = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            
+            var data = Mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(Result);
+
+            for (int i = 0; i < data.ToList().Count; i++)
+            {
+                var email = data.ToList()[i].Email;
+                var user = await userManager.FindByEmailAsync(email);
+                IList<string> userRoles = await userManager.GetRolesAsync(user);
+                data.ToList()[i].Role = userRoles.FirstOrDefault() ?? "";
+                data.ToList()[i].RoleId = roleManager.Roles.Where(r => r.Name == data.ToList()[i].Role)
+                                                     .Select(r => r.Id).FirstOrDefault() ?? "";// Default to User role if no roles assigned
+            }
+
+            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+        }
+        public async Task<IFinalResult> DeleteUser(string userId)
+        {
+            ResponseResult responseResult = new();
+
+            User user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            IdentityResult res = await userManager.DeleteAsync(user);
+
+            if (!res.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                                                 message: MessagesConstants.DeleteError + "User : " +
+                                                 string.Join(", ", res.Errors.Select(e => e.Description)));
+
+            return responseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                             message: MessagesConstants.DeleteSuccess);
         }
         private async Task<LoginResponseDto> CreateTokenResponse(User user)
         {
@@ -151,7 +332,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                SonoTracker.Domain.Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
+                Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 
@@ -163,13 +344,6 @@ namespace SonoTracker.Application.Services.Identity.Account
                 AccessToken = await CreateToken(user, perUser),
                 RefreshToken = await GenerateAndSaveRefreshTokensAsync(user)
             };
-        }
-        public async Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request)
-        {
-            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
-            if (user is null) return null;
-
-            return await CreateTokenResponse(user);
         }
         private async Task<User> ValidateRefreshTokenAsync(string userId, string refreshToken)
         {
@@ -217,10 +391,10 @@ namespace SonoTracker.Application.Services.Identity.Account
                 ExpiryTime = DateTime.Now.AddDays(AuthConstants.RefreshTokenLife),
                 CreatedBy = user.FullName,
                 CreatedById = user.Id,
-                CreatedDate = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ModifiedBy = user.FullName,
                 ModifiedById = user.Id,
-                ModifiedDate = DateTime.Now,
+                ModifiedAt = DateTime.UtcNow,
                 IsDeleted = false,
                 IpAddress = ""
             };
@@ -275,127 +449,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
-        public async Task<IdentityResult> UpdateUserPersonalData(string userId, ChangeUserPersonalDataDto changePersonalData)
-        {
-            User user = await userManager.FindByIdAsync(userId);
-            if (user is null)
-                return IdentityResult.Failed(new IdentityError() { Description = "User Not Found" });
-
-            user.Email = changePersonalData.Email;
-            user.UserName = changePersonalData.Email;
-            user.FullName = changePersonalData.UserName;
-            user.ModifiedById = auditUser.Id != "" ? auditUser.Id : user.Id;
-            user.ModifiedAt = DateTime.Now;
-
-            await userManager.UpdateAsync(user);
-            return await userManager.ChangePasswordAsync(user, changePersonalData.OldPassword, changePersonalData.NewPassword);
-        }
-        public async Task<User> LogoutAsync(string id)
-        {
-            User user = await userManager.FindByIdAsync(id);
-            if (user is not null)
-            {
-                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync();
-                if (refreshToken is not null)
-                {
-                    await RemoveOldRefreshToken(id, refreshToken!.Token);
-                    user.IsLogedIn = false;
-                    await userManager.UpdateAsync(user);
-                    //await signInManager.SignOutAsync();
-                    return user;
-                }
-            }
-            return null;
-
-        }
-        public async Task<string> UpdateUserRole(string userId, string roleId)
-        {
-            User user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            if (user is null)
-            {
-                return "null";
-            }
-
-            SonoTracker.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(roleId);
-            if (role == null)
-            {
-                return "null";
-            }
-
-            IList<string> userRole = await userManager.GetRolesAsync(user);
-            if (userRole.Count > 0)
-            {
-                await userManager.RemoveFromRolesAsync(user, userRole);
-            }
-
-            await userManager.AddToRoleAsync(user, role.Name!);
-            return "OK";
-
-        }
-        public async Task<UserDto> GetUserByIdAsync(string userId)
-        {
-            User user = await userManager.FindByIdAsync(userId);
-            if (user is null)
-            {
-                return null;
-            }
-            UserDto userDto = new()
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                Role = userManager.GetRolesAsync(user).Result.FirstOrDefault() ?? "",
-                FloatingUnitId = user.FloatingUnitId.ToString(),
-                OrganizationId = user.OrganizationId.ToString(),
-            };
-            return userDto;
-        }
-        public async Task<bool> RemoveUser(string userId)
-        {
-            User user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            if (user is null)
-            {
-                return false;
-            }
-            IdentityResult Result = await userManager.DeleteAsync(user);
-            return Result.Succeeded ? true : false;
-        }
-
-        public IEnumerable<UserDto> GetUsersAsync()
-        {
-            var users = userManager.Users.Select(u => new UserDto 
-            { 
-                Id=u.Id,
-                Email=u.Email,
-                FullName = u.FullName,
-                Role = userManager.GetRolesAsync(u).Result.FirstOrDefault() ?? "",
-                FloatingUnitId = u.FloatingUnitId.ToString(),
-                OrganizationId = u.OrganizationId.ToString()
-            });
-            return users;
-        }
-
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter)
-        {
-            var limit = filter.PageSize;
-
-            var offset = --filter.PageNumber * filter.PageSize;
-
-            var (Count, Result) = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
-            
-            var data = Mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(Result);
-
-            for (int i = 0; i < data.ToList().Count; i++)
-            {
-                var email = data.ToList()[i].Email;
-                var user = await userManager.FindByEmailAsync(email);
-                IList<string> userRoles = await userManager.GetRolesAsync(user);
-                data.ToList()[i].Role = userRoles.FirstOrDefault() ?? ""; // Default to User role if no roles assigned
-            }
-
-            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-        }
-        static Expression<Func<User, bool>> PredicateBuilderFunction(FilterUserDto filter)
+        private static Expression<Func<User, bool>> PredicateBuilderFunction(FilterUserDto filter)
         {
             var predicate = PredicateBuilder.New<User>(true);
             if (!string.IsNullOrWhiteSpace(filter.Name))

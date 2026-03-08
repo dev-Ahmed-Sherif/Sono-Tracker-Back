@@ -1,4 +1,4 @@
-﻿using SonoTracker.Common.Core;
+using SonoTracker.Common.Core;
 using SonoTracker.Domain.Enum;
 using System;
 using System.Linq;

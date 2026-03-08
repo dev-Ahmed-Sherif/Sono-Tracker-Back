@@ -139,7 +139,7 @@ namespace SonoTracker.Api.Extensions
                 user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? "";
 
 
-                List<UserPermission> permissions =
+                List<UserPermissionDto> permissions =
                 [.. user.Claims
                 .Where(c =>
                     c.Type != ClaimTypes.NameIdentifier && c.Type != ClaimTypes.Name &&
@@ -147,7 +147,7 @@ namespace SonoTracker.Api.Extensions
                     c.Type != AuthConstants.FloatingUnitId &&
                     c.Type != "exp" && c.Type != "iss")
                 .Select(c =>
-                    new UserPermission
+                    new UserPermissionDto
                     {
                         Name = c.Type,
                         Value = c.Value
@@ -156,7 +156,7 @@ namespace SonoTracker.Api.Extensions
                 //bool parsedUserId = int.TryParse(stringId, out int id);
                 //bool parsedOrgId = int.TryParse(stringOrganizationId, out int organizationId);
 
-                return new UserData(Id, name, role, permissions, organizationId, floatingUnitId);
+                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId);
             });
             services.AddCors(option =>
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using LinqKit;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +34,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
 
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id)
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -46,7 +47,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetByIdAsync(object id)
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
@@ -59,7 +60,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.Inspection, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.Inspection, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync
                 (include: src => src
@@ -73,7 +74,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
                 message: HttpStatusCode.OK.ToString());
         }
 
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<GeneralInspectionFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<GeneralInspectionFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
@@ -83,7 +84,8 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
                 include: src => src
                 .Include(t => t.Organization)
                 .Include(t => t.TripInformation)
-                .ThenInclude(t => t.FloatingUnit));
+                .ThenInclude(t => t.FloatingUnit),
+                cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Inspection>, IEnumerable<GeneralInspectionDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -136,7 +138,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
 
-        public override async Task<IFinalResult> AddAsync([FromForm] AddGeneralInspectionDto dto)
+        public override async Task<IFinalResult> AddAsync([FromForm] AddGeneralInspectionDto dto, CancellationToken cancellationToken = default)
         {
             var mapped = Mapper.Map<Entities.Tracker.Inspection>(dto);
             if (dto.InspectionAttachment != null)
@@ -157,7 +159,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
         }
 
-        public override async Task<IFinalResult> UpdateAsync([FromForm] AddGeneralInspectionDto dto)
+        public override async Task<IFinalResult> UpdateAsync([FromForm] AddGeneralInspectionDto dto, CancellationToken cancellationToken = default)
         {
 
             try
@@ -206,7 +208,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
             }
 
         }
-        public override async Task<IFinalResult> DeleteAsync(object id)
+        public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
 
             try

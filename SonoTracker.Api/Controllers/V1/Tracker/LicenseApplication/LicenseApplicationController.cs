@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SonoTracker.Api.Controllers.V1.Base;
+using SonoTracker.Application.Services.Tracker.LicenseApplication;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Api.Controllers.V1.Base;
-using Asp.Versioning;
-using SonoTracker.Application.Services.Tracker.LicenseApplication;
 using SonoTracker.Common.DTO.Tracker.LicenseApplication;
 using SonoTracker.Common.DTO.Tracker.LicenseApplication.Parameters;
-using Microsoft.AspNetCore.Authorization;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Governorate
 {
@@ -22,76 +24,156 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Governorate
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await licenseApplicationService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await licenseApplicationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await licenseApplicationService.GetByIdForEditAsync(id);
 
+        [HttpGet("getEdit/{id}")]
+        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await licenseApplicationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await licenseApplicationService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await licenseApplicationService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<LicenseApplicationFilter> filter) => await licenseApplicationService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<LicenseApplicationFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await licenseApplicationService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromForm] AddLicenseApplicationDto dto) => await licenseApplicationService.AddAsync(dto);
-       
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddLicenseApplicationDto dto, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await licenseApplicationService.AddAsync(dto, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
+        }
+
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await licenseApplicationService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await licenseApplicationService.GetDropDownAsync(filter, cancellationToken);
 
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
+            return Ok(res);
+        }
 
         /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromForm] AddLicenseApplicationDto model) => await licenseApplicationService.UpdateAsync(model);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddLicenseApplicationDto model, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await licenseApplicationService.UpdateAsync(model, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await licenseApplicationService.DeleteAsync(id);
 
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await licenseApplicationService.DeleteAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await licenseApplicationService.DeleteSoftAsync(id);
 
+        [HttpDelete("deleteSoft/{id}")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await licenseApplicationService.DeleteSoftAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
     }
 }

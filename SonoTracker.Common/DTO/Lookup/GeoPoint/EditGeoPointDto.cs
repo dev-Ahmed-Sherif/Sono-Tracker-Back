@@ -15,5 +15,11 @@ namespace SonoTracker.Common.DTO.Lookup.GeoPoint
         public string Id { get; set; }
         public string North { get; set; }
         public string East { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

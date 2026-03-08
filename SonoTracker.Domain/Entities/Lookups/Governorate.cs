@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Lookups
 {
     [ExcludeFromCodeCoverage]
-    public class Governorate : BaseAudit<string>
+    public class Governorate : Lookup<string>
     {
         public Governorate()
         {
@@ -19,12 +19,6 @@ namespace SonoTracker.Domain.Entities.Lookups
         }
 
         [Required, MaxLength(100)]
-        public required string Name { get; set; }
-        
-        [Required, MaxLength(10)]
-        public required string Code { get; set; }
-
-        [Required, MaxLength(100)]
         public required string WebsiteUrl { get; set; }
 
         [Required, MaxLength(250)]
@@ -33,7 +27,7 @@ namespace SonoTracker.Domain.Entities.Lookups
         [Required, MaxLength(250)]
         public required string ImageUrl { get; set; }
        
-        public virtual HashSet<Town> Cities { get; set; } = [];
+        public virtual HashSet<City> Cities { get; set; } = [];
 
     }
 }

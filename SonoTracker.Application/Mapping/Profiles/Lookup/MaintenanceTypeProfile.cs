@@ -12,7 +12,7 @@ namespace SonoTracker.Application.Mapping
             
             CreateMap<MaintenanceType, EditMaintenanceTypeDto>().ReverseMap();
             
-            CreateMap<MaintenanceType, AddMaintenanceTypeDto>()
+            CreateMap<AddMaintenanceTypeDto, MaintenanceType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
 

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -22,7 +23,7 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 {
     public class GeoPointService(IServiceBaseParameter<Entities.Lookups.GeoPoint> businessBaseParameter) : BaseService<Entities.Lookups.GeoPoint, AddGeoPointDto, EditGeoPointDto, GeoPointDto, string, string>(businessBaseParameter), IGeoPointService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.GeoPoint, bool>> predicate = null)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.GeoPoint, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
@@ -36,28 +37,27 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
                 message: HttpStatusCode.OK.ToString());
         }
 
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter)
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(query.Item2.Where(x => x.IsDeleted != true));
 
@@ -89,7 +89,7 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
             }
             return predicate;
         }
-        public override async Task<IFinalResult> AddAsync(AddGeoPointDto model)
+        public override async Task<IFinalResult> AddAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
             //var IsExisted = await UnitOfWork.Repository.Any(x => (x.NameAr == model.NameAr
             //|| x.NameEn == model.NameEn) && x.IsDeleted != true);
@@ -106,7 +106,7 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
         }
-        public override async Task<IFinalResult> UpdateAsync(AddGeoPointDto model)
+        public override async Task<IFinalResult> UpdateAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
             //var IsExisted = await UnitOfWork.Repository.Any(x =>(x.NameAr == model.NameAr
             //&& x.NameEn == model.NameEn ) && x.Id != model.Id && x.IsDeleted != true);

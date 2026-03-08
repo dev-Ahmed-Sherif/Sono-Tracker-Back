@@ -1,7 +1,7 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Identity.Account;
 using SonoTracker.Application.Services.Identity.Role;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -14,16 +14,19 @@ namespace SonoTracker.Api.Controllers.V1.Identity
     /// <summary>
     /// Controller for managing roles in the application.
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class RolesController(RoleManager<Role> roleManager, IRoleService roleService) : BaseController
     {
         /// <summary>
         /// Gets all roles in the application.
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns>A list of roles.</returns>
+        
         [HttpGet("getAll")]
-        public ActionResult<IFinalResult> GetAllRolesAsync()
+        public ActionResult<IFinalResult> GetAllRolesAsync(CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 
@@ -36,17 +39,21 @@ namespace SonoTracker.Api.Controllers.V1.Identity
 
             return Ok(responseResult.PostResult(roles, HttpStatusCode.OK, message: HttpStatusCode.OK.ToString()));
         }
+       
         /// <summary>
         /// Retrieves a paginated list of users in the application.
         /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>
         /// An <see cref="ActionResult"/> containing a paginated list of roles if found, 
         /// or a not found response if no users exist.
-        /// </returns> 
+        /// </returns>
+        
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public ActionResult<IFinalResult> GetPagedRolesAsync(BaseParam<FilterRoleDto> filter)
+        public ActionResult<IFinalResult> GetPagedRolesAsync([FromBody] BaseParam<FilterRoleDto> filter, CancellationToken cancellationToken = default)
         {
             
             var roles = roleService.GetAllPagedAsync(filter);
@@ -58,13 +65,16 @@ namespace SonoTracker.Api.Controllers.V1.Identity
 
             return Ok(roles);
         }
+        
         /// <summary>
         /// Gets a role by its ID.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>The role with the specified ID, or a not found result if the role does not exist.</returns>
+        
         [HttpGet("get/{id}")]
-        public async Task<ActionResult<IFinalResult>> GetRoleByIdAsync(string id)
+        public async Task<ActionResult<IFinalResult>> GetRoleByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 
@@ -97,9 +107,11 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// Creates a new role in the application.
         /// </summary>
         /// <param name="roleDto">The role data transfer object containing role details.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>An ActionResult indicating the result of the role creation operation.</returns>
+        
         [HttpPost("add")]
-        public async Task<ActionResult<IFinalResult>> CreateRoleAsync([FromBody] AddRole roleDto)
+        public async Task<ActionResult<IFinalResult>> CreateRoleAsync([FromBody] AddRoleDto roleDto, CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 
@@ -143,12 +155,14 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// <summary>
         /// Deletes a role from the application.
         /// </summary>
-        /// /// </summary>
         /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>
-        /// <returns>An IActionResult indicating the result of the delete operation.</returns>
+        /// An IActionResult indicating the result of the delete operation.
+        /// </returns>
+        
         [HttpDelete("delete/{id}")]
-        public async Task<ActionResult<IFinalResult>> DeleteRoleAsync(string id)
+        public async Task<ActionResult<IFinalResult>> DeleteRoleAsync(string id, CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 

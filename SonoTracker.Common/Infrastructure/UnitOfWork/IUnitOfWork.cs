@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SonoTracker.Common.Infrastructure.Repository;
 
@@ -20,7 +21,7 @@ namespace SonoTracker.Common.Infrastructure.UnitOfWork
         /// Save Changes Async
         /// </summary>
         /// <returns></returns>
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// Save Changes
         /// </summary>

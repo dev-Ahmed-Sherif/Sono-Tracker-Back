@@ -1,67 +1,94 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SonoTracker.Api.Controllers.V1.Base;
+using SonoTracker.Application.Services.Lookup.Town;
+using SonoTracker.Application.Services.Tracker.TouristMarina;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Application.Services.Tracker.TouristMarina;
+using SonoTracker.Common.DTO.Lookup.Town;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Application.Services.Lookup.Town;
-using Microsoft.AspNetCore.Authorization;
+using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 {
     /// <summary>
     /// Constructor
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class TouristMarinaController(
-        ITouristMarinaService touristMarinaService, 
+        ITouristMarinaService touristMarinaService,
         ITownService townService) : BaseController
     {
         /// <summary>
         /// Get By Id 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await touristMarinaService.GetByIdAsync(id);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await touristMarinaService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await touristMarinaService.GetByIdForEditAsync(id);
 
+        [HttpGet("getEdit/{id}")]
+        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await touristMarinaService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
         /// <returns></returns>
+
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync() => await touristMarinaService.GetAllAsync();
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await touristMarinaService.GetAllAsync(cancellationToken: cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// GetAll Data paged
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("getPaged")]
-        public async Task<PagingResult> GetPagedAsync([FromBody] BaseParam<TouristMarinaFilter> filter) => await touristMarinaService.GetAllPagedAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TouristMarinaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await touristMarinaService.GetAllPagedAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
         /// </summary>
         /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromBody] AddTouristMarinaDto dto) 
+        public async Task<IFinalResult> AddAsync([FromBody] AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
         {
-            string gov = "28" , townCode;
-            var town = await townService.GetByIdAsync(dto.TownId);
- ;
+            string gov = "28", townCode = "";
+            var town = await townService.GetByIdAsync(dto.TownId, cancellationToken);
             if (town.Data is TownDto townDto)
             {
                 townCode = townDto.Code;
@@ -90,43 +117,57 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
                     dto.Code = $"{gov}{townCode}001";
                 }
             }
-            
-            var res = await touristMarinaService.AddAsync(dto);
 
-            return res;
+            return await touristMarinaService.AddAsync(dto, cancellationToken);
         } 
 
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("getDropDown")]
-        public async Task<PagingResult> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter) => await touristMarinaService.GetDropDownAsync(filter);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await touristMarinaService.GetDropDownAsync(filter, cancellationToken);
+
+            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
+
+            return Ok(res);
+        }
 
         /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync(AddTouristMarinaDto model) => await touristMarinaService.UpdateAsync(model);
+        public async Task<IFinalResult> UpdateAsync([FromBody] AddTouristMarinaDto model, CancellationToken cancellationToken = default)
+                                        => await touristMarinaService.UpdateAsync(model, cancellationToken);
 
         /// <summary>
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await touristMarinaService.DeleteAsync(id);
+        public async Task<IFinalResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await touristMarinaService.DeleteAsync(id, cancellationToken);
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await touristMarinaService.DeleteSoftAsync(id);
+        public async Task<IFinalResult> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+                                        => await touristMarinaService.DeleteSoftAsync(id, cancellationToken);
     }
 }

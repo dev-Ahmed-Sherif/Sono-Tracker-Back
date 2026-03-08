@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -29,6 +30,11 @@ namespace SonoTracker.Infrastructure.Repository
             return await DbSet.FindAsync(keys);
         }
 
+        public async Task<T> GetAsync(CancellationToken cancellationToken, params object[] keys)
+        {
+            return await DbSet.FindAsync(keys, cancellationToken);
+        }
+
         public IQueryable<T> GetAllQueryable(Expression<Func<T, bool>> predicate = null)
         {
             if (predicate != null)
@@ -39,7 +45,7 @@ namespace SonoTracker.Infrastructure.Repository
         }
 
 
-        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -58,11 +64,11 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            return await query.FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync(cancellationToken);
 
         }
 
-        public async Task<T> LastOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+        public async Task<T> LastOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -81,11 +87,11 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            return await query.LastOrDefaultAsync();
+            return await query.LastOrDefaultAsync(cancellationToken);
 
         }
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate = null, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate = null, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -104,10 +110,10 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            return await query.ToListAsync();
+            return await query.ToListAsync(cancellationToken);
         }
 
-        public async Task<(int Count, IEnumerable<T> Result)> FindPagedAsync(Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+        public async Task<(int Count, IEnumerable<T> Result)> FindPagedAsync(Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -127,11 +133,11 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            int count = query.Count();
-            return (count, await query.Skip(pageNumber).Take(pageSize).ToListAsync());
+            int count = await query.CountAsync(cancellationToken);
+            return (count, await query.Skip(pageNumber).Take(pageSize).ToListAsync(cancellationToken));
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+        public async Task<IEnumerable<T>> GetAllAsync(IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -146,16 +152,16 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            return await query.ToListAsync();
+            return await query.ToListAsync(cancellationToken);
         }
 
 
-        public async Task<ICollection<TType>> GetSelectAsync<TType>(Expression<Func<T, bool>> where, Expression<Func<T, TType>> select) where TType : class
+        public async Task<ICollection<TType>> GetSelectAsync<TType>(Expression<Func<T, bool>> where, Expression<Func<T, TType>> select, CancellationToken cancellationToken = default) where TType : class
         {
-            return await DbSet.Where(where).Select(select).ToListAsync();
+            return await DbSet.Where(where).Select(select).ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<TType>> FindSelectAsync<TType>(Expression<Func<T, TType>> select, Expression<Func<T, bool>> predicate = null, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true) where TType : class
+        public async Task<IEnumerable<TType>> FindSelectAsync<TType>(Expression<Func<T, TType>> select, Expression<Func<T, bool>> predicate = null, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default) where TType : class
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -174,10 +180,10 @@ namespace SonoTracker.Infrastructure.Repository
             {
                 query = include(query).AsSplitQuery();
             }
-            return await query.Select(select).ToListAsync();
+            return await query.Select(select).ToListAsync(cancellationToken);
         }
 
-        public async Task<(int Count, IEnumerable<TType> Result)> FindPagedSelectAsync<TType>(Expression<Func<T, TType>> select, Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true) where TType : class
+        public async Task<(int Count, IEnumerable<TType> Result)> FindPagedSelectAsync<TType>(Expression<Func<T, TType>> select, Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0, IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default) where TType : class
         {
             IQueryable<T> query = DbSet;
             if (disableTracking)
@@ -197,8 +203,8 @@ namespace SonoTracker.Infrastructure.Repository
                 var field = orderByCriteria.First().PairAsSqlExpression;
                 query = query.OrderBy(field);
             }
-            var count = query.Count();
-            return (count, await query.Skip(pageNumber).Take(pageSize).Select(select).ToListAsync());
+            var count = await query.CountAsync(cancellationToken);
+            return (count, await query.Skip(pageNumber).Take(pageSize).Select(select).ToListAsync(cancellationToken));
         }
 
         public IList<TReturn> FindGrouped<TResult, TKey, TGroup, TReturn>(
@@ -227,9 +233,9 @@ namespace SonoTracker.Infrastructure.Repository
             return result;
         }
 
-        public async Task<int> ExecWithStoreProcedure(string query)
+        public async Task<int> ExecWithStoreProcedure(string query, CancellationToken cancellationToken = default)
         {
-            return await DbContext.Database.ExecuteSqlRawAsync(query);
+            return await DbContext.Database.ExecuteSqlRawAsync(query, cancellationToken);
         }
 
         public long GetNextSequenceValue(string sequenceName)
@@ -239,16 +245,16 @@ namespace SonoTracker.Infrastructure.Repository
         }
 
 
-        public async Task<int> Count(Expression<Func<T, bool>> predicate = null) => predicate == null ? await DbSet.CountAsync() : await DbSet.CountAsync(predicate);
+        public async Task<int> Count(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) => predicate == null ? await DbSet.CountAsync(cancellationToken) : await DbSet.CountAsync(predicate, cancellationToken);
 
-        public async Task<TB> Max<TB>(Expression<Func<T, TB>> selector, Expression<Func<T, bool>> predicate = null)
+        public async Task<TB> Max<TB>(Expression<Func<T, TB>> selector, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate == null)
-                return await DbSet.MaxAsync(selector);
-            return await DbSet.Where(predicate).MaxAsync(selector);
+                return await DbSet.MaxAsync(selector, cancellationToken);
+            return await DbSet.Where(predicate).MaxAsync(selector, cancellationToken);
         }
 
-        public async Task<bool> Any(Expression<Func<T, bool>> predicate = null) => predicate == null ? await DbSet.AnyAsync() : await DbSet.AnyAsync(predicate);
+        public async Task<bool> Any(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) => predicate == null ? await DbSet.AnyAsync(cancellationToken) : await DbSet.AnyAsync(predicate, cancellationToken);
 
         public IQueryable<T> Union(params IQueryable<T>[] queries)
         {
@@ -271,9 +277,9 @@ namespace SonoTracker.Infrastructure.Repository
             return DbSet.Add(newEntity).Entity;
         }
 
-        public async Task<T> AddAsync(T newEntity)
+        public async Task<T> AddAsync(T newEntity, CancellationToken cancellationToken = default)
         {
-            var result = await DbSet.AddAsync(newEntity);
+            var result = await DbSet.AddAsync(newEntity, cancellationToken);
             return result.Entity;
         }
 
@@ -282,9 +288,9 @@ namespace SonoTracker.Infrastructure.Repository
             DbSet.AddRange(entities);
         }
 
-        public async Task AddRangeAsync(IEnumerable<T> entities)
+        public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         {
-            await DbSet.AddRangeAsync(entities);
+            await DbSet.AddRangeAsync(entities, cancellationToken);
         }
 
         public void Update(T originalEntity, T newEntity)
@@ -292,9 +298,9 @@ namespace SonoTracker.Infrastructure.Repository
             DbContext.Entry(originalEntity).CurrentValues.SetValues(newEntity);
         }
 
-        public async Task UpdateAsync(object id, T newEntity)
+        public async Task UpdateAsync(object id, T newEntity, CancellationToken cancellationToken = default)
         {
-            var originalEntity = await DbSet.FindAsync(id);
+            var originalEntity = await DbSet.FindAsync(new[] { id }, cancellationToken);
             if (originalEntity != null)
             {
                 DbContext.Entry(originalEntity).CurrentValues.SetValues(newEntity);
@@ -337,5 +343,18 @@ namespace SonoTracker.Infrastructure.Repository
             DbSet.RemoveRange(entities);
         }
 
+        public async Task<T> GetLast(CancellationToken cancellationToken = default)
+        {
+            // Ensure that the entity type `T` has a `CreatedAt` property.
+            // If `T` does not have a `CreatedAt` property, this method will throw an exception.
+            var entityType = typeof(T);
+            var createdAtProperty = entityType.GetProperty("CreatedAt");
+            if (createdAtProperty == null)
+            {
+                throw new InvalidOperationException($"The entity type '{entityType.Name}' does not contain a property named 'CreatedAt'.");
+            }
+
+            return await DbSet.OrderByDescending(x => EF.Property<DateTime>(x, "CreatedAt")).FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

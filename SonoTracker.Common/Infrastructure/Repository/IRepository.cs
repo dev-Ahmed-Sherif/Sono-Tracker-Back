@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 using SonoTracker.Common.Extensions;
@@ -17,6 +18,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="keys"></param>
         /// <returns></returns>
         Task<T> GetAsync(params object[] keys);
+        Task<T> GetAsync(CancellationToken cancellationToken, params object[] keys);
 
         /// <summary>
         /// Return DbSet As Queryable
@@ -33,10 +35,10 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="disableTracking"></param>
         /// <returns></returns>
         Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>,
-            IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true);
+            IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
 
         Task<T> LastOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>,
-            IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true);
+            IOrderedQueryable<T>> orderBy = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get All
@@ -46,7 +48,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="disableTracking"></param>
         /// <returns></returns>
         Task<IEnumerable<T>> GetAllAsync(IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>,
-            IIncludableQueryable<T, object>> include = null, bool disableTracking = true);
+            IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find Async
@@ -57,7 +59,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="disableTracking"></param>
         /// <returns></returns>
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate = null,
-            IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true);
+            IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find Paged
@@ -70,7 +72,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="disableTracking"></param>
         /// <returns></returns>
         Task<(int Count, IEnumerable<T> Result)> FindPagedAsync(Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0,
-            IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true);
+            IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Select
@@ -79,7 +81,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="where"></param>
         /// <param name="select"></param>
         /// <returns></returns>
-        Task<ICollection<TType>> GetSelectAsync<TType>(Expression<Func<T, bool>> where, Expression<Func<T, TType>> select) where TType : class;
+        Task<ICollection<TType>> GetSelectAsync<TType>(Expression<Func<T, bool>> where, Expression<Func<T, TType>> select, CancellationToken cancellationToken = default) where TType : class;
 
         /// <summary>
         /// Find Select
@@ -93,7 +95,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <returns></returns>
         Task<IEnumerable<TType>> FindSelectAsync<TType>(Expression<Func<T, TType>> select,
             Expression<Func<T, bool>> predicate = null, IEnumerable<SortModel> orderByCriteria = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
             where TType : class;
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         Task<(int Count, IEnumerable<TType> Result)> FindPagedSelectAsync<TType>(Expression<Func<T, TType>> select,
             Expression<Func<T, bool>> predicate = null, int pageNumber = 0, int pageSize = 0,
             IEnumerable<SortModel> orderByCriteria = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true)
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default)
             where TType : class;
 
         /// <summary>
@@ -152,7 +154,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<int> ExecWithStoreProcedure(string query);
+        Task<int> ExecWithStoreProcedure(string query, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Next Sequence
@@ -166,14 +168,14 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Task<bool> Any(Expression<Func<T, bool>> predicate = null);
+        Task<bool> Any(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Count
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Task<int> Count(Expression<Func<T, bool>> predicate = null);
+        Task<int> Count(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Max
@@ -182,7 +184,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="selector"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        Task<TB> Max<TB>(Expression<Func<T, TB>> selector, Expression<Func<T, bool>> predicate = null);
+        Task<TB> Max<TB>(Expression<Func<T, TB>> selector, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Union
@@ -203,7 +205,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// </summary>
         /// <param name="newEntity"></param>
         /// <returns></returns>
-        Task<T> AddAsync(T newEntity);
+        Task<T> AddAsync(T newEntity, CancellationToken cancellationToken = default);
 
 
         /// <summary>
@@ -217,7 +219,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// </summary>
         /// <param name="entities"></param>
         /// <returns></returns>
-        Task AddRangeAsync(IEnumerable<T> entities);
+        Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Update
@@ -232,7 +234,7 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// <param name="id"></param>
         /// <param name="newEntity"></param>
         /// <returns></returns>
-        Task UpdateAsync(object id, T newEntity);
+        Task UpdateAsync(object id, T newEntity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Update Range
@@ -263,6 +265,8 @@ namespace SonoTracker.Common.Infrastructure.Repository
         /// </summary>
         /// <param name="entities"></param>
         void RemoveRange(IEnumerable<T> entities);
+
+        Task<T> GetLast(CancellationToken cancellationToken = default);
         //Task<(int Count, IEnumerable<RoleTable> Result)> FindPagedAsync(Expression<Func<RoleTable, bool>> predicate, int pageNumber, int pageSize, IEnumerable<SortModel> orderByValue);
     }
 }

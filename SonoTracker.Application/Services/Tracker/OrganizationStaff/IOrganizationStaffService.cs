@@ -7,15 +7,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.OrganizationStaffStaff
 {
     public interface IOrganizationStaffService : IBaseService<Domain.Entities.Tracker.OrganizationStaff, AddOrganizationStaffDto, EditOrganizationStaffDto, OrganizationStaffDto, string, string>
     {
-        Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter);
+        Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default);
 
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
-        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
+        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

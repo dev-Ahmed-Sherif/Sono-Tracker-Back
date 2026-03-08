@@ -6,10 +6,11 @@ namespace SonoTracker.Domain.Entities.Base
     [ExcludeFromCodeCoverage]
     public class Lookup<TKey> : BaseAudit<TKey>
     {
-        [Required]
+        [Required, MaxLength(35)]
         public  required string Code { get; set; }
-        [Required]
+        [Required, MaxLength(280)]
         public required string NameAr { get; set; }
+        [MaxLength(280)]
         public string? NameEn { get; set; }
     }
 }

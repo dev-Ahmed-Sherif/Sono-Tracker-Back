@@ -12,6 +12,11 @@ namespace SonoTracker.Common.DTO.Lookup.Route
    [ExcludeFromCodeCoverage]
    public class RouteDto : LookupDto<string>
    {
-
-   }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
+    }
 }

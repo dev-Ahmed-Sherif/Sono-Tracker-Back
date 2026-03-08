@@ -9,15 +9,16 @@ using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarina
 {
    public  interface ITouristMarinaService : IBaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, string, string>
    {
-        Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> Filter);
+        Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> Filter, CancellationToken cancellationToken = default);
         Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter);
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
-        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter);
+        Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
    }
 }
