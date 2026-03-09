@@ -17,8 +17,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
    public  interface ITouristMarinaService : IBaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, string, string>
    {
         Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> Filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
    }
 }

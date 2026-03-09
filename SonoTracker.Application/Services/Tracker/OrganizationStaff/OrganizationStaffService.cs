@@ -152,14 +152,14 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             return predicate;
         }
       
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }

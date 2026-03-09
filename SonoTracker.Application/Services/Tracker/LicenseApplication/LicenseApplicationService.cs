@@ -152,20 +152,20 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
-        public async Task<IFinalResult> GetAllFilterAsync(LicenseApplicationFilter filter)
+        public async Task<IFinalResult> GetAllFilterAsync(LicenseApplicationFilter filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter));
+            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(entity.Where(x => x.IsDeleted != true));
 
@@ -193,7 +193,7 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
                 };
 
                 // Check if the trip information already exists for the given floating unit id
-                var exist = await GetAllFilterAsync(filter);
+                var exist = await GetAllFilterAsync(filter, cancellationToken);
                 // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
                 var existDataCollection = exist.Data as ICollection<LicenseApplicationDto>;
 

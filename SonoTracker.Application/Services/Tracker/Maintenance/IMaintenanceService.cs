@@ -20,7 +20,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
    public  interface IMaintenanceService : IBaseService<Domain.Entities.Tracker.Maintenance, AddMaintenanceDto, EditMaintenanceDto, MaintenanceDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MaintenanceFilter> Filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

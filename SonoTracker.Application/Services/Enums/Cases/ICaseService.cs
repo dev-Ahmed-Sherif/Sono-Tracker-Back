@@ -5,6 +5,6 @@ namespace SonoTracker.Application.Services.Enums.Cases
 {
     public interface ICaseService
     {
-        Task<IFinalResult> GetAllAsync();
+        Task<IFinalResult> GetAllAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 }

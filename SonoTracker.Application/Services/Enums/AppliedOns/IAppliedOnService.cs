@@ -5,6 +5,6 @@ namespace SonoTracker.Application.Services.Enums.AppliedOns
 {
     public interface IAppliedOnService
     {
-        Task<IFinalResult> GetAllAsync();
+        Task<IFinalResult> GetAllAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 }

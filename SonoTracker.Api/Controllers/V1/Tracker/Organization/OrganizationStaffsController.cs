@@ -24,14 +24,14 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// </summary>
         /// <returns></returns>
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(Guid id) => await organizationStaffService.GetByIdAsync(id);
+        public async Task<IFinalResult> GetAsync(string id) => await organizationStaffService.GetByIdAsync(id);
 
         /// <summary>
         /// Get For Edit 
         /// </summary>
         /// <returns></returns>
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id) => await organizationStaffService.GetByIdForEditAsync(id);
+        public async Task<IFinalResult> GetEditAsync(string id) => await organizationStaffService.GetByIdForEditAsync(id);
 
         /// <summary>
         /// Get All 
@@ -39,12 +39,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <returns></returns>
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await organizationStaffService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -57,12 +54,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await organizationStaffService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -84,12 +78,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await organizationStaffService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -108,7 +99,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="id">PK</param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id) => await organizationStaffService.DeleteAsync(id);
+        public async Task<IFinalResult> DeleteAsync(string id) => await organizationStaffService.DeleteAsync(id);
 
         /// <summary>
         /// Soft Remove  by id
@@ -116,6 +107,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="id">PK</param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id) => await organizationStaffService.DeleteSoftAsync(id);
+        public async Task<IFinalResult> DeleteSoftAsync(string id) => await organizationStaffService.DeleteSoftAsync(id);
     }
 }

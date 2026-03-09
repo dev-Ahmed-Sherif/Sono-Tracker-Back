@@ -20,15 +20,12 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.InspectionType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+            IEnumerable<Domain.Entities.Lookups.InspectionType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            // Filter out deleted records
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.InspectionType>();
+            IEnumerable<InspectionTypeDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(filtered);
 
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(filteredEntities);
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionTypeFilter> filter, CancellationToken cancellationToken = default)
@@ -37,11 +34,17 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            (int Count, IEnumerable<Entities.Lookups.InspectionType> Result) = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(filter.Filter),
+                pageNumber: offset,
+                pageSize: limit,
+                filter.OrderByValue,
+                cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.InspectionType>();
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(filteredResult);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -53,10 +56,9 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(query.Result.Where(x => x.IsDeleted != true));
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         static Expression<Func<Entities.Lookups.InspectionType, bool>> PredicateBuilderFunction(InspectionTypeFilter filter)
         {
@@ -84,26 +86,26 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
         }
         public override async Task<IFinalResult> AddAsync(AddInspectionTypeDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                                  (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted);
+            var IsExisted = await UnitOfWork.Repository.Any(x =>
+                (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted, cancellationToken);
 
             if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.Existed);
 
             var entity = Mapper.Map<Entities.Lookups.InspectionType>(model);
 
-            var data = await GetAllAsync();
+            IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
-            var dataCollection = data.Data as ICollection<InspectionTypeDto>;
-
-            if (dataCollection?.Count > 0)
+            if (lastEntity.Data != null)
             {
-                if (int.TryParse(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.
-                    AsSpan(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.Length - 1),
-                    out int num))
+                if (lastEntity.Data is InspectionTypeDto inspectionTypeDto)
                 {
-                    int newCode = ++num;
-                    entity.Code = newCode.ToString("D2");
+                    if (int.TryParse(inspectionTypeDto.Code.AsSpan(inspectionTypeDto.Code.Length - 2), out int num))
+                    {
+                        ++num;
+                        entity.Code = num.ToString("D2");
+                    }
                 }
             }
             else
@@ -111,39 +113,39 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
                 entity.Code = "01";
             }
 
-            var result = await UnitOfWork.Repository.AddAsync(entity);
+            await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            if (affectedRows <= 0)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.AddError);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null,
-                                          message: MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null,
-                                  message: MessagesConstants.AddSuccess);
+            return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                message: MessagesConstants.AddSuccess);
         }
         public override async Task<IFinalResult> UpdateAsync(AddInspectionTypeDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                          (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && !x.IsDeleted);
+            var IsExisted = await UnitOfWork.Repository.Any(x =>
+                (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && !x.IsDeleted, cancellationToken);
 
             if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, 
-                           message: MessagesConstants.Existed);
+                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.Existed);
 
-            Domain.Entities.Lookups.InspectionType entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Domain.Entities.Lookups.InspectionType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            //SetEntityModifiedBaseProperties(entity);
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            if (affectedRows <= 0)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.UpdateError);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, 
-                                          message: MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                message: MessagesConstants.UpdateSuccess);
         }
     }
 }

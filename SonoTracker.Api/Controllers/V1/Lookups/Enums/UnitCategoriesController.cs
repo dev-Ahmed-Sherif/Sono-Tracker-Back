@@ -23,6 +23,6 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
         /// <returns></returns>
         
         [HttpGet("getAll")]
-        public async Task<IFinalResult> GetAllAsync(CancellationToken cancellationToken = default) => await unitCategory.GetAllAsync();
+        public async Task<IFinalResult> GetAllAsync(CancellationToken cancellationToken = default) => await unitCategory.GetAllAsync(cancellationToken);
     }
 }

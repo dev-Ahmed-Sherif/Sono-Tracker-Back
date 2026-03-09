@@ -21,7 +21,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Nationality, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
             // Filter out deleted records
             var filteredEntities = entity.Where(e => !e.IsDeleted);

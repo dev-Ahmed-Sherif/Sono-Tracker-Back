@@ -15,6 +15,6 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
     }
 }

@@ -25,15 +25,12 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.GeoPoint, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking);
+            IEnumerable<Domain.Entities.Lookups.GeoPoint> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            // Filter out deleted records
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.GeoPoint>();
+            IEnumerable<GeoPointDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(filtered);
 
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(filteredEntities);
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
         }
 
@@ -43,11 +40,17 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            (int Count, IEnumerable<Entities.Lookups.GeoPoint> Result) = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(filter.Filter),
+                pageNumber: offset,
+                pageSize: limit,
+                filter.OrderByValue,
+                cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.GeoPoint>();
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(filteredResult);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -59,10 +62,9 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(query.Result.Where(x => x.IsDeleted != true));
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
         static Expression<Func<Entities.Lookups.GeoPoint, bool>> PredicateBuilderFunction(GeoPointFilter filter)
@@ -99,8 +101,8 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             var entity = Mapper.Map<Domain.Entities.Lookups.GeoPoint>(model);
 
-            var result = await UnitOfWork.Repository.AddAsync(entity);
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
 
@@ -114,7 +116,7 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
             //if (IsExisted)
             //    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
 
-            Domain.Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Domain.Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 
@@ -122,11 +124,14 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             //SetEntityModifiedBaseProperties(entity);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+            if (affectedRows <= 0)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.UpdateError);
 
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                message: MessagesConstants.UpdateSuccess);
         }
     }
 }

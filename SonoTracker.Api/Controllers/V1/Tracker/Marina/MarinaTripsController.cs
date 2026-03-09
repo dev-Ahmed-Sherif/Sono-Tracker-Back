@@ -28,7 +28,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await marinaTripService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await marinaTripService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -47,12 +47,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaTripService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -65,12 +62,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await marinaTripService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -129,7 +123,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpDelete("delete/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaTripService.DeleteAsync(id, cancellationToken);
 
@@ -148,7 +142,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpDelete("deleteSoft/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaTripService.DeleteSoftAsync(id, cancellationToken);
 
@@ -165,6 +159,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpDelete("deleteRange")]
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await marinaTripService.DeleteRangeAsync(ids);
+                                        => await marinaTripService.DeleteRangeAsync(ids, cancellationToken);
     }
 }

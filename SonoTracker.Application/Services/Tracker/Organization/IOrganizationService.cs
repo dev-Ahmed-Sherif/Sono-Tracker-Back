@@ -17,11 +17,11 @@ namespace SonoTracker.Application.Services.Tracker.Organization
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
 
-        Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter);
+        Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default);
         Task<byte[]> GenerateReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default);
     }
 }

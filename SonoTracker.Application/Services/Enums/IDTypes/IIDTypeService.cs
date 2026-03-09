@@ -9,6 +9,6 @@ namespace SonoTracker.Application.Services.Enums.IDTypes
 {
     public interface IIDTypeService
     {
-        Task<IFinalResult> GetAllAsync();
+        Task<IFinalResult> GetAllAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 }

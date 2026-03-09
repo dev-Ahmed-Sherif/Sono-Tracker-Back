@@ -52,17 +52,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public ActionResult<IFinalResult> GetPagedRolesAsync([FromBody] BaseParam<FilterRoleDto> filter, CancellationToken cancellationToken = default)
         {
-            
             var roles = roleService.GetAllPagedAsync(filter);
-
-            if (roles == null || roles.TotalCount == 0)
-            {
-                return NotFound("لا يوجد بيانات طبقا للبحث المطلوب");
-            }
-
             return Ok(roles);
         }
         

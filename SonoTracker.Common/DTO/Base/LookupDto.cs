@@ -14,7 +14,9 @@ namespace SonoTracker.Common.DTO.Base
          ErrorMessage = "NameAr should Arabic Letters Only No Numbers Or Special Chars Allowed")]
         public string NameAr { get; set; }
 
-        [Required, RegularExpression("^[a-zA-Z\\-\\s]+$",
+        //[Required, RegularExpression("^[a-zA-Z\\-\\s]+$",
+        // ErrorMessage = "NameEn should be English Letters Only No Numbers Or Special Chars Allowed")]
+        [RegularExpression("^[a-zA-Z\\-\\s]+$",
          ErrorMessage = "NameEn should be English Letters Only No Numbers Or Special Chars Allowed")]
         public string NameEn { get; set; }
 

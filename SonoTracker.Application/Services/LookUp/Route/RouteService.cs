@@ -6,7 +6,6 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.Route;
 using SonoTracker.Common.DTO.Lookup.Route.Parameters;
 using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Common.DTO.Lookup.UnitType;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -22,15 +21,12 @@ namespace SonoTracker.Application.Services.Lookup.Route
     {
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.Route, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            // Retrieve all entities
-            var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
+            IEnumerable<Domain.Entities.Lookups.Route> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            // Filter out deleted records
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.Route>();
+            IEnumerable<RouteDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Route>, IEnumerable<RouteDto>>(filtered);
 
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Route>, IEnumerable<RouteDto>>(filteredEntities);
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
         }
 
@@ -40,11 +36,17 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            (int Count, IEnumerable<Entities.Lookups.Route> Result) = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(filter.Filter),
+                pageNumber: offset,
+                pageSize: limit,
+                filter.OrderByValue,
+                cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.Route>();
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(filteredResult);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
   
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
@@ -57,10 +59,9 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(query.Result.Where(x => x.IsDeleted != true));
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
         static Expression<Func<Entities.Lookups.Route, bool>> PredicateBuilderFunction(RouteFilter filter)
@@ -108,9 +109,9 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
                 if (lastEntity.Data != null)
                 {
-                    if (lastEntity.Data is UnitTypeDto unitType)
+                    if (lastEntity.Data is RouteDto routeDto)
                     {
-                        if (int.TryParse(unitType.Code.AsSpan(unitType.Code.Length - 2), out int num))
+                        if (int.TryParse(routeDto.Code.AsSpan(routeDto.Code.Length - 2), out int num))
                         {
                             ++num;
                             entity.Code = num.ToString("D2");
@@ -132,9 +133,8 @@ namespace SonoTracker.Application.Services.Lookup.Route
             }
             catch (Exception e)
             {
-                //_logger.LogError($"{MessagesConstants.AddError}-{nameof(AddAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: e,
+                    message: MessagesConstants.AddError + e.Message);
             }
 
         }
@@ -150,7 +150,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
             if (IsExisted)
                 return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
 
-            Domain.Entities.Lookups.Route entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Domain.Entities.Lookups.Route entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 

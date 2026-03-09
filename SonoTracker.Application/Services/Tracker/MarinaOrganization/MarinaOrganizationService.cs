@@ -135,14 +135,14 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
@@ -169,7 +169,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
         }
 
 
-        public async Task<IFinalResult> GetAllReportAsync(FilterTouristMarinaReportDto filter)
+        public async Task<IFinalResult> GetAllReportAsync(FilterTouristMarinaReportDto filter, CancellationToken cancellationToken = default)
         {
 
             var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderReportFunction(filter),
@@ -177,8 +177,8 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
                    .Include(x => x.TouristMarina)
                      .Include(t => t.Organization)
                      .Include(x => x.TouristMarina.Town)
-                     .Include(x => x.TouristMarina.GeoPoint)
-                );
+                     .Include(x => x.TouristMarina.GeoPoint),
+                 cancellationToken: cancellationToken);
 
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Tracker.MarinaOrganization>, IEnumerable<TouristMarinaReportDto>>(query);
@@ -214,7 +214,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
 
             if (filter.ReportName == "TouristMarinasReport")
             {
-                Org = await GetAllReportAsync(filter);
+                Org = await GetAllReportAsync(filter, cancellationToken);
                 var orgData = Org.Data as IEnumerable<TouristMarinaReportDto>;
                 if (orgData == null)
                 {

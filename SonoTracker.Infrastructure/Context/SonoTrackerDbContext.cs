@@ -132,6 +132,12 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureOrganizationRelations(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Organization>()
+                .HasOne(o => o.OrganizationCategory)
+                .WithMany(c => c.Organizations)
+                .HasForeignKey(o => o.OrganizationCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<OrganizationStaff>()
                 .HasOne(s => s.Organization)
                 .WithMany(o => o.OrganizationStaffs)

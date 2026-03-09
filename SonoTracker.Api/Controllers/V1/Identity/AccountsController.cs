@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +9,7 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Domain.Entities.Identity;
 using System.Net;
+using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Identity
 {
@@ -39,9 +40,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> RegisterAsync([FromBody] RegisterDto user)
+        public async Task<ActionResult<IFinalResult>> RegisterAsync([FromBody] RegisterDto user, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.RegisterAsync(user);
+            IFinalResult res = await accountService.RegisterAsync(user, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
             
@@ -62,9 +63,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [HttpPost("login")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IFinalResult>> LoginAsync([FromBody] LoginRequestDto user)
+        public async Task<ActionResult<IFinalResult>> LoginAsync([FromBody] LoginRequestDto user, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.LoginAsync(user);
+            IFinalResult res = await accountService.LoginAsync(user, cancellationToken);
 
             if (res.Status == HttpStatusCode.Unauthorized)  return Unauthorized(res);
             
@@ -80,9 +81,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         //[HttpGet("logout"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IFinalResult>> Logout(Guid id)
+        public async Task<ActionResult<IFinalResult>> Logout(Guid id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.LogoutAsync(userData.Id);
+            IFinalResult res = await accountService.LogoutAsync(userData.Id, cancellationToken);
 
             if (res.Status == HttpStatusCode.Unauthorized) return Unauthorized(res);
 
@@ -101,11 +102,11 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [HttpPost("refresh"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IFinalResult>> RefreshTokenAsync([FromBody] RefreshTokenRequestDto model)
+        public async Task<ActionResult<IFinalResult>> RefreshTokenAsync([FromBody] RefreshTokenRequestDto model, CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 
-            var loginResult = await accountService.RefreshTokensAsync(model);
+            var loginResult = await accountService.RefreshTokensAsync(model, cancellationToken);
 
             if (loginResult?.IsLogedIn != true)
             {
@@ -143,13 +144,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// </returns>
         [HttpGet("get/{id}"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IFinalResult>> GetUserByIdAsync(Guid id)
+        public async Task<ActionResult<IFinalResult>> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.GetUserByIdAsync(id.ToString());
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
-            
+            IFinalResult res = await accountService.GetUserByIdAsync(id.ToString(), cancellationToken);
             return Ok(res);
         }
         
@@ -160,13 +157,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         
         [HttpGet("getAllUsers"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IFinalResult>> GetAllUsersAsync()
+        public async Task<ActionResult<IFinalResult>> GetAllUsersAsync(CancellationToken cancellationToken = default)
         {
-            IFinalResult users = await accountService.GetUsersAsync();
-
-            if (users.Status == HttpStatusCode.NotFound) return NotFound(users);
-
+            IFinalResult users = await accountService.GetUsersAsync(cancellationToken);
             return Ok(users);
         }
 
@@ -179,16 +172,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         /// </returns>
         [HttpPost("getPaged"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IFinalResult>> GetAllPagedAsync(BaseParam<FilterUserDto> filter)
+        public async Task<ActionResult<IFinalResult>> GetAllPagedAsync(BaseParam<FilterUserDto> filter, CancellationToken cancellationToken = default)
         {
-            var users = await accountService.GetAllPagedAsync(filter);
-
-            if (users == null || users.TotalCount == 0)
-            {
-                return NotFound("لا يوجد مستخدمين طبقا للبحث المطلوب");
-            }
-
+            var users = await accountService.GetAllPagedAsync(filter, cancellationToken);
             return Ok(users);
         }
 
@@ -204,9 +190,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [HttpPut("updateUserPersonalData"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromBody] UpdateUserDto changeUserPersonalDataDto)
+        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromBody] UpdateUserDto changeUserPersonalDataDto, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.UpdateUser(changeUserPersonalDataDto);
+            IFinalResult res = await accountService.UpdateUser(changeUserPersonalDataDto, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -224,9 +210,9 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         [HttpDelete("delete/{id}"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DelereUser(Guid id)
+        public async Task<ActionResult<IFinalResult>> DelereUser(Guid id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await accountService.DeleteUser(id.ToString());
+            IFinalResult res = await accountService.DeleteUser(id.ToString(), cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
             

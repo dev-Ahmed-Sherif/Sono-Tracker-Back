@@ -138,14 +138,14 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
@@ -169,7 +169,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                 };
 
                 // Check if the trip information already exists for the given floating unit id
-                var exist = await GetAllFilterAsync(filter);
+                var exist = await GetAllFilterAsync(filter, cancellationToken);
                 // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
                 var existDataCollection = exist.Data as ICollection<MaintenanceDto>;
 
@@ -323,9 +323,9 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             }
 
         }
-        public async Task<IFinalResult> GetAllFilterAsync(MaintenanceFilter filter)
+        public async Task<IFinalResult> GetAllFilterAsync(MaintenanceFilter filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter));
+            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Maintenance>, IEnumerable<MaintenanceDto>>(entity.Where(x => x.IsDeleted != true));
 

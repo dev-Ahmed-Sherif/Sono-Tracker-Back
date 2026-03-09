@@ -41,7 +41,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public async Task<IFinalResult> GetLastByFloatingUnitIdAsync(object id)
+        public async Task<IFinalResult> GetLastByFloatingUnitIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository
@@ -50,7 +50,8 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
                             include: src => src
                                        .Include(t => t.GeoPoint)
                                        .Include(t => t.TripInformation)
-                                       .ThenInclude(t => t.FloatingUnit));
+                                       .ThenInclude(t => t.FloatingUnit),
+                            cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<Entities.Tracker.TripGeo, EditTripGeoDto>(entity);
 
@@ -99,9 +100,9 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
-        public async Task<IFinalResult> GetAllFilterAsync(TripGeoFilter filter)
+        public async Task<IFinalResult> GetAllFilterAsync(TripGeoFilter filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter));
+            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(entity.Where(x => x.IsDeleted != true));
 
@@ -142,14 +143,14 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             return predicate;
         }
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }

@@ -9,6 +9,6 @@ namespace SonoTracker.Application.Services.Enums.InspectionTypes
 {
     public interface IInspectionTypeService
     {
-        Task<IFinalResult> GetAllAsync();
+        Task<IFinalResult> GetAllAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 }

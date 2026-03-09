@@ -13,8 +13,8 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
     public interface ITripInformationService : IBaseService<Domain.Entities.Tracker.TripInformation, AddTripInformationDto, EditTripInformationDto, TripInformationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<TripInformationFilter> filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> GetAllFilterAsync(TripInformationFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> GetAllFilterAsync(TripInformationFilter filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

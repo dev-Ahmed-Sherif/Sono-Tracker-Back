@@ -27,7 +27,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripGeoService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripGeoService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -46,12 +46,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripGeoService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -64,12 +61,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TripGeoFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await tripGeoService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -83,12 +77,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await tripGeoService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -147,7 +138,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [HttpDelete("delete/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripGeoService.DeleteAsync(id, cancellationToken);
 
@@ -166,7 +157,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [HttpDelete("deleteSoft/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripGeoService.DeleteSoftAsync(id, cancellationToken);
 
@@ -183,6 +174,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
         [HttpDelete("deleteRange")]
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await tripGeoService.DeleteRangeAsync(ids);
+                                        => await tripGeoService.DeleteRangeAsync(ids, cancellationToken);
     }
 }

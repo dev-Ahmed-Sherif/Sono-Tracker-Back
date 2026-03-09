@@ -31,7 +31,7 @@
             <param name="accountService">Service for handling account-related operations.</param>
             <param name="userData">Data of the currently logged-in user.</param>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RegisterAsync(SonoTracker.Common.DTO.Identity.User.RegisterDto)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RegisterAsync(SonoTracker.Common.DTO.Identity.User.RegisterDto,System.Threading.CancellationToken)">
             <summary>
             Registers a new user with the provided details.
             </summary>
@@ -41,7 +41,7 @@
             or a conflict response if the registration fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.LoginAsync(SonoTracker.Common.DTO.Identity.User.LoginRequestDto)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.LoginAsync(SonoTracker.Common.DTO.Identity.User.LoginRequestDto,System.Threading.CancellationToken)">
             <summary>
             Authenticates a user and generates an access token and refresh token.
             </summary>
@@ -51,13 +51,13 @@
             or an unauthorized response if the login fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Logs out the user with the specified user ID.
             </summary>
             <returns>An IActionResult indicating the result of the logout operation.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RefreshTokenAsync(SonoTracker.Common.DTO.Identity.User.RefreshTokenRequestDto)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RefreshTokenAsync(SonoTracker.Common.DTO.Identity.User.RefreshTokenRequestDto,System.Threading.CancellationToken)">
             <summary>
             Refreshes the access token and refresh token for the user.
             </summary>
@@ -73,7 +73,7 @@
             </summary>
             <returns>An <see cref="T:ActionResult"/> containing the <see cref="T:SonoTracker.Common.DTO.Identity.User.UserDataDto"/> of the logged-in user.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetUserByIdAsync(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetUserByIdAsync(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Retrieves a user by their unique identifier.
             </summary>
@@ -83,13 +83,13 @@
             or a not found response if the user does not exist.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllUsersAsync">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllUsersAsync(System.Threading.CancellationToken)">
             <summary>
             Gets all users in the application.
             </summary>
             <returns>A list of users.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.User.FilterUserDto})">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.User.FilterUserDto},System.Threading.CancellationToken)">
             <summary>
             Retrieves a paginated list of users in the application.
             </summary>
@@ -98,7 +98,7 @@
             or a not found response if no users exist.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.UpdateUserPersonalData(SonoTracker.Common.DTO.Identity.User.UpdateUserDto)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.UpdateUserPersonalData(SonoTracker.Common.DTO.Identity.User.UpdateUserDto,System.Threading.CancellationToken)">
             <summary>
             Updates the personal data of the currently logged-in user.
             </summary>
@@ -108,7 +108,7 @@
             Returns a success message if the update is successful, or a bad request response if the operation fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.DelereUser(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.DelereUser(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Removes a user by their unique identifier.
             </summary>
@@ -187,13 +187,13 @@
             Constructor
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -237,7 +237,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -245,7 +245,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -269,13 +269,13 @@
             Constructor
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -319,7 +319,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -327,7 +327,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -463,13 +463,13 @@
             Constructor
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -513,7 +513,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -521,7 +521,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -539,13 +539,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -589,7 +589,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -597,7 +597,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -615,13 +615,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -665,7 +665,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -673,7 +673,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -697,13 +697,13 @@
             Nationality
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -747,7 +747,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -755,13 +755,68 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
             <param name="id">PK</param>
             <param name="cancellationToken"></param>
             <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController">
+            <summary>
+            Organization Categories Controller
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.#ctor(SonoTracker.Application.Services.LookUp.OrganizationCategory.IOrganizationCategoryService)">
+            <summary>
+            Organization Categories Controller
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.OrganizationCategory.Parameters.OrganizationCategoryFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.AddAsync(SonoTracker.Common.DTO.Lookup.OrganizationCategory.AddOrganizationCategoryDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.OrganizationCategory.AddOrganizationCategoryDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
         </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Lookups.RoutesController">
             <summary>
@@ -773,13 +828,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -823,7 +878,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -831,7 +886,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -855,13 +910,13 @@
             Constructor
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -905,7 +960,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -913,7 +968,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.TownController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1005,13 +1060,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1055,7 +1110,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1063,7 +1118,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1081,13 +1136,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1123,7 +1178,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1131,7 +1186,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1149,13 +1204,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1199,7 +1254,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1207,7 +1262,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1225,13 +1280,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1275,7 +1330,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1283,7 +1338,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitStaffsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1301,13 +1356,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1343,7 +1398,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1351,7 +1406,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove by id
             </summary>
@@ -1377,13 +1432,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1427,7 +1482,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1435,7 +1490,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1453,13 +1508,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1503,7 +1558,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1511,7 +1566,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1529,13 +1584,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1579,7 +1634,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1587,7 +1642,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1605,13 +1660,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1655,7 +1710,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1663,7 +1718,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1686,13 +1741,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1728,7 +1783,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1736,7 +1791,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove by id
             </summary>
@@ -1762,13 +1817,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1812,7 +1867,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1820,7 +1875,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1838,13 +1893,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -1888,7 +1943,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1896,7 +1951,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove by id
             </summary>
@@ -1930,13 +1985,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAsync(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAsync(System.String)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetEditAsync(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetEditAsync(System.String)">
             <summary>
             Get For Edit 
             </summary>
@@ -1978,14 +2033,14 @@
             <param name="model">Object content</param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteAsync(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteAsync(System.String)">
             <summary>
             Remove  by id
             </summary>
             <param name="id">PK</param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteSoftAsync(System.Guid)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.DeleteSoftAsync(System.String)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -2002,13 +2057,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -2052,7 +2107,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -2060,7 +2115,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove by id
             </summary>
@@ -2086,13 +2141,13 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetEditAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
@@ -2135,7 +2190,7 @@
             <param name="model">Object content</param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -2143,7 +2198,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteSoftAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove by id
             </summary>

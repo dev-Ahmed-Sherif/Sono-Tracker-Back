@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 
 namespace SonoTracker.Application.Mapping
 {
@@ -12,6 +12,7 @@ namespace SonoTracker.Application.Mapping
             MapRoute();
             MapMaintenanceType();
             MapUnitType();
+            MapOrganizationCategory();
             MapNationality();
             MapInspectionType();
             MapGeoPoint();

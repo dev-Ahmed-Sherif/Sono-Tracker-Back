@@ -49,13 +49,9 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await townService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
-
             return Ok(res);
         }
         
@@ -68,13 +64,9 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TownFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await townService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
-
             return Ok(res);
         }
 
@@ -88,13 +80,9 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await townService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
-
             return Ok(res);
         }
         

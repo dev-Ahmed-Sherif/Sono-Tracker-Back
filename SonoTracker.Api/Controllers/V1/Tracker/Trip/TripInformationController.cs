@@ -31,7 +31,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripInformationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripInformationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -50,12 +50,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripInformationService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -68,12 +65,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TripInformationFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await tripInformationService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -87,12 +81,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await tripInformationService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -122,7 +113,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
                 };
 
                 // Check if the trip information already exists for the given floating unit id
-                var exist = await tripInformationService.GetAllFilterAsync(filter);
+                var exist = await tripInformationService.GetAllFilterAsync(filter, cancellationToken);
                 // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
                 var existDataCollection = exist.Data as ICollection<TripInformationDto>;
 
@@ -180,7 +171,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripInformationService.DeleteAsync(id, cancellationToken);
 
         /// <summary>
@@ -190,7 +181,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
                                         => await tripInformationService.DeleteSoftAsync(id, cancellationToken);
 
         /// <summary>
@@ -201,6 +192,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
         [HttpDelete("deleteRange")]
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await tripInformationService.DeleteRangeAsync(ids);
+                                        => await tripInformationService.DeleteRangeAsync(ids, cancellationToken);
     }
 }

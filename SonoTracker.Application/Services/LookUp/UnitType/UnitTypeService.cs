@@ -21,11 +21,8 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
         {
             IEnumerable<Entities.Lookups.UnitType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            if (entities == null || !entities.Any())
-                return ResponseResult.PostResult(result: entities, status: HttpStatusCode.NotFound, exception: null,
-                                                 message: MessagesConstants.NotFound);
-            
-            IEnumerable<UnitTypeDto> mapped = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(entities.Where(e => !e.IsDeleted));
+            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Entities.Lookups.UnitType>();
+            IEnumerable<UnitTypeDto> mapped = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
@@ -44,11 +41,8 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
                      filter.OrderByValue,
                      cancellationToken: cancellationToken);
 
-            if (Result == null || !Result.Any())
-                return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: Count, result: null,
-                                        status: HttpStatusCode.NotFound, message: MessagesConstants.NotFound);
-
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(Result.Where(x => x.IsDeleted != true));
+            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.UnitType>();
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filteredResult);
 
             return new PagingResult(pageNumber: filter.PageNumber,pageSize: filter.PageSize, totalCount: Count, result: data,
                                     status: HttpStatusCode.OK, message: MessagesConstants.Success);

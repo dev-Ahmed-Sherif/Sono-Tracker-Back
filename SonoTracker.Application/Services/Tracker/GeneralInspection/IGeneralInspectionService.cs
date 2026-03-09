@@ -15,7 +15,7 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<GeneralInspectionFilter> filter, CancellationToken cancellationToken = default);
 
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
        
     }
 }

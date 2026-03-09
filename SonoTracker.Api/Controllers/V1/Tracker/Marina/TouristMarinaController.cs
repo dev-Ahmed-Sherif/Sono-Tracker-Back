@@ -31,7 +31,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await touristMarinaService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await touristMarinaService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -50,12 +50,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await touristMarinaService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -68,12 +65,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TouristMarinaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await touristMarinaService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -99,7 +93,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
                     IsDeleted = false
                 };
 
-                var exist = await touristMarinaService.GetAllFilterAsync(filter);
+                var exist = await touristMarinaService.GetAllFilterAsync(filter, cancellationToken);
                 var existDataCollection = exist.Data as ICollection<TouristMarinaDto>;
 
                 if (existDataCollection?.Count > 0)
@@ -130,12 +124,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await touristMarinaService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -157,7 +148,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
                                         => await touristMarinaService.DeleteAsync(id, cancellationToken);
 
         /// <summary>
@@ -167,7 +158,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
                                         => await touristMarinaService.DeleteSoftAsync(id, cancellationToken);
     }
 }

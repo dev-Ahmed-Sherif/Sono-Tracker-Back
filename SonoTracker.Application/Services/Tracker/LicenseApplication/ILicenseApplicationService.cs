@@ -17,8 +17,8 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
     public interface ILicenseApplicationService : IBaseService<Entities.Tracker.LicenseApplication, AddLicenseApplicationDto, EditLicenseApplicationDto, LicenseApplicationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<LicenseApplicationFilter> filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> GetAllFilterAsync(LicenseApplicationFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> GetAllFilterAsync(LicenseApplicationFilter filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

@@ -27,7 +27,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await floatingUnitOrganizationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await floatingUnitOrganizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -46,12 +46,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await floatingUnitOrganizationService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -64,12 +61,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<FloatingUnitOrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await floatingUnitOrganizationService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -128,7 +122,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         [HttpDelete("delete/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await floatingUnitOrganizationService.DeleteAsync(id, cancellationToken);
 
@@ -147,7 +141,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         [HttpDelete("deleteSoft/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await floatingUnitOrganizationService.DeleteSoftAsync(id, cancellationToken);
 

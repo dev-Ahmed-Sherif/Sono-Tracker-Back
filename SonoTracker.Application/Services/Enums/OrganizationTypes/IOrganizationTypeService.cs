@@ -9,6 +9,6 @@ namespace SonoTracker.Application.Services.Enums.OrganizationTypes
 {
     public interface IOrganizationTypeService
     {
-        Task<IFinalResult> GetAllAsync();
+        Task<IFinalResult> GetAllAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 }

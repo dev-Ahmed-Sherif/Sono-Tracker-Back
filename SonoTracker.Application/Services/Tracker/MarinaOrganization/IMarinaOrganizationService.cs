@@ -19,7 +19,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
    public  interface IMarinaOrganizationService : IBaseService<Domain.Entities.Tracker.MarinaOrganization, AddMarinaOrganizationDto, EditMarinaOrganizationDto, MarinaOrganizationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MarinaOrganizationFilter> Filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
 
         Task<byte[]> GenerateReportAsync(FilterTouristMarinaReportDto filter, CancellationToken cancellationToken = default);

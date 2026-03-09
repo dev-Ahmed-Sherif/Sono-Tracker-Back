@@ -27,7 +27,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await generalInspectionService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await generalInspectionService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -46,12 +46,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await generalInspectionService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -64,12 +61,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<GeneralInspectionFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await generalInspectionService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -128,7 +122,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         [HttpDelete("delete/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await generalInspectionService.DeleteAsync(id, cancellationToken);
 
@@ -147,7 +141,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         [HttpDelete("deleteSoft/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await generalInspectionService.DeleteSoftAsync(id, cancellationToken);
 
@@ -164,6 +158,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection
         /// <returns></returns>
         [HttpDelete("deleteRange")]
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await generalInspectionService.DeleteRangeAsync(ids);
+                                        => await generalInspectionService.DeleteRangeAsync(ids, cancellationToken);
     }
 }

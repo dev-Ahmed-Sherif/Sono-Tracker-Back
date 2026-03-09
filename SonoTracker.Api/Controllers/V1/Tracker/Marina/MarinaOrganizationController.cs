@@ -30,7 +30,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await marinaOrganizationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
 
         [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
                                         => await marinaOrganizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
@@ -49,12 +49,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaOrganizationService.GetAllAsync(cancellationToken: cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -67,12 +64,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<MarinaOrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await marinaOrganizationService.GetAllPagedAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -108,12 +102,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await marinaOrganizationService.GetDropDownAsync(filter, cancellationToken);
-
-            if (res.Status == HttpStatusCode.NotFound) return NotFound(res);
 
             return Ok(res);
         }
@@ -150,7 +141,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpDelete("delete/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaOrganizationService.DeleteAsync(id, cancellationToken);
 
@@ -169,7 +160,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpDelete("deleteSoft/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaOrganizationService.DeleteSoftAsync(id, cancellationToken);
 

@@ -12,10 +12,10 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
 {
     public interface ITripGeoService : IBaseService<Entities.Tracker.TripGeo, AddTripGeoDto, EditTripGeoDto, TripGeoDto, string, string>
     {
-        Task<IFinalResult> GetLastByFloatingUnitIdAsync(object id);
+        Task<IFinalResult> GetLastByFloatingUnitIdAsync(object id, CancellationToken cancellationToken = default);
         Task<PagingResult> GetAllPagedAsync(BaseParam<TripGeoFilter> filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> GetAllFilterAsync(TripGeoFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> GetAllFilterAsync(TripGeoFilter filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }

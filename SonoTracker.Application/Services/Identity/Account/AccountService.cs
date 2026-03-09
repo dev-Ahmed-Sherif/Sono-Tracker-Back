@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using LinqKit;
@@ -35,7 +36,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                  IUnitOfWork<User> UnitOfWork,
                  IMapper Mapper) : IAccountService
     {
-        public async Task<IFinalResult> RegisterAsync(RegisterDto request)
+        public async Task<IFinalResult> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
@@ -87,7 +88,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 else
                 {
                     Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
-                  
+
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
                     if (!result.Succeeded)
@@ -103,7 +104,7 @@ namespace SonoTracker.Application.Services.Identity.Account
             return responseResult.PostResult(result: null,status: HttpStatusCode.Conflict, exception: null,
                                              message: MessagesConstants.Existed);
         }
-        public async Task<IFinalResult> LoginAsync(LoginRequestDto request)
+        public async Task<IFinalResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
@@ -122,12 +123,12 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             await userManager.UpdateAsync(user);
 
-            response = await CreateTokenResponse(user);
+            response = await CreateTokenResponse(user, cancellationToken);
 
             return responseResult.PostResult(result: response, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
         }
-        public async Task<IFinalResult> LogoutAsync(string id)
+        public async Task<IFinalResult> LogoutAsync(string id, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
@@ -135,10 +136,10 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             if (user is not null)
             {
-                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync();
+                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync(cancellationToken);
                 if (refreshToken is not null)
                 {
-                    await RemoveOldRefreshToken(id, refreshToken!.Token);
+                    await RemoveOldRefreshToken(id, refreshToken!.Token, cancellationToken);
                     user.IsLogedIn = false;
                     await userManager.UpdateAsync(user);
                     return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
@@ -150,14 +151,14 @@ namespace SonoTracker.Application.Services.Identity.Account
                                                      message: HttpStatusCode.Unauthorized.ToString());
 
         }
-        public async Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request)
+        public async Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request, CancellationToken cancellationToken = default)
         {
-            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+            var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken, cancellationToken);
             if (user is null) return null;
 
-            return await CreateTokenResponse(user);
+            return await CreateTokenResponse(user, cancellationToken);
         }
-        public async Task<IFinalResult> UpdateUser(UpdateUserDto updateUser)
+        public async Task<IFinalResult> UpdateUser(UpdateUserDto updateUser, CancellationToken cancellationToken = default)
         {
             var responseResult = new ResponseResult();
 
@@ -222,7 +223,7 @@ namespace SonoTracker.Application.Services.Identity.Account
             return responseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                                              message: MessagesConstants.UpdateSuccess);
         }
-        public async Task<IFinalResult> GetUserByIdAsync(string Id)
+        public async Task<IFinalResult> GetUserByIdAsync(string Id, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
@@ -233,7 +234,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.FullName,
-                Role = userManager.GetRolesAsync(user).Result.FirstOrDefault() ?? "",
+                Role = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "",
                 FloatingUnitId = user.FloatingUnitId ?? "",
                 OrganizationId = user.OrganizationId ?? "",
             };
@@ -244,11 +245,11 @@ namespace SonoTracker.Application.Services.Identity.Account
             return responseResult.PostResult(result: userDto, status: HttpStatusCode.OK, exception: null,
                                              message: MessagesConstants.Success);
         }
-        public async Task<IFinalResult> GetUsersAsync()
+        public async Task<IFinalResult> GetUsersAsync(CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
-            List<User> userList = await userManager.Users.ToListAsync();
+            List<User> userList = await userManager.Users.ToListAsync(cancellationToken);
 
             List<UserDto> users = [];
 
@@ -284,14 +285,14 @@ namespace SonoTracker.Application.Services.Identity.Account
             return responseResult.PostResult(result: users, status: HttpStatusCode.OK, exception: null, 
                                              message: MessagesConstants.Success);
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var (Count, Result) = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue);
-            
+            var (Count, Result) = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+
             var data = Mapper.Map<IEnumerable<User>, IEnumerable<UserDto>>(Result);
 
             for (int i = 0; i < data.ToList().Count; i++)
@@ -306,11 +307,11 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        public async Task<IFinalResult> DeleteUser(string userId)
+        public async Task<IFinalResult> DeleteUser(string userId, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
-            User user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            User user = await userManager.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
 
             IdentityResult res = await userManager.DeleteAsync(user);
 
@@ -322,7 +323,7 @@ namespace SonoTracker.Application.Services.Identity.Account
             return responseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                                              message: MessagesConstants.DeleteSuccess);
         }
-        private async Task<LoginResponseDto> CreateTokenResponse(User user)
+        private async Task<LoginResponseDto> CreateTokenResponse(User user, CancellationToken cancellationToken = default)
         {
             IList<Claim> perUserClaim = await userManager.GetClaimsAsync(user);
 
@@ -341,11 +342,11 @@ namespace SonoTracker.Application.Services.Identity.Account
             return new LoginResponseDto
             {
                 IsLogedIn = true,
-                AccessToken = await CreateToken(user, perUser),
-                RefreshToken = await GenerateAndSaveRefreshTokensAsync(user)
+                AccessToken = await CreateToken(user, perUser, cancellationToken),
+                RefreshToken = await GenerateAndSaveRefreshTokensAsync(user, cancellationToken)
             };
         }
-        private async Task<User> ValidateRefreshTokenAsync(string userId, string refreshToken)
+        private async Task<User> ValidateRefreshTokenAsync(string userId, string refreshToken, CancellationToken cancellationToken = default)
         {
             User user = await userManager.FindByIdAsync(userId);
 
@@ -353,9 +354,9 @@ namespace SonoTracker.Application.Services.Identity.Account
                         .Where(x => x.Token == refreshToken &&
                                x.User.Id == userId &&
                                x.ExpiryTime >= DateTime.Now)
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefaultAsync(cancellationToken);
 
-            await RemoveOldRefreshToken(userId, refreshToken);
+            await RemoveOldRefreshToken(userId, refreshToken, cancellationToken);
 
 
             if (user is null || token is null)
@@ -365,20 +366,20 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             return user;
         }
-        private async Task<RefreshToken> RemoveOldRefreshToken(string userId, string refreshToken)
+        private async Task<RefreshToken> RemoveOldRefreshToken(string userId, string refreshToken, CancellationToken cancellationToken = default)
         {
             var OldToken = await context.RefreshTokens
                    .Where(x => x.Token == refreshToken && x.User.Id == userId)
-                   .FirstOrDefaultAsync();
+                   .FirstOrDefaultAsync(cancellationToken);
 
             if (OldToken is not null)
             {
                 context.RefreshTokens.Remove(OldToken!);
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync(cancellationToken);
             }
             return OldToken;
         }
-        private async Task<string> GenerateAndSaveRefreshTokensAsync(User user)
+        private async Task<string> GenerateAndSaveRefreshTokensAsync(User user, CancellationToken cancellationToken = default)
         {
             // Generate refresh token
             string refreshToken = GenerateRefreshToken();
@@ -399,8 +400,8 @@ namespace SonoTracker.Application.Services.Identity.Account
                 IpAddress = ""
             };
 
-            await context.RefreshTokens.AddAsync(token);
-            await context.SaveChangesAsync();
+            await context.RefreshTokens.AddAsync(token, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             return token.Token;
         }
@@ -411,7 +412,7 @@ namespace SonoTracker.Application.Services.Identity.Account
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
-        private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB)
+        private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
             IList<string> userRoles = await userManager.GetRolesAsync(user);
             IEnumerable<Claim> roles = userRoles.Select(o => new Claim(ClaimTypes.Role, o));

@@ -262,14 +262,14 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         // get all entities at once using search first (FindAsync)
         // then use remove range
 
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids)
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id));
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
 
             UnitOfWork.Repository.RemoveRange(entitiesToDelete);
 
-            var rows = await UnitOfWork.SaveChangesAsync();
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
@@ -301,11 +301,12 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             return predicate;
         }
 
-        public async Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter)
+        public async Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
         {
             var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderReportFunction(filter),
                  include: src => src
-                                 .Include(x => x.Nationality));
+                                 .Include(x => x.Nationality),
+                 cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrgReportDTO>>(query);
             

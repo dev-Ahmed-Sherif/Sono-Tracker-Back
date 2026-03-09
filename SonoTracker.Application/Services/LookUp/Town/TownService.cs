@@ -43,15 +43,16 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Lookups.Town, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-                                                    .Include(t => t.City)
-                                                    .ThenInclude(x => x.Governorate) ,
-                                                    disableTracking: disableTracking);
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var entities = await UnitOfWork.Repository.GetAllAsync(include: src => src
+                .Include(t => t.City)
+                .ThenInclude(x => x.Governorate),
+                disableTracking: disableTracking,
+                cancellationToken: cancellationToken);
 
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filteredEntities);
+            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>();
+            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filtered);
 
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
         }
 
@@ -61,19 +62,20 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync
-                (predicate: PredicateBuilderFunction(filter.Filter),
+            (int Count, IEnumerable<Domain.Entities.Lookups.Town> Result) = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(filter.Filter),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
                 include: src => src
-                               .Include(t => t.City)
-                               .ThenInclude(x=>x.Governorate),
+                    .Include(t => t.City)
+                    .ThenInclude(x => x.Governorate),
                 cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>();
+            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filteredResult);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -85,10 +87,9 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Result.Where(x => x.IsDeleted != true));
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         static Expression<Func<Domain.Entities.Lookups.Town, bool>> PredicateBuilderFunction(TownFilter filter)
         {
@@ -120,28 +121,25 @@ namespace SonoTracker.Application.Services.Lookup.Town
             {
 
                 var IsExisted = await UnitOfWork.Repository.Any(x =>
-                                    x.NameAr == model.NameAr &&
-                                    x.NameEn == model.NameEn &&
-                                    x.IsDeleted != true);
+                    (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted, cancellationToken);
 
                 if (IsExisted)
-                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict,
-                                                message: MessagesConstants.Existed);
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
 
                 var entity = Mapper.Map<Entities.Lookups.Town>(model);
 
-                var data = await GetAllAsync();
+                IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
-                var dataCollection = data.Data as ICollection<TownDto>;
-
-                if (dataCollection?.Count > 0)
+                if (lastEntity.Data != null)
                 {
-                    if (int.TryParse(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.
-                        AsSpan(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code.Length - 1),
-                        out int num))
+                    if (lastEntity.Data is TownDto townDto)
                     {
-                        int newCode = ++num;
-                        entity.Code = newCode.ToString("D2");
+                        if (int.TryParse(townDto.Code.AsSpan(townDto.Code.Length - 2), out int num))
+                        {
+                            ++num;
+                            entity.Code = num.ToString("D2");
+                        }
                     }
                 }
                 else
@@ -149,19 +147,20 @@ namespace SonoTracker.Application.Services.Lookup.Town
                     entity.Code = "01";
                 }
 
-                //SetEntityCreatedBaseProperties(entity);
-                await UnitOfWork.Repository.AddAsync(entity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.AddError);
 
-                return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                    message: MessagesConstants.AddSuccess);
             }
             catch (Exception e)
             {
-                //_logger.LogError($"{MessagesConstants.AddError}-{nameof(AddAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: e,
+                    message: MessagesConstants.AddError + e.Message);
             }
 
         }
@@ -180,15 +179,13 @@ namespace SonoTracker.Application.Services.Lookup.Town
             //}
 
             var IsExisted = await UnitOfWork.Repository.Any(x =>
-                                   x.NameAr == model.NameAr &&
-                                   x.NameEn == model.NameEn &&
-                                   x.Id != model.Id &&
-                                   x.IsDeleted != true);
+                (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && x.IsDeleted != true, cancellationToken);
 
             if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.Existed);
 
-            Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 
@@ -196,12 +193,14 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             //SetEntityModifiedBaseProperties(entity);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
+            if (affectedRows <= 0)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.UpdateError);
 
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                message: MessagesConstants.UpdateSuccess);
         }
-
     }
 }

@@ -13,8 +13,8 @@ namespace SonoTracker.Application.Services.Tracker.Accident
    public  interface IAccidentService : IBaseService<Entities.Tracker.Accident, AddAccidentDto, EditAccidentDto, AccidentDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentFilter> Filter, CancellationToken cancellationToken = default);
-        Task<IFinalResult> GetAllFilterAsync(AccidentFilter filter);
-        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids);
+        Task<IFinalResult> GetAllFilterAsync(AccidentFilter filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }
