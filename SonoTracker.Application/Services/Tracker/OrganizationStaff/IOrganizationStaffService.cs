@@ -14,6 +14,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaffStaff
 {
     public interface IOrganizationStaffService : IBaseService<Domain.Entities.Tracker.OrganizationStaff, AddOrganizationStaffDto, EditOrganizationStaffDto, OrganizationStaffDto, string, string>
     {
+        Task<IFinalResult> GetAllAsync(string? organizationId, CancellationToken cancellationToken = default);
         Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default);
 
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);

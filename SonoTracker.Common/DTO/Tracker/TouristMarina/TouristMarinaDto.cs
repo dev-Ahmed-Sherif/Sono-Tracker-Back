@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarina
 {
     public class TouristMarinaDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; }
         public string TownId { get; set; }
@@ -24,5 +24,11 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarina
         public string GeoPointNorth { get; set; }
         public string GeoPointEast { get; set; }
         public string Note { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

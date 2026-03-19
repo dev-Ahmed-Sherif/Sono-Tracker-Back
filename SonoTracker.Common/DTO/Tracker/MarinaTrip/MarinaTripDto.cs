@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.MarinaTrip
 {
     public class MarinaTripDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
         public string TouristMarinaId { get; set; }
         public string TouristMarinaName{ get; set; }
 
@@ -20,5 +20,11 @@ namespace SonoTracker.Common.DTO.Tracker.MarinaTrip
         public string FloatingUnitNameAr { get; set; }
         public string FloatingUnitNameEn { get; set; }
         public string FloatingUnitCode { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

@@ -18,5 +18,11 @@ namespace SonoTracker.Common.DTO.Tracker.Governorate
         public string Url { get; set; }
         public string Address { get; set; }
         public string ImageUrl { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

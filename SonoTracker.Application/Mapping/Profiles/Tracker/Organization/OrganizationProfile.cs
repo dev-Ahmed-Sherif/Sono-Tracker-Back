@@ -19,7 +19,9 @@ namespace SonoTracker.Application.Mapping
                  .ForMember(des => des.InspectionType, opt => opt.MapFrom(src => src.InspectionType.NameAr))
                 .ReverseMap();
 
-            CreateMap<Organization, AddOrganizationDto>().ReverseMap();
+            CreateMap<AddOrganizationDto, Organization>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ReverseMap();
 
             CreateMap<Organization, OrgReportDTO>().ReverseMap();
         }

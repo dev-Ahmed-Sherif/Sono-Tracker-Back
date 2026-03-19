@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,7 +13,6 @@ using SonoTracker.Application.Helper;
 using SonoTracker.Application.Mapping;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Application.Services.Lookup.Nationality;
 using SonoTracker.Application.Services.Tracker.Organization;
 using SonoTracker.Application.Services.Validators.Base;
 using SonoTracker.Common.Constants.Auth;
@@ -34,7 +32,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-using System.Web.Services.Description;
 
 namespace SonoTracker.Api.Extensions
 {
@@ -285,7 +282,7 @@ namespace SonoTracker.Api.Extensions
         /// <param name="services"></param>
         private static void RegisterAutoMapper(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(MappingService));
+            services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingService).Assembly));
         }
 
         /// <summary>

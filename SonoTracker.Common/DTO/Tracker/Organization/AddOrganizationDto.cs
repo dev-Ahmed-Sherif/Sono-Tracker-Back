@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
     [ExcludeFromCodeCoverage]
     public class AddOrganizationDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         //[RegularExpression("^[0-9]+$", ErrorMessage = "Must be number")]
         //public string Code { get; set; }
@@ -36,12 +36,12 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         [Required, EmailAddress]
         public string Email { get; set; }
         
-        public string? NationalityId { get; set; }
+        public string NationalityId { get; set; }
+
+        public string OrganizationCategoryId { get; set; }
 
         [Required]
-        public required OrganizationType OrganizationTypeId { get; set; }
-        
-        public AppliedOn? AppliedOn { get; set; }
+        public required OrganizationType OrganizationType { get; set; }
         
         public string? InspectionTypeId { get; set; }
         

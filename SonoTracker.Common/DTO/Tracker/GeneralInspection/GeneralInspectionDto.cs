@@ -29,8 +29,6 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
 
         public string OrganizationNameAr { get; set; }
 
-        public InspectionType InspectionTypeId { get; set; }
-
         public EnumResult InspectionTypeName { get; set; }
 
         public bool IsInspected { get; set; }
@@ -42,5 +40,11 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
         public string Note { get; set; }
 
         public string InspectionAttachment { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

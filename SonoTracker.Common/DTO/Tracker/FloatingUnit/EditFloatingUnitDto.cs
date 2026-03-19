@@ -36,8 +36,14 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnit
 
         public DateTime? NextMaintenanceDate { get; set; }
 
-        public UnitCategory unitCategory { get; set; }
+        public UnitCategory UnitCategory { get; set; }
 
         public string UnitTypeId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

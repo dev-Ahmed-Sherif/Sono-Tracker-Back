@@ -1,4 +1,3 @@
-using SonoTracker.Domain.Enum;
 using System;
 
 namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters
@@ -8,14 +7,6 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters
         public string Name { get; set; } = string.Empty;
 
         public string Job { get; set; } = string.Empty;
-
-        public Gender? Gender { get; set; }
-
-        public IDType? IDType { get; set; }
-
-        public string Identity { get; set; } = string.Empty;
-
-        public string? NationalityId { get; set; }
 
         public string? OrganizationId { get; set; }
 

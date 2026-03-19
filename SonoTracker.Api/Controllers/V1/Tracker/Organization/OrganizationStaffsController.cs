@@ -1,11 +1,12 @@
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
 using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Tracker.OrganizationStaffStaff;
+using SonoTracker.Common.Core;
+using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.OrganizationStaff;
 using SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters;
-using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using System.Threading;
 
@@ -14,8 +15,8 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
     /// <summary>
     /// Constructor
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class OrganizationStaffsController(IOrganizationStaffService organizationStaffService) : BaseController
     {
@@ -36,12 +37,14 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <summary>
         /// Get All 
         /// </summary>
+        /// <param name="organizationId">Optional. Filter by organization ID.</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string organizationId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await organizationStaffService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await organizationStaffService.GetAllAsync(organizationId, cancellationToken);
 
             return Ok(res);
         }

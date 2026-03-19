@@ -190,45 +190,14 @@ namespace SonoTracker.Domain.Enum
         MovableUnit = 2
     }
 
-    public enum InspectionType
-    {
-        [Values("EnvironmentalInspection", "تفتيش بيئي", "EnvironmentalInspection")]
-        EnvironmentalInspection = 1,
-        [Values("SafetyRequirementInspection", "تفتيش متطلبات السلامة", "SafetyRequirementInspection")]
-        SafetyRequirementInspection = 2
-    }
-
-    //public enum OrganizationType
-    //{
-    //    [Values("ShipOwnerCompany", "شركة مالكة للسفينة", "ShipOwnerCompany")]
-    //    ShipOwnerCompany = 1,
-    //    [Values("OperatingCompany", "شركة تشغيل", "OperatingCompany")]
-    //    OperatingCompany = 2,
-    //    [Values("OwnerOperatorCompany", "شركة مالكة مشغلة", "OwnerOperatorCompany")]
-    //    OwnerOperatorCompany = 3,
-    //    [Values("MarinaOwnerCompany", "شركة مالكة للمرسى", "MarinaOwnerCompany")]
-    //    MarinaOwnerCompany = 4,
-    //    [Values("MarinaTenantCompany", "شركة مستأجرة للمرسى", "MarinaTenantCompany")]
-    //    MarinaTenantCompany = 5,
-    //    [Values("GovernmentCompany", "جهة حكومية مسؤولة", "GovernmentCompany")]
-    //    GovernmentCompany = 6
-
-    //}
     public enum OrganizationType
     {
-        [Values("OwnerCompany", "شركة مالكة ", "OwnerCompany")]
+        [Values("OwnerCompany", "شركة مالكة", "OwnerCompany")]
         OwnerCompany = 1,
-        [Values("OperatingCompany", "شركة تشغيل", "OperatingCompany")]
+        [Values("OperatingCompany", "شركة مشغلة", "OperatingCompany")]
         OperatingCompany = 2,
         [Values("GovernmentCompany", "جهة حكومية مسؤولة", "GovernmentCompany")]
         GovernmentCompany = 3
-    }
-    public enum AppliedOn
-    {
-        [Values("TouristMarina", "مرسى ", "TouristMarina")]
-        TouristMarina = 1,
-        [Values("FloatingUnit", "سفينة", "FloatingUnit")]
-        FloatingUnit = 2
     }
 
     #endregion

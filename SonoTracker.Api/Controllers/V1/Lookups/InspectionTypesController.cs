@@ -58,11 +58,28 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <param name="filter">Filter responsible for search and sort</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<InspectionTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await inspectionTypeService.GetAllPagedAsync(filter, cancellationToken);
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Get All Data paged For Drop Down
+        /// </summary>
+        /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+
+        [HttpPost]
+        [Route("getDropDown")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await inspectionTypeService.GetDropDownAsync(filter, cancellationToken);
             return Ok(res);
         }
 
@@ -86,21 +103,6 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
             if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
             return Created("", res);
-        }
-
-        /// <summary>
-        /// Get All Data paged For Drop Down
-        /// </summary>
-        /// <param name="filter">Filter responsible for search and sort</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("getDropDown")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
-        {
-            PagingResult res = await inspectionTypeService.GetDropDownAsync(filter, cancellationToken);
-            return Ok(res);
         }
 
         /// <summary>

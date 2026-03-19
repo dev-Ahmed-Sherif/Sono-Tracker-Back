@@ -10,7 +10,7 @@ using SonoTracker.Domain.Enum;
 namespace SonoTracker.Common.DTO.Tracker.Inspection
 {
    public class EditGeneralInspectionDto : IEntityDto<string>
-    {
+   {
         public string? Id { get; set; }
 
         public DateTime InspectionDate { get; set; }
@@ -19,8 +19,6 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
         public Guid? FloatingUnitId { get; set; }
 
         public Guid OrganizationId { get; set; }
-
-        public InspectionType InspectionType { get; set; }
 
         public bool IsInspected { get; set; }
 
@@ -31,6 +29,12 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
         public string Note { get; set; }
 
         public string InspectionAttachment { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
 
     }
 }

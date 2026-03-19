@@ -16,7 +16,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
     public interface IOrganizationService : IBaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default);
-
+        Task<IFinalResult> GetFilterAsync(OrganizationFilter filter, CancellationToken cancellationToken = default);
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);

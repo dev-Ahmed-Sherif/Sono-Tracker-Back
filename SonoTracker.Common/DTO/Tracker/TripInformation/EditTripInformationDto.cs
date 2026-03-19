@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.TripInformation
 {
     public class EditTripInformationDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         public DateTime SartDate { get; set; }
 
@@ -26,6 +26,12 @@ namespace SonoTracker.Common.DTO.Tracker.TripInformation
 
         public string RouteId { get; set; }
         public string PassengerAttachment { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
 
     }
 }

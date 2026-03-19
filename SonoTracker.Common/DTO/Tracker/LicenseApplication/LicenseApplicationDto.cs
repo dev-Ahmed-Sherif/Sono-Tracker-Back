@@ -27,5 +27,11 @@ namespace SonoTracker.Common.DTO.Tracker.LicenseApplication
         public string StateProperty { get; set; }
         public string Other { get; set; }
         public int TouristMarinaNumber { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

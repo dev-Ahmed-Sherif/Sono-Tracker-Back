@@ -61,6 +61,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <param name="filter">Filter responsible for search and sort</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<AccidentTypeFilter> filter, CancellationToken cancellationToken = default)
@@ -69,6 +70,21 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
             return Ok(res);
         }
 
+        /// <summary>
+        /// Get All Data paged For Drop Down
+        /// </summary>
+        /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        
+        [HttpPost]
+        [Route("getDropDown")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await accidentTypeService.GetDropDownAsync(filter, cancellationToken);
+            return Ok(res);
+        }
 
         /// <summary>
         /// Add 
@@ -91,20 +107,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
             return Created("", res);
         }
-        /// <summary>
-        /// Get All Data paged For Drop Down
-        /// </summary>
-        /// <param name="filter">Filter responsible for search and sort</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("getDropDown")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
-        {
-            PagingResult res = await accidentTypeService.GetDropDownAsync(filter, cancellationToken);
-            return Ok(res);
-        }
+        
 
         /// <summary>
         /// Update  

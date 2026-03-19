@@ -1,5 +1,4 @@
 using SonoTracker.Common.Core;
-using SonoTracker.Domain.Enum;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -8,7 +7,7 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
     [ExcludeFromCodeCoverage]
     public class OrganizationStaffDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         public string Name { get; set; }
 
@@ -20,26 +19,22 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
 
         public string Email { get; set; }
 
-        public Gender Gender { get; set; }
-       
-        public EnumResult GenderName { get; set; }
-      
-        public IDType IDType { get; set; }
-       
-        public EnumResult IDTypeName { get; set; }
+        public string PhoneExtension { get; set; }
 
-        public string Identity { get; set; }
+        public string NationalId { get; set; }
 
-        public Guid NationalityId { get; set; }
-
-        public string NationalityName { get; set; }
-
-        public Guid OrganizationId { get; set; }
+        public string OrganizationId { get; set; }
         
         public string OrganizationName { get; set; }
 
         public bool IsDelegate { get; set; }
 
         public string DelegateAttachment { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

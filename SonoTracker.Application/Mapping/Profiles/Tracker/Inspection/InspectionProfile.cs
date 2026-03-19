@@ -15,7 +15,6 @@ namespace SonoTracker.Application.Mapping
         public void MapInspection()
         {
             CreateMap<Inspection, GeneralInspectionDto>()
-                 .ForMember(des => des.InspectionTypeName, opt => opt.MapFrom(src => src.InspectionTypeId.GetName()))
                  .ForMember(des => des.OrganizationNameAr, opt => opt.MapFrom(src => src.Organization.NameAr))
                  .ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
                  .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.TripInformation.FloatingUnit.NameAr))

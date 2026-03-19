@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.Core;
-using SonoTracker.Domain.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +9,7 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
     [ExcludeFromCodeCoverage]
     public class AddOrganizationStaffDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         [Required, MaxLength(100), 
          RegularExpression("^[A-Za-z\u0600-\u06FF\u0660-\u0669\\s]{1,50}$",
@@ -34,19 +33,11 @@ namespace SonoTracker.Common.DTO.Tracker.OrganizationStaff
         [Required, EmailAddress]
         public required string Email { get; set; }
 
-        public Gender Gender { get; set; }
-        
-        public IDType IDType { get; set; }
+        [Required, MaxLength(14)]
+        public required string NationalId { get; set; }
 
-        [RegularExpression("^[A-Za-z0-9]{0,45}$", 
-         ErrorMessage = "Identity Number Only Contain Numbers and Letters " +
-         "No Special Chars Allowed and length less than 40 Letter or Number")]
-        public string Identity { get; set; }
-        
-        public Guid? NationalityId { get; set; }
-        
         [Required]
-        public required Guid OrganizationId { get; set; }
+        public required string OrganizationId { get; set; }
         
         public bool IsDelegate { get; set; }
         

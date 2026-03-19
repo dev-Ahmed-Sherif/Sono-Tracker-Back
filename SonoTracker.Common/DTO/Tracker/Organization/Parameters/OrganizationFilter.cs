@@ -15,8 +15,6 @@ namespace SonoTracker.Common.DTO.Tracker.Organization.Parameters
         public int? TouristMarinaNumber { get; set; }
 
         public OrganizationType? OrganizationTypeId { get; set; }
-       
-        public AppliedOn? AppliedOn { get; set; }
 
         public Guid? InspectionTypeId { get; set; }
 

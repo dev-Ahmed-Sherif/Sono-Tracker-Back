@@ -24,5 +24,11 @@ namespace SonoTracker.Common.DTO.Tracker.Accident
         public string OrganizationId { get; set; }
         public string Notes { get; set; }
         public string Attach { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

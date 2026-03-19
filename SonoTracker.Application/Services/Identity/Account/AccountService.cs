@@ -415,16 +415,11 @@ namespace SonoTracker.Application.Services.Identity.Account
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
             IList<string> userRoles = await userManager.GetRolesAsync(user);
+            
             IEnumerable<Claim> roles = userRoles.Select(o => new Claim(ClaimTypes.Role, o));
-            //IEnumerable<Claim> claims = new[]
-            //{
-            //    new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
-            //    new Claim(ClaimTypes.Name,user.FullName),
-            //    new Claim(AuthConstants.OrgId, user.Organization.Id.ToString()),
-            //    new Claim(ClaimTypes.Role, roles.FirstOrDefault().ToString()),
-
-            //}.Union(roles).Union(claimDB);
+          
             var role = userRoles.FirstOrDefault() ?? Roles.User; // Default to User role if no roles assigned
+            
             IEnumerable<Claim> claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
@@ -437,14 +432,13 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(configuration.GetValue<string>("Jwt:Key")!));
 
-
             SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha256);
 
             var tokenDescriptor = new JwtSecurityToken
             (
                 issuer: configuration.GetValue<string>("Jwt:Issuer"),
                 claims: claims,
-                expires: DateTime.Now.AddHours(AuthConstants.AccessTokenLifeInHours),
+                expires: DateTime.UtcNow.AddDays(AuthConstants.AccessTokenLifeInHours),
                 signingCredentials: creds
             );
 

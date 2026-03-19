@@ -213,19 +213,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.AccidentType.AddAccidentTypeDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.AccidentType.AddAccidentTypeDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -295,19 +295,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.City.AddCityDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.City.AddCityDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -333,22 +333,6 @@
             </summary>
             <param name="id">PK</param>
             <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController.#ctor(SonoTracker.Application.Services.Enums.AppliedOns.IAppliedOnService)">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.AppliedOnsController.GetAllAsync(System.Threading.CancellationToken)">
-            <summary>
-            Get all 
-            </summary>
             <returns></returns>
         </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.CasesController">
@@ -394,22 +378,6 @@
             </summary>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.IDTypesController.GetAllAsync(System.Threading.CancellationToken)">
-            <summary>
-            Get all 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController.#ctor(SonoTracker.Application.Services.Enums.InspectionTypes.IInspectionTypeService)">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.Enums.InspectionTypesEnumController.GetAllAsync(System.Threading.CancellationToken)">
             <summary>
             Get all 
             </summary>
@@ -489,19 +457,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.AddAsync(SonoTracker.Common.DTO.Lookup.GeoPoint.AddGeoPointDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.AddAsync(SonoTracker.Common.DTO.Lookup.GeoPoint.AddGeoPointDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -565,19 +533,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.InspectionType.AddInspectionTypeDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.InspectionType.AddInspectionTypeDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -641,19 +609,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.MaintenanceType.AddMaintenanceTypeDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.MaintenanceTypesController.AddAsync(SonoTracker.Common.DTO.Lookup.MaintenanceType.AddMaintenanceTypeDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -723,19 +691,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.Nationality.AddNationalityDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.NationalitiesController.AddAsync(SonoTracker.Common.DTO.Lookup.Nationality.AddNationalityDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -805,8 +773,16 @@
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.UpdateAsync(SonoTracker.Common.DTO.Lookup.OrganizationCategory.AddOrganizationCategoryDto,System.Threading.CancellationToken)">
             <summary>
-            Update
+            Updates an existing organization category.
             </summary>
+            <param name="model">The organization category data to update.</param>
+            <param name="cancellationToken">Cancellation token for the async operation.</param>
+            <returns>
+            An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing the result of the update operation.
+            Returns <see cref="F:Microsoft.AspNetCore.Http.StatusCodes.Status202Accepted"/> if successful,
+            <see cref="F:Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest"/> if the request is invalid,
+            or <see cref="F:Microsoft.AspNetCore.Http.StatusCodes.Status409Conflict"/> if there is a conflict.
+            </returns>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.OrganizationCategoriesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
@@ -854,19 +830,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.AddAsync(SonoTracker.Common.DTO.Lookup.Route.AddRouteDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.RoutesController.AddAsync(SonoTracker.Common.DTO.Lookup.Route.AddRouteDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
@@ -1997,10 +1973,12 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAllAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get All 
             </summary>
+            <param name="organizationId">Optional. Filter by organization ID.</param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.OrganizationStaff.Parameters.OrganizationStaffFilter},System.Threading.CancellationToken)">

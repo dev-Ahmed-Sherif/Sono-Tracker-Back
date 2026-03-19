@@ -57,12 +57,13 @@ namespace SonoTracker.Domain.Entities.Tracker
 
         [MaxLength(50), ForeignKey(nameof(InspectionType))]
         public string? InspectionTypeId { get; set; }
-        public virtual Lookups.InspectionType? InspectionType { get; set; }
+        public virtual InspectionType? InspectionType { get; set; }
         public virtual HashSet<OrganizationStaff> OrganizationStaffs { get; set; } = [];
         public virtual HashSet<MarinaOrganization> MarinaOwners { get; set; } = [];
         public virtual HashSet<FloatingUnitOrganization> FloatingUnitOrganizations { get; set; } = [];
         public virtual HashSet<Inspection> Inspections { get; set; } = [];
         public virtual HashSet<LicenseApplication> LicenseApplications { get; set; } = [];
         public virtual HashSet<Accident> Accidents { get; set; } = [];
+        public virtual HashSet<Maintenance> Maintenances { get; set; } = [];
     }
 }

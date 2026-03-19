@@ -23,6 +23,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// Get By Id
         /// </summary>
+        
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
@@ -31,6 +32,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// Get For Edit
         /// </summary>
+        
         [HttpGet("getEdit/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
@@ -39,6 +41,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// Get All
         /// </summary>
+        
         [HttpGet("getall")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -50,6 +53,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// GetAll Data paged
         /// </summary>
+        
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<OrganizationCategoryFilter> filter, CancellationToken cancellationToken = default)
@@ -61,6 +65,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
+       
         [HttpPost("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
@@ -72,6 +77,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <summary>
         /// Add
         /// </summary>
+        
         [HttpPost("add")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
@@ -88,8 +94,17 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         }
 
         /// <summary>
-        /// Update
+        /// Updates an existing organization category.
         /// </summary>
+        /// <param name="model">The organization category data to update.</param>
+        /// <param name="cancellationToken">Cancellation token for the async operation.</param>
+        /// <returns>
+        /// An <see cref="ActionResult{IFinalResult}"/> containing the result of the update operation.
+        /// Returns <see cref="StatusCodes.Status202Accepted"/> if successful,
+        /// <see cref="StatusCodes.Status400BadRequest"/> if the request is invalid,
+        /// or <see cref="StatusCodes.Status409Conflict"/> if there is a conflict.
+        /// </returns>
+       
         [HttpPut("update")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]

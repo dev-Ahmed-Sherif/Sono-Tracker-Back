@@ -32,7 +32,6 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(50), ForeignKey(nameof(Organization))]
         public required string OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
-        public InspectionType InspectionTypeId { get; set; }
         public bool IsInspected { get; set; }
         public bool SaftyPetroleumWaste { get; set; }
         public bool RightWasteDisposal { get; set; }

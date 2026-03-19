@@ -8,7 +8,6 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.GeoPoint;
 using SonoTracker.Common.DTO.Lookup.GeoPoint.Parameters;
 using System.Net;
-using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Lookups
 {
@@ -18,6 +17,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
     /// <remarks>
     /// Constructor
     /// </remarks>
+    
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
@@ -61,11 +61,28 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <param name="filter">Filter responsible for search and sort</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<GeoPointFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await geoPointService.GetAllPagedAsync(filter, cancellationToken);
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Get All Data paged For Drop Down
+        /// </summary>
+        /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+
+        [HttpPost]
+        [Route("getDropDown")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await geoPointService.GetDropDownAsync(filter, cancellationToken);
             return Ok(res);
         }
 
@@ -89,21 +106,6 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
             if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
             return Created("", res);
-        }
-
-        /// <summary>
-        /// Get All Data paged For Drop Down
-        /// </summary>
-        /// <param name="filter">Filter responsible for search and sort</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("getDropDown")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
-        {
-            PagingResult res = await geoPointService.GetDropDownAsync(filter, cancellationToken);
-            return Ok(res);
         }
 
         /// <summary>

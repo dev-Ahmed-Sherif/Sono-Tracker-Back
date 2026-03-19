@@ -121,8 +121,8 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
                 }
 
                 //SetEntityCreatedBaseProperties(entity);
-                await UnitOfWork.Repository.AddAsync(entity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
 
@@ -144,7 +144,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
                                    x.NameAr == model.NameAr &&
                                    x.NameEn == model.NameEn &&
                                    x.Id != model.Id &&
-                                   x.IsDeleted != true);
+                                   x.IsDeleted != true, cancellationToken);
 
             if (IsExisted)
                 return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
@@ -157,7 +157,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
 
             //SetEntityModifiedBaseProperties(entity);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
 

@@ -44,6 +44,12 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitStaff
         public bool IsDelegate { get; set; } = true;
 
         public string DelegateAttachment { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
 
     }
 }

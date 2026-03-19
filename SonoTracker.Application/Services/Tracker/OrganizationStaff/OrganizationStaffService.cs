@@ -44,8 +44,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
-                .Include(t => t.Nationality)
-               .Include(x => x.Organization)
+                .Include(x => x.Organization)
                 );
             var mapped = Mapper.Map<Domain.Entities.Tracker.OrganizationStaff, EditOrganizationStaffDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -55,22 +54,25 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         {
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
-                         .Include(t => t.Organization)
-                         .Include(x => x.Nationality));
+                include: src => src.Include(t => t.Organization));
 
             var mapped = Mapper.Map<Domain.Entities.Tracker.OrganizationStaff, OrganizationStaffDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.OrganizationStaff, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.OrganizationStaff, bool>> predicate = null, CancellationToken cancellationToken = default)
+            => await GetAllAsync(organizationId: null, cancellationToken);
+
+        public async Task<IFinalResult> GetAllAsync(string organizationId, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.Nationality)
-             .Include(x => x.Organization));
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(filteredEntities);
+            var filter = new OrganizationStaffFilter { OrganizationId = organizationId };
+            var entity = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(filter),
+                include: src => src
+                    .Include(x => x.Organization),
+                cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(entity);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
@@ -82,7 +84,6 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
                 include: src => src
-             .Include(t => t.Nationality)
              .Include(x => x.Organization),
                 cancellationToken: cancellationToken);
 
@@ -118,21 +119,9 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             {
                 predicate = predicate.And(x => x.Job.Contains(filter.Job));
             }
-            if (!string.IsNullOrEmpty(filter.NationalityId))
-            {
-                predicate = predicate.And(x => x.NationalityId == filter.NationalityId);
-            }
             if (!string.IsNullOrEmpty(filter.OrganizationId))
             {
                 predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId);
-            }
-            if (filter.IDType.HasValue)
-            {
-                predicate = predicate.And(x => x.IDType== filter.IDType.Value);
-            }
-            if (filter.Gender.HasValue)
-            {
-                predicate = predicate.And(x => x.Gender == filter.Gender.Value);
             }
             if (filter.IsDelegate)
             {

@@ -20,7 +20,6 @@ namespace SonoTracker.Common.DTO.Tracker.GeneralInspection
         public Guid? FloatingUnitId { get; set; }
 
         public Guid OrganizationId { get; set; }
-        public InspectionType InspectionTypeId { get; set; }
         public bool IsInspected { get; set; }
 
         public bool SaftyPetroleumWaste { get; set; }

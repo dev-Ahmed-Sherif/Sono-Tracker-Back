@@ -6,7 +6,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading;
 using System.Threading.Tasks;
 using LinqKit;
 using Microsoft.AspNetCore.Hosting;
@@ -50,7 +49,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
              .Include(t => t.Nationality)
-             .Include(x => x.InspectionType));
+             .Include(x => x.InspectionType), cancellationToken: cancellationToken);
             var filteredEntities = entity.Where(e => !e.IsDeleted);
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
@@ -75,6 +74,19 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data,status:HttpStatusCode.OK, MessagesConstants.Success);
         }
+        public async Task<IFinalResult> GetFilterAsync(OrganizationFilter filter, CancellationToken cancellationToken = default)
+        {
+            var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter),
+                include: src => src
+               .Include(t => t.InspectionType)
+               .Include(x => x.Nationality),
+                cancellationToken: cancellationToken);
+
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query);
+
+            return  ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                              message: MessagesConstants.Success);
+        }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
@@ -88,125 +100,177 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         }
         public override async Task<IFinalResult> AddAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                                                x.NameAr == model.NameAr &&
-                                                x.NameEn == model.NameEn &&
-                                                x.IsDeleted != true);
-
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, 
-                                            message: MessagesConstants.Existed);
-
-            var entity = Mapper.Map<Entities.Tracker.Organization>(model);
-
-            var data = await GetAllAsync();
-
-            var dataCollection = data.Data as ICollection<OrganizationDto>;
-
-            if (dataCollection.Count > 0)
+            try
             {
-                if (int.TryParse(dataCollection.OrderByDescending(o => o.Code).FirstOrDefault().Code, out int num))
+           
+                var IsExisted = await UnitOfWork.Repository.Any(x => 
+                                                    x.NameAr == model.NameAr &&
+                                                    x.NameEn == model.NameEn &&
+                                                    x.OrganizationCategoryId == model.OrganizationCategoryId &&
+                                                    x.OrganizationType == model.OrganizationType &&
+                                                    x.IsDeleted != true, cancellationToken);
+
+                if (IsExisted)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
+
+                Entities.Tracker.Organization entity = Mapper.Map<Entities.Tracker.Organization>(model);
+
+                var data = await GetFilterAsync(new OrganizationFilter
                 {
-                   int newCode = ++num;
-                   entity.Code = newCode.ToString();
-                }
-            }
-            else
-            {
-                entity.Code = "1";
-            }
+                   OrganizationTypeId = model.OrganizationType
+                }, cancellationToken);
 
-            if (model.ImageUrl != null)
-            {
-                string res = await _uploaderConfiguration
-                                   .UploadFile(model.ImageUrl, "Organization");
+                ICollection<OrganizationDto> dataCollection = data.Data as ICollection<OrganizationDto>;
 
-                if (res != null)
+                string segmentCode;
+
+                if (model.OrganizationType == OrganizationType.GovernmentCompany)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    segmentCode = "Gov";
+                }
+                else if (model.OrganizationType == OrganizationType.OwnerCompany)
+                {
+                    segmentCode = "Owner";
+                }
+                else
+                {
+                    segmentCode = "Operate";
                 }
 
-                entity.ImageUrl = res;
+                if (dataCollection.Count > 0)
+                {
+                    int maxNum = dataCollection
+                        .Select(o =>
+                        {
+                            var numericPart = o.Code?.Contains('-') == true
+                                ? o.Code[(o.Code.LastIndexOf('-') + 1)..]
+                                : o.Code;
+                            return int.TryParse(numericPart, out int n) ? n : (int?)null;
+                        })
+                        .Where(n => n.HasValue)
+                        .Select(n => n!.Value)
+                        .DefaultIfEmpty(0)
+                        .Max();
+
+                    entity.Code = segmentCode + "-" + (maxNum + 1).ToString("D3");
+                }
+                else
+                {
+                    entity.Code = segmentCode + "-001";
+                }
+
+                if (model.ImageUrl != null)
+                {
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.ImageUrl, $"Organization/{model.OrganizationType}", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.ImageUrl = res;
+                }
+
+                Entities.Tracker.Organization result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0) 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                     message: MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
             }
-
-            var result = await UnitOfWork.Repository.AddAsync(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.AddError + ex.Message);
+            }
         }
         public override async Task<IFinalResult> UpdateAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                                        x.NameAr == model.NameAr &&
-                                        x.NameEn == model.NameEn && 
-                                        x.Id != model.Id && x.IsDeleted != true);
-
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-
-            Domain.Entities.Tracker.Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (model.ImageUrl != null)
+            try
             {
-                string res = await _uploaderConfiguration
-                                   .UploadFile(model.ImageUrl, "Organization");
+                bool IsExisted = await UnitOfWork.Repository.Any(x =>
+                                        x.NameAr == model.NameAr &&
+                                        x.NameEn == model.NameEn &&
+                                        x.OrganizationCategoryId == model.OrganizationCategoryId &&
+                                        x.OrganizationType == model.OrganizationType &&
+                                        x.Id != model.Id && x.IsDeleted != true, cancellationToken);
 
-                if (res != null)
+                if (IsExisted)
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+
+                Entities.Tracker.Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+
+                if (model.ImageUrl != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.ImageUrl, $"Organization/{model.OrganizationType}" , cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.ImageUrl = res;
+
+                    _uploaderConfiguration.DeleteFile(entityToUpdate.ImageUrl);
+                }
+                else
+                {
+                    IFinalResult entityExist = await GetByIdForEditAsync(model.Id, cancellationToken);
+                    EditOrganizationDto entityRes = (EditOrganizationDto)entityExist.Data;
+                    entity.ImageUrl = entityRes.ImageUrl;
                 }
 
-                entity.ImageUrl = res;
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-                _uploaderConfiguration.DeleteFile(entityToUpdate.ImageUrl);
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0) 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                     message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.UpdateSuccess);
             }
-            else
+            catch(Exception ex)
             {
-                var entityExist = await GetByIdForEditAsync(model.Id);
-                var entityRes = (EditOrganizationDto)entityExist.Data;
-                entity.ImageUrl = entityRes.ImageUrl;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.UpdateError + ex.Message);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
         public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
-                if (entityToDelete == null) 
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.NotFound,
-                        message: MessagesConstants.DeleteError);
-                // Remove Uploaded File
+                Entities.Tracker.Organization entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+
                 _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.DeleteSuccess);
-                }
 
-                return Result;
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0) 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                     message: MessagesConstants.DeleteError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.DeleteSuccess);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.DeleteError + ex.Message);
                 //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
                 throw;

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using DeputyOffice.Common.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +18,8 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
     /// <summary>
     /// Constructor
     /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     public class OrganizationsController(IOrganizationService organizationService) : BaseController
     {

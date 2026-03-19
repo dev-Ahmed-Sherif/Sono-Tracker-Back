@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.Maintenance
 
     public class MaintenanceDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
         public string Number { get; set; }
         public DateTime MaintenanceDate { get; set; }
         public DateTime? NextMaintenanceDate { get; set; }
@@ -19,7 +19,13 @@ namespace SonoTracker.Common.DTO.Tracker.Maintenance
         public string FloatingUnitId { get; set; }
         public string FloatingUnitNameAr { get; set; }
         public string MaintenanceReport { get; set; }
-        public string? Other { get; set; }
-        public string? Notes { get; set; }
+        public string Other { get; set; }
+        public string Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }

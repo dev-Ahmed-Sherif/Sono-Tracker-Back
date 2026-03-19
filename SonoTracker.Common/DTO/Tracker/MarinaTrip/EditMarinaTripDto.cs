@@ -13,11 +13,16 @@ namespace SonoTracker.Common.DTO.Tracker.MarinaTrip
     [ExcludeFromCodeCoverage]
     public class EditMarinaTripDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         public string TouristMarinaId { get; set; }
 
         public string TripInformationId { get; set; }
-
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; }
+        public string CreatedById { get; set; }
+        public DateTime ModifiedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public string ModifiedById { get; set; }
     }
 }
