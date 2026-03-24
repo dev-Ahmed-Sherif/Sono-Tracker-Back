@@ -28,29 +28,28 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? Attach { get; set; }
 
       
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Town))]
-        public required string TownId { get; set; }
+        public string? TownId { get; set; }
         public virtual Town? Town { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(GeoPoint))]
-        public required string GeoPointId { get; set; }
+        public string? GeoPointId { get; set; }
         public virtual GeoPoint? GeoPoint { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(AccidentType))]
-        public required string AccidentTypeId { get; set; }
+        public string? AccidentTypeId { get; set; }
         public virtual AccidentType? AccidentType { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public required string FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Organization))]
-        public required string OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
    }
 }

@@ -42,10 +42,8 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
-                .Include(x => x.Organization)
-                );
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr, include: src => src
+                .Include(x => x.Organization), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.OrganizationStaff, EditOrganizationStaffDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -53,8 +51,8 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src.Include(t => t.Organization));
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr, 
+                include: src => src.Include(t => t.Organization), cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<Domain.Entities.Tracker.OrganizationStaff, OrganizationStaffDto>(entity);
 
@@ -154,92 +152,109 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         }
         public override async Task<IFinalResult> AddAsync(AddOrganizationStaffDto model, CancellationToken cancellationToken = default)
         {
-            var entity = Mapper.Map<Entities.Tracker.OrganizationStaff>(model);
-
-            if (model.DelegateAttachment != null)
+            try
             {
-                string res = await _uploaderConfiguration
-                                   .UploadFile(model.DelegateAttachment, "OrganizationStaff");
+                Entities.Tracker.OrganizationStaff entity = Mapper.Map<Entities.Tracker.OrganizationStaff>(model);
 
-                if (res != null)
+                if (model.DelegateAttachment != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    IFinalResult organizationResult = await _organizationService.GetByIdAsync(model.OrganizationId, cancellationToken);
+                    
+                    if (organizationResult?.Data is not OrganizationDto organization)
+                        return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.NotFound);
+
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.DelegateAttachment, $"OrganizationStaff/{organization.OrganizationType}", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.DelegateAttachment = res;
+
+                    entity.IsDelegate = true;
+                }
+                else
+                {
+                    entity.IsDelegate = false;
                 }
 
-                entity.DelegateAttachment = res;
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
-                entity.IsDelegate = true;
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0) 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
             }
-            else
+            catch (Exception ex) 
             {
-                entity.IsDelegate = false;
-            }
-
-            var org = await _organizationService.GetByIdAsync(model.OrganizationId);
-            
-            if (org != null) 
-            {
-                var entityRes = (OrganizationDto)org.Data;
-                entity.Phone = entityRes.Phone;   
-            }
-            else
-            {
-                return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null,message: "Org Id Not Correct");
-            }
-
-            await UnitOfWork.Repository.AddAsync(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                       message: MessagesConstants.AddError + ex.Message);
+            } 
         }
         public override async Task<IFinalResult> UpdateAsync(AddOrganizationStaffDto model, CancellationToken cancellationToken = default)
         {
-            Domain.Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (model.DelegateAttachment != null)
+            try
             {
-                string res = await _uploaderConfiguration
-                               .UploadFile(model.DelegateAttachment, "OrganizationStaff");
+                Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
 
-                if (res != null)
+                var entity = Mapper.Map(model, entityToUpdate);
+
+                if (model.DelegateAttachment != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    IFinalResult organizationResult = await _organizationService.GetByIdAsync(model.OrganizationId, cancellationToken);
+
+                    if (organizationResult?.Data is not OrganizationDto organization)
+                    {
+                        return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.NotFound);
+                    }
+
+                    string res = await _uploaderConfiguration
+                                   .UploadFile(model.DelegateAttachment, $"OrganizationStaff/{organization.OrganizationType}", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
+
+                    entity.DelegateAttachment = res;
+
+                    entity.IsDelegate = true;
+                }
+                else
+                {
+                    var entityExist = await GetByIdForEditAsync(model.Id, cancellationToken);
+                    var entityRes = (EditOrganizationStaffDto)entityExist.Data;
+                    entity.DelegateAttachment = entityRes.DelegateAttachment;
                 }
 
-                entity.DelegateAttachment = res;
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-                entity.IsDelegate = true;
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
+                if (affectedRows < 0) 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                     message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null, 
+                                                 message: MessagesConstants.UpdateSuccess);
             }
-            else if (model.IsDelegate == false)
+            catch (Exception ex)
             {
-                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
-                entity.DelegateAttachment = "";
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.UpdateError + ex.Message);
             }
-            else
-            {
-                var entityExist = await GetByIdForEditAsync(model.Id);
-                var entityRes = (EditOrganizationStaffDto)entityExist.Data;
-                entity.DelegateAttachment = entityRes.DelegateAttachment;
-            }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
         public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -251,17 +266,20 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                 _uploaderConfiguration.DeleteFile(entityToDelete.DelegateAttachment);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.DeleteSuccess);
-                }
 
-                return Result;
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.DeleteError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.DeleteSuccess);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.DeleteError + ex.Message);
                 //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
                 throw;

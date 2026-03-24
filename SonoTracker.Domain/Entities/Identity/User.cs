@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Identity;
+using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Entities.Tracker;
 using SonoTracker.Domain.Entities.TrackerNotification;
 using System;
@@ -55,6 +56,10 @@ namespace SonoTracker.Domain.Entities.Identity
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
         public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<RefreshToken> RefreshTokens { get; set; } = [];
         public virtual HashSet<Message> Messages { get; set; } = [];

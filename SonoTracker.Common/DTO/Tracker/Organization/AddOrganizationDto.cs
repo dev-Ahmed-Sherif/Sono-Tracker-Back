@@ -57,9 +57,12 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         
         public bool IsAccepted { get; set; }
         
-        [MaxLength(15), RegularExpression("^[0-9]{15}$",ErrorMessage = "Must be number and length less than 15")]
+        //[
+        //    MaxLength(15), 
+        //    RegularExpression("^[0-9]{15}$",ErrorMessage = "Must be number and length less than 15")
+        //    ]
         public string CommercialRegistrationNumber { get; set; }
         
-        public IFormFile ImageUrl { get; set; }
+        public IFormFile CommercialRegistrationAttachment { get; set; }
     }
 }

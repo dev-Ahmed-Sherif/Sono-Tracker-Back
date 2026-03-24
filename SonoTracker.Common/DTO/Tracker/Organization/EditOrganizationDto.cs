@@ -19,15 +19,15 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         public string Email { get; set; }
         public string NationalityId { get; set; }
         public string NationalityName { get; set; }
-        public OrganizationType OrganizationTypeId { get; set; }
-        public EnumResult OrganizationType { get; set; }
+        public OrganizationType OrganizationType { get; set; }
+        //public EnumResult OrganizationType { get; set; }
         public string InspectionTypeId { get; set; }
         public string InspectionType { get; set; }
         public DateTime CreationDate { get; set; }
         public string CommercialRegistrationNumber { get; set; }
+        public string CommercialRegistrationAttachment { get; set; }
         public string WebSiteAddress { get; set; }
         public int TouristMarinaNumber { get; set; }
-        public string ImageUrl { get; set; }
         public bool IsAccepted { get; set; }
         public bool IsReport { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -17,9 +17,8 @@ namespace SonoTracker.Domain.Entities.Lookups
             }
         }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(City))]
-        public required string CityId { get; set; }
+        public string? CityId { get; set; }
         public virtual City? City { get; set; }
 
         public virtual HashSet<Accident> Accidents { get; set; } = [];

@@ -36,6 +36,22 @@ namespace SonoTracker.Domain.Entities.Tracker
         [Required, MaxLength(100)]
         public required string Email { get; set; }
 
+        
+        public OrganizationType OrganizationType { get; set; }
+
+        public DateTime? CreationDate { get; set; }
+        public string? CommercialRegistrationAttachment { get; set; }
+        public bool IsAccepted { get; set; }
+        public bool IsReport { get; set; }
+
+        [MaxLength(50)]
+        public string? CommercialRegistrationNumber { get; set; }
+        public string? WebSiteAddress { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
+
         [MaxLength(50), ForeignKey(nameof(Nationality))]
         public string? NationalityId { get; set; }
         public virtual Nationality? Nationality { get; set; }
@@ -44,16 +60,6 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? OrganizationCategoryId { get; set; }
         public virtual OrganizationCategory? OrganizationCategory { get; set; }
 
-        public OrganizationType OrganizationType { get; set; }
-
-        public DateTime? CreationDate { get; set; }
-        public string? ImageUrl { get; set; }
-        public bool IsAccepted { get; set; }
-        public bool IsReport { get; set; }
-
-        [MaxLength(50)]
-        public string? CommercialRegistrationNumber { get; set; }
-        public string? WebSiteAddress { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(InspectionType))]
         public string? InspectionTypeId { get; set; }

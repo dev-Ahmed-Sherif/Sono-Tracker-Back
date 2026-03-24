@@ -95,3 +95,4 @@
 /SonoTracker.Domain/bin/Debug/net9.0
 /SonoTracker.Infrastructure/bin/Debug/net9.0
 /SonoTracker.Integration/bin/Debug/net9.0
+/SonoTracker.Api/wwwroot

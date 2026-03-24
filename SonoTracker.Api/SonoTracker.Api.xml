@@ -1881,7 +1881,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAllAsync(System.Nullable{SonoTracker.Domain.Enum.OrganizationType},System.String,System.Threading.CancellationToken)">
             <summary>
             Get All 
             </summary>

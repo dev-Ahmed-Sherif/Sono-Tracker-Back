@@ -24,17 +24,19 @@ namespace SonoTracker.Domain.Entities.Tracker
         public DateTime? EndDate { get; set; }
         public string Code { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public required string FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
         public int StaffNumber { get; set; }
         public int PassengerNumber { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Route))]
-        public required string RouteId { get; set; }
+        public string? RouteId { get; set; }
         public virtual Route? Route { get; set; }
+        
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
         public string? PassengerAttachment { get; set; }
         public virtual HashSet<NationalityTrip> NationalityTrips { get; set; } = [];
         public virtual HashSet<MarinaTrip> MarinaTrips { get; set; } = [];

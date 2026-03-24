@@ -23,19 +23,21 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string Code { get; set; }
         public string Name { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Town))]
-        public required string TownId { get; set; }
+        public string? TownId { get; set; }
         public virtual Town? Town { get; set; }
         public string Url { get; set; }
         public float Length { get; set; }
         public string NorthSide { get; set; }
         public string SouthSide { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(GeoPoint))]
-        public required string GeoPointId { get; set; }
+        public string? GeoPointId { get; set; }
         public virtual GeoPoint? GeoPoint { get; set; }
+        
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
         public string Note { get; set; }
         public virtual HashSet<MarinaOrganization> MarinaOwners { get; set; } = [];
         public virtual HashSet<MarinaTrip> MarinaTrips { get; set; } = [];

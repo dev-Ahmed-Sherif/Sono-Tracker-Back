@@ -1,4 +1,5 @@
 using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,14 +18,16 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Organization))]
-        public required string OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public required string FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
     }
 }

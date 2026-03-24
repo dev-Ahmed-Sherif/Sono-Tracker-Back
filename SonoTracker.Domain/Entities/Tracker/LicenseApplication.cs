@@ -1,4 +1,5 @@
 using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -23,15 +24,17 @@ namespace SonoTracker.Domain.Entities.Tracker
         public DateTime? LicenseDate { get; set; } = DateTime.Now;
 
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(FromOrganization))]
-        public required string FromOrganizationId { get; set; }
+        public string? FromOrganizationId { get; set; }
         public virtual Organization? FromOrganization { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(ToOrganization))]
-        public required string ToOrganizationId { get; set; }
+        public string? ToOrganizationId { get; set; }
         public virtual Organization? ToOrganization { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
 
         public string? Text { get; set; }
         public Status Status { get; set; } = Status.Pending;

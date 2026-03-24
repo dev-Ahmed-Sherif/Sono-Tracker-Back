@@ -1,4 +1,5 @@
 using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,10 +35,13 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(14)]
         public required string NationalId { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Organization))]
-        public required string OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
         public bool IsDelegate { get; set; }
         public string? DelegateAttachment { get; set; }
     }

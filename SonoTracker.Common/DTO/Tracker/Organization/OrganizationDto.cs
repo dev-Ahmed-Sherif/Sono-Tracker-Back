@@ -19,8 +19,8 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         public string Email { get; set; }
         public string? NationalityId { get; set; }
         public string NationalityName { get; set; }
-        public OrganizationType OrganizationTypeId { get; set; }
-        public EnumResult OrganizationType { get; set; }
+        public OrganizationType OrganizationType { get; set; }
+        //public EnumResult OrganizationType { get; set; }
         public string? InspectionTypeId { get; set; }
         public string InspectionType { get; set; }
         public DateTime CreationDate { get; set; }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoTracker.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoTracker.Infrastructure.Context;
 namespace SonoTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoTrackerDbContext))]
-    partial class SonoTrackerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260324121920_AddGovIdRelation")]
+    partial class AddGovIdRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1268,10 +1271,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
                         .HasColumnType("nvarchar(28)");
@@ -1314,8 +1313,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("GeoPointId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("TownId");
@@ -1344,10 +1341,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1411,8 +1404,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("UnitTypeId");
 
                     b.ToTable("FloatingUnits");
@@ -1428,10 +1419,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1442,8 +1429,6 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FloatingUnitId");
-
-                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("OrganizationId");
 
@@ -1470,10 +1455,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
-
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("IDType")
                         .HasColumnType("int");
@@ -1512,8 +1493,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("FloatingUnitId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("NationalityId");
 
                     b.ToTable("FloatingUnitStaffs");
@@ -1526,10 +1505,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FloatingUnitId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1569,8 +1544,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("FloatingUnitId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("InspectionTypeId");
 
                     b.HasIndex("OrganizationId");
@@ -1595,10 +1568,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FromOrganizationId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1652,8 +1621,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("FromOrganizationId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("ToOrganizationId");
 
                     b.ToTable("LicenseApplications");
@@ -1666,10 +1633,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FloatingUnitId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1707,8 +1670,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("FloatingUnitId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("MaintenanceTypeId");
 
                     b.HasIndex("OrganizationId");
@@ -1724,10 +1685,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1756,8 +1713,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("TouristMarinaId");
@@ -1770,10 +1725,6 @@ namespace SonoTracker.Infrastructure.Migrations
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.MarinaTrip", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1793,8 +1744,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("TouristMarinaId");
 
                     b.HasIndex("TouristMarinaId1");
@@ -1807,10 +1756,6 @@ namespace SonoTracker.Infrastructure.Migrations
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.NationalityTrip", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1829,8 +1774,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("NationalityId");
 
@@ -1979,10 +1922,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<bool>("IsDelegate")
                         .HasColumnType("bit");
 
@@ -2022,8 +1961,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("OrganizationStaffs");
@@ -2041,10 +1978,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("GeoPointId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -2082,8 +2015,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("GeoPointId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("TownId");
 
                     b.ToTable("TouristMarinas");
@@ -2099,10 +2030,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -2113,8 +2040,6 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GeoPointId");
-
-                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("TripInformationId");
 
@@ -2135,10 +2060,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FloatingUnitId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -2165,8 +2086,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("FloatingUnitId");
 
-                    b.HasIndex("GovernorateId");
-
                     b.HasIndex("RouteId");
 
                     b.ToTable("TripInformations");
@@ -2182,10 +2101,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(14000)
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -2211,8 +2126,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("MessagingGroupId");
 
@@ -2249,10 +2162,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
                         .HasColumnType("nvarchar(28)");
@@ -2284,8 +2193,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GovernorateId");
-
                     b.ToTable("MessagingGroups");
                 });
 
@@ -2299,10 +2206,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(14000)
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -2328,8 +2231,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("NotificationGroupId");
 
@@ -2366,10 +2267,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
                         .HasColumnType("nvarchar(28)");
@@ -2400,8 +2297,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(280)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GovernorateId");
 
                     b.ToTable("NotificationGroups");
                 });
@@ -2615,11 +2510,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .WithMany("Accidents")
                         .HasForeignKey("GeoPointId");
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "Organization")
                         .WithMany("Accidents")
                         .HasForeignKey("OrganizationId")
@@ -2635,8 +2525,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Navigation("GeoPoint");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("Organization");
 
                     b.Navigation("Town");
@@ -2644,16 +2532,9 @@ namespace SonoTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.FloatingUnit", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.UnitType", "UnitType")
                         .WithMany("FloatingUnits")
                         .HasForeignKey("UnitTypeId");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("UnitType");
                 });
@@ -2665,19 +2546,12 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("FloatingUnitId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "Organization")
                         .WithMany("FloatingUnitOrganizations")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("FloatingUnit");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("Organization");
                 });
@@ -2689,19 +2563,12 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("FloatingUnitId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.Nationality", "Nationality")
                         .WithMany("FloatingUnitStaffs")
                         .HasForeignKey("NationalityId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("FloatingUnit");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("Nationality");
                 });
@@ -2711,11 +2578,6 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.FloatingUnit", "FloatingUnit")
                         .WithMany("Inspections")
                         .HasForeignKey("FloatingUnitId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.InspectionType", null)
@@ -2734,8 +2596,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Navigation("FloatingUnit");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("Organization");
 
                     b.Navigation("TripInformation");
@@ -2748,19 +2608,12 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("FromOrganizationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "ToOrganization")
                         .WithMany()
                         .HasForeignKey("ToOrganizationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("FromOrganization");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("ToOrganization");
                 });
@@ -2770,11 +2623,6 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.FloatingUnit", "FloatingUnit")
                         .WithMany("Maintenances")
                         .HasForeignKey("FloatingUnitId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.MaintenanceType", "MaintenanceType")
@@ -2787,18 +2635,11 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Navigation("FloatingUnit");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("MaintenanceType");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.MarinaOrganization", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "Organization")
                         .WithMany("MarinaOwners")
                         .HasForeignKey("OrganizationId")
@@ -2813,8 +2654,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .WithMany("MarinaOwners")
                         .HasForeignKey("TouristMarinaId1");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("Organization");
 
                     b.Navigation("TouristMarina");
@@ -2822,11 +2661,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.MarinaTrip", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.TouristMarina", "TouristMarina")
                         .WithMany()
                         .HasForeignKey("TouristMarinaId")
@@ -2841,8 +2675,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("TripInformationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("TouristMarina");
 
                     b.Navigation("TripInformation");
@@ -2850,11 +2682,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.NationalityTrip", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.Nationality", "Nationality")
                         .WithMany("NationalityTrips")
                         .HasForeignKey("NationalityId")
@@ -2864,8 +2691,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .WithMany("NationalityTrips")
                         .HasForeignKey("TripInformationId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("Nationality");
 
@@ -2904,17 +2729,10 @@ namespace SonoTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.OrganizationStaff", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "Organization")
                         .WithMany("OrganizationStaffs")
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("Organization");
                 });
@@ -2926,19 +2744,12 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("GeoPointId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.Town", "Town")
                         .WithMany("TouristMarinas")
                         .HasForeignKey("TownId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("GeoPoint");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("Town");
                 });
@@ -2950,19 +2761,12 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("GeoPointId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.TripInformation", "TripInformation")
                         .WithMany()
                         .HasForeignKey("TripInformationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("GeoPoint");
-
-                    b.Navigation("Governorate");
 
                     b.Navigation("TripInformation");
                 });
@@ -2974,11 +2778,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasForeignKey("FloatingUnitId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.Route", "Route")
                         .WithMany("TripInformations")
                         .HasForeignKey("RouteId")
@@ -2986,18 +2785,11 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Navigation("FloatingUnit");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("Route");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.TrackerNotification.Message", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.TrackerNotification.MessagingGroup", "MessagingGroup")
                         .WithMany("Messages")
                         .HasForeignKey("MessagingGroupId")
@@ -3019,8 +2811,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .WithMany("Messages")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("MessagingGroup");
 
                     b.Navigation("Receiver");
@@ -3028,23 +2818,8 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("SonoTracker.Domain.Entities.TrackerNotification.MessagingGroup", b =>
-                {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Governorate");
-                });
-
             modelBuilder.Entity("SonoTracker.Domain.Entities.TrackerNotification.Notification", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SonoTracker.Domain.Entities.TrackerNotification.NotificationGroup", "NotificationGroup")
                         .WithMany("Notifications")
                         .HasForeignKey("NotificationGroupId")
@@ -3066,23 +2841,11 @@ namespace SonoTracker.Infrastructure.Migrations
                         .WithMany("Notifications")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("Governorate");
-
                     b.Navigation("NotificationGroup");
 
                     b.Navigation("Receiver");
 
                     b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("SonoTracker.Domain.Entities.TrackerNotification.NotificationGroup", b =>
-                {
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
-                        .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Governorate");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Identity.User", b =>

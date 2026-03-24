@@ -45,15 +45,25 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
+            => GetAllAsync(organizationTypeId: null, organizationCategoryId:"", cancellationToken: cancellationToken);
+        public async Task<IFinalResult> GetAllAsync(OrganizationType? organizationTypeId,string organizationCategoryId, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.Nationality)
-             .Include(x => x.InspectionType), cancellationToken: cancellationToken);
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(filteredEntities);
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
+            var filter = new OrganizationFilter 
+            { 
+                OrganizationType = organizationTypeId,
+                OrganizationCategoryId = organizationCategoryId
+            };
+
+            var entity = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(filter),
+                include: src => src
+                    .Include(t => t.InspectionType)
+                    .Include(x => x.Nationality),
+                cancellationToken: cancellationToken);
+
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<EditOrganizationDto>>(entity);
+            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK, message: HttpStatusCode.OK.ToString());
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -89,11 +99,9 @@ namespace SonoTracker.Application.Services.Tracker.Organization
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
-            var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), include: src => src
                 .Include(x=>x.InspectionType)
-                .Include(x => x.Nationality));
+                .Include(x => x.Nationality), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.Organization, EditOrganizationDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -118,7 +126,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
                 var data = await GetFilterAsync(new OrganizationFilter
                 {
-                   OrganizationTypeId = model.OrganizationType
+                   OrganizationType = model.OrganizationType
                 }, cancellationToken);
 
                 ICollection<OrganizationDto> dataCollection = data.Data as ICollection<OrganizationDto>;
@@ -160,10 +168,10 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                     entity.Code = segmentCode + "-001";
                 }
 
-                if (model.ImageUrl != null)
+                if (model.CommercialRegistrationAttachment != null)
                 {
                     string res = await _uploaderConfiguration
-                                       .UploadFile(model.ImageUrl, $"Organization/{model.OrganizationType}", cancellationToken);
+                                       .UploadFile(model.CommercialRegistrationAttachment, $"Organization/{model.OrganizationType}", cancellationToken);
 
                     if (res != null)
                     {
@@ -171,7 +179,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                             return UploadResponse(res);
                     }
 
-                    entity.ImageUrl = res;
+                    entity.CommercialRegistrationAttachment = res;
                 }
 
                 Entities.Tracker.Organization result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
@@ -209,10 +217,10 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
                 var entity = Mapper.Map(model, entityToUpdate);
 
-                if (model.ImageUrl != null)
+                if (model.CommercialRegistrationAttachment != null)
                 {
                     string res = await _uploaderConfiguration
-                                       .UploadFile(model.ImageUrl, $"Organization/{model.OrganizationType}" , cancellationToken);
+                                       .UploadFile(model.CommercialRegistrationAttachment, $"Organization/{model.OrganizationType}" , cancellationToken);
 
                     if (res != null)
                     {
@@ -220,22 +228,22 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                             return UploadResponse(res);
                     }
 
-                    entity.ImageUrl = res;
+                    _uploaderConfiguration.DeleteFile(entityToUpdate.CommercialRegistrationAttachment);
 
-                    _uploaderConfiguration.DeleteFile(entityToUpdate.ImageUrl);
+                    entity.CommercialRegistrationAttachment = res;
                 }
                 else
                 {
                     IFinalResult entityExist = await GetByIdForEditAsync(model.Id, cancellationToken);
                     EditOrganizationDto entityRes = (EditOrganizationDto)entityExist.Data;
-                    entity.ImageUrl = entityRes.ImageUrl;
+                    entity.CommercialRegistrationAttachment = entityRes.CommercialRegistrationAttachment;
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows <= 0) 
+                if (affectedRows < 0) 
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
                                                      message: MessagesConstants.UpdateError);
 
@@ -254,13 +262,13 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             {
                 Entities.Tracker.Organization entityToDelete = await UnitOfWork.Repository.GetAsync(id);
 
-                _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);
+                _uploaderConfiguration.DeleteFile(entityToDelete.CommercialRegistrationAttachment);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows <= 0) 
+                if (affectedRows < 0) 
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
                                                      message: MessagesConstants.DeleteError);
 
@@ -294,13 +302,13 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             {
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
             }
-            //if (filter.TouristMarinaNumber.HasValue)
-            //{
-            //    predicate = predicate.And(x => x.TouristMarinaNumber == filter.TouristMarinaNumber.Value);
-            //}
-            if (filter.OrganizationTypeId.HasValue)
+            if (!string.IsNullOrWhiteSpace(filter?.OrganizationCategoryId))
             {
-                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
+                predicate = predicate.And(x => x.OrganizationCategoryId.Equals(filter.OrganizationCategoryId));
+            }
+            if (filter.OrganizationType.HasValue)
+            {
+                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationType.Value);
             }
             //if (filter.AppliedOn.HasValue)
             //{

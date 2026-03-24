@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Base;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,9 +16,9 @@ namespace SonoTracker.Domain.Entities.Identity
             AuthModule = null!;
         }
 
-        [Required, MaxLength(50)]
+        [MaxLength(50)]
         [ForeignKey(nameof(AuthModule))]
-        public required string AuthModuleId { get; set; }
-        public virtual AuthModule AuthModule { get; set; }
+        public string? AuthModuleId { get; set; }
+        public virtual AuthModule? AuthModule { get; set; }
     }
 }

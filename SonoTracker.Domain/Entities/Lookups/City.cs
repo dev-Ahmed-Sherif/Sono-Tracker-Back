@@ -1,4 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,9 +16,8 @@ namespace SonoTracker.Domain.Entities.Lookups
             }
         }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public required string GovernorateId { get; set; }
+        public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<Town> Towns { get; set; } = [];

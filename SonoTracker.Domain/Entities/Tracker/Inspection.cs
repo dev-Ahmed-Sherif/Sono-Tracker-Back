@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Domain.Entities.Tracker
@@ -28,10 +29,13 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(Organization))]
-        public required string OrganizationId { get; set; }
+        public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
         public bool IsInspected { get; set; }
         public bool SaftyPetroleumWaste { get; set; }
         public bool RightWasteDisposal { get; set; }

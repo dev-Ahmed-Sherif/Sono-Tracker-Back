@@ -22,15 +22,17 @@ namespace SonoTracker.Domain.Entities.Tracker
         public DateTime MaintenanceDate { get; set; }
         public DateTime? NextMaintenanceDate { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(MaintenanceType))]
-        public required string MaintenanceTypeId { get; set; }
+        public string? MaintenanceTypeId { get; set; }
         public virtual MaintenanceType? MaintenanceType { get; set; }
 
-        [Required]
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public required string FloatingUnitId { get; set; }
+        public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
         public string MaintenanceReport { get; set; }
         public string? Other{ get; set; }
         public string? Notes { get; set; }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Identity;
+using SonoTracker.Domain.Entities.Lookups;
 
 namespace SonoTracker.Domain.Entities.TrackerNotification
 {
@@ -34,5 +35,9 @@ namespace SonoTracker.Domain.Entities.TrackerNotification
         [MaxLength(50), ForeignKey(nameof(NotificationGroup))]
         public string? NotificationGroupId { get; set; }
         public virtual NotificationGroup? NotificationGroup { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
     }
 }

@@ -9,6 +9,8 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Reports.Org;
 using SonoTracker.Common.DTO.Tracker.Organization;
 using SonoTracker.Common.DTO.Tracker.Organization.Parameters;
+using SonoTracker.Domain.Entities.Lookups;
+using SonoTracker.Domain.Enum;
 using System.Net;
 using System.Net.Mime;
 using System.Threading;
@@ -31,7 +33,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await organizationService.GetByIdAsync(id, cancellationToken);
+                                        => await organizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
@@ -49,9 +51,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] OrganizationType? organizationType, [FromQuery] string? organizationCategoryId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await organizationService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await organizationService.GetAllAsync(organizationType ,organizationCategoryId ,cancellationToken);
 
             return Ok(res);
         }
