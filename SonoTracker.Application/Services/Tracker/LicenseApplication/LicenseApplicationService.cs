@@ -73,7 +73,10 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
                 .Include(t => t.FromOrganization)
                 .Include(t => t.ToOrganization));
 
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filteredEntities = IsSuperAdmin()
+                ? entity
+                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
 
             var mapped = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(filteredEntities);
 
@@ -83,13 +86,20 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<LicenseApplicationFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var licenseFilter = filter?.Filter ?? new LicenseApplicationFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            if (!isSuperAdmin)
+                licenseFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(licenseFilter, governorateId), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(query.Item2);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
@@ -99,17 +109,19 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
 
             var offset = --filter.PageNumber * filter.PageSize;
 
+            var isSuperAdmin = IsSuperAdmin();
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.LicenseApplication>, IEnumerable<LicenseApplicationDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
 
-        static Expression<Func<Entities.Tracker.LicenseApplication, bool>> PredicateBuilderFunction(LicenseApplicationFilter filter)
+        static Expression<Func<Entities.Tracker.LicenseApplication, bool>> PredicateBuilderFunction(LicenseApplicationFilter filter, string governorateId = null)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.LicenseApplication>(x => x.IsDeleted == filter.IsDeleted);
 
@@ -139,6 +151,11 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
             }
             
             
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
+            }
+
             return predicate;
         }
         static Expression<Func<Entities.Tracker.LicenseApplication, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)

@@ -13,5 +13,6 @@ namespace SonoTracker.Common.DTO.Identity.User
         public string RoleId { get; set; }
         public string OrgId { get; set; }
         public string FloatingUnitId { get; set; }
+        public string GovernorateId { get; set; }
     }
 }

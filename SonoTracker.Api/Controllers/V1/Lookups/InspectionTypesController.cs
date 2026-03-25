@@ -27,17 +27,22 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await inspectionTypeService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await inspectionTypeService.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+            return Ok(res);
+        }
+                                        
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await inspectionTypeService.GetByIdForEditAsync(id, cancellationToken);
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
+
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await inspectionTypeService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -74,8 +79,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        [HttpPost]
-        [Route("getDropDown")]
+        [HttpPost("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {

@@ -60,7 +60,10 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                                                     .Include(t => t.FloatingUnit)
                                                     .Include(x => x.Route));
 
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filteredEntities = IsSuperAdmin()
+                ? entity
+                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
 
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.TripInformation>, IEnumerable<TripInformationDto>>(filteredEntities);
 
@@ -78,11 +81,17 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<TripInformationFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var tripFilter = filter?.Filter ?? new TripInformationFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            if (!isSuperAdmin)
+                tripFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter),
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(tripFilter, governorateId),
                 pageNumber: offset, pageSize: limit,
                 filter.OrderByValue,
                 include: src => src
@@ -90,12 +99,14 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                 .Include(x => x.Route),
                 cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripInformation>, IEnumerable<TripInformationDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripInformation>, IEnumerable<TripInformationDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
@@ -104,12 +115,13 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripInformation>, IEnumerable<TripInformationDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripInformation>, IEnumerable<TripInformationDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
-        static Expression<Func<Entities.Tracker.TripInformation, bool>> PredicateBuilderFunction(TripInformationFilter filter)
+        static Expression<Func<Entities.Tracker.TripInformation, bool>> PredicateBuilderFunction(TripInformationFilter filter, string governorateId = null)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TripInformation>(x => x.IsDeleted == filter.IsDeleted);
 
@@ -132,6 +144,11 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
             if (!string.IsNullOrWhiteSpace(filter.Code))
             {
                 predicate = predicate.And(x => x.Code.Contains(filter.Code));
+            }
+
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

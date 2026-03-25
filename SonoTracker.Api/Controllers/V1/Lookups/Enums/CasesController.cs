@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Enums.Cases;
 using SonoTracker.Common.Core;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class CasesController(ICaseService caseCategory) : ControllerBase
+    public class CasesController(ICaseService caseCategory) : BaseController
     {
         /// <summary>
         /// Get all 

@@ -22,7 +22,11 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
         {
             IEnumerable<Domain.Entities.Lookups.InspectionType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.InspectionType>();
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filtered = IsSuperAdmin()
+                ? (entities ?? Enumerable.Empty<Domain.Entities.Lookups.InspectionType>())
+                : (entities?.Where(e =>
+                    !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId)) ?? Enumerable.Empty<Domain.Entities.Lookups.InspectionType>());
             IEnumerable<InspectionTypeDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
@@ -30,18 +34,27 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionTypeFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var inspectionFilter = filter?.Filter ?? new InspectionTypeFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            if (!isSuperAdmin)
+                inspectionFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             (int Count, IEnumerable<Entities.Lookups.InspectionType> Result) = await UnitOfWork.Repository.FindPagedAsync(
-                predicate: PredicateBuilderFunction(filter.Filter),
+                predicate: PredicateBuilderFunction(inspectionFilter, governorateId),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
                 cancellationToken: cancellationToken);
 
-            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.InspectionType>();
+            var filteredResult = isSuperAdmin
+                ? (Result ?? Enumerable.Empty<Entities.Lookups.InspectionType>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.InspectionType>());
             var data = Mapper.Map<IEnumerable<Entities.Lookups.InspectionType>, IEnumerable<InspectionTypeDto>>(filteredResult);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
@@ -60,7 +73,7 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        static Expression<Func<Entities.Lookups.InspectionType, bool>> PredicateBuilderFunction(InspectionTypeFilter filter)
+        static Expression<Func<Entities.Lookups.InspectionType, bool>> PredicateBuilderFunction(InspectionTypeFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.InspectionType>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
@@ -70,6 +83,10 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
             if (!string.IsNullOrWhiteSpace(filter.NameEn))
             {
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            }
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

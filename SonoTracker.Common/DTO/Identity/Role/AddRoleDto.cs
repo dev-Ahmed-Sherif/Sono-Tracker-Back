@@ -4,5 +4,6 @@ namespace SonoTracker.Common.DTO.Identity.Role
     {
         public string NameAr { get; set; }
         public string NameEn { get; set; }
+        public string GovernorateId { get; set; }
     }
 }

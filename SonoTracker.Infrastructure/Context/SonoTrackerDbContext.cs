@@ -162,12 +162,6 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(o => o.NationalityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Organization>()
-                .HasOne(o => o.InspectionType)
-                .WithMany()
-                .HasForeignKey(o => o.InspectionTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<OrganizationStaff>()
                 .HasOne(s => s.Organization)
                 .WithMany(o => o.OrganizationStaffs)

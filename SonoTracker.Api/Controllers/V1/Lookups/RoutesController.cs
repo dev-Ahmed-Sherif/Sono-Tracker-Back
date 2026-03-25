@@ -28,8 +28,13 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await routeService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await routeService.GetByIdAsync(id, cancellationToken);
+
+            return Ok(res);
+        }
+                                        
 
         /// <summary>
         /// Get For Edit 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain;
 using SonoTracker.Domain.Entities.Base;
@@ -40,6 +42,28 @@ namespace SonoTracker.Application.Services.Base
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
         protected TokenClaimDto ClaimData { get; set; }
+
+        /// <summary>
+        /// Determines whether the current authenticated user has the `SuperAdmin` role.
+        /// </summary>
+        /// <returns>True when the current role is SuperAdmin; otherwise false.</returns>
+        protected bool IsSuperAdmin()
+        {
+            var role = HttpContextAccessor?.HttpContext?.User?.Claims?
+                .FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? string.Empty;
+
+            return string.Equals(role, Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gets the current user's GovernorateId from JWT claims.
+        /// Returns empty string when claim does not exist.
+        /// </summary>
+        protected string GetGovernorateIdFromClaims()
+        {
+            return HttpContextAccessor?.HttpContext?.User?.Claims?
+                       .FirstOrDefault(c => c.Type == AuthConstants.GovId)?.Value ?? string.Empty;
+        }
 
         protected internal BaseService(IServiceBaseParameter<T> businessBaseParameter)
         {

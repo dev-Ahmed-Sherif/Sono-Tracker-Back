@@ -49,7 +49,10 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 disableTracking: disableTracking,
                 cancellationToken: cancellationToken);
 
-            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>();
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filtered = IsSuperAdmin()
+                ? (entities ?? Enumerable.Empty<Domain.Entities.Lookups.Town>())
+                : (entities?.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.City?.GovernorateId == governorateId)) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>());
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
@@ -58,12 +61,19 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<TownFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var townFilter = filter?.Filter ?? new TownFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            if (!isSuperAdmin)
+                townFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             (int Count, IEnumerable<Domain.Entities.Lookups.Town> Result) = await UnitOfWork.Repository.FindPagedAsync(
-                predicate: PredicateBuilderFunction(filter.Filter),
+                predicate: PredicateBuilderFunction(townFilter, governorateId),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
@@ -72,26 +82,36 @@ namespace SonoTracker.Application.Services.Lookup.Town
                     .ThenInclude(x => x.Governorate),
                 cancellationToken: cancellationToken);
 
-            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>();
+            var filteredResult = isSuperAdmin
+                ? (Result ?? Enumerable.Empty<Domain.Entities.Lookups.Town>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>());
             var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filteredResult);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
+            if (!isSuperAdmin)
+                predicate = predicate.And(x => x.IsDeleted != true);
+
+            if (!string.IsNullOrWhiteSpace(governorateId))
+                predicate = predicate.And(x => x.City.GovernorateId == governorateId);
+
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Result.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Result);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        static Expression<Func<Domain.Entities.Lookups.Town, bool>> PredicateBuilderFunction(TownFilter filter)
+        static Expression<Func<Domain.Entities.Lookups.Town, bool>> PredicateBuilderFunction(TownFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<Domain.Entities.Lookups.Town>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
@@ -101,6 +121,11 @@ namespace SonoTracker.Application.Services.Lookup.Town
             if (!string.IsNullOrWhiteSpace(filter.NameEn))
             {
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            }
+
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.City.GovernorateId == governorateId);
             }
 
             return predicate;

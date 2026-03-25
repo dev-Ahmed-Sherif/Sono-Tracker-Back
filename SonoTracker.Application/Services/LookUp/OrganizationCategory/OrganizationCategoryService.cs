@@ -21,7 +21,11 @@ namespace SonoTracker.Application.Services.LookUp.OrganizationCategory
         {
             IEnumerable<Entities.Lookups.OrganizationCategory> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>();
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filtered = IsSuperAdmin()
+                ? (entities ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>())
+                : (entities?.Where(e =>
+                    !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId)) ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>());
             IEnumerable<OrganizationCategoryDto> mapped = Mapper.Map<IEnumerable<Entities.Lookups.OrganizationCategory>, IEnumerable<OrganizationCategoryDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
@@ -30,18 +34,27 @@ namespace SonoTracker.Application.Services.LookUp.OrganizationCategory
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationCategoryFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var organizationCategoryFilter = filter?.Filter ?? new OrganizationCategoryFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            if (!isSuperAdmin)
+                organizationCategoryFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
             var offset = --filter.PageNumber * filter.PageSize;
 
             (int Count, IEnumerable<Entities.Lookups.OrganizationCategory> Result) = await UnitOfWork.Repository
                 .FindPagedAsync(
-                    predicate: PredicateBuilderFunction(filter.Filter),
+                    predicate: PredicateBuilderFunction(organizationCategoryFilter, governorateId),
                     pageNumber: offset,
                     pageSize: limit,
                     filter.OrderByValue,
                     cancellationToken: cancellationToken);
 
-            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>();
+            var filteredResult = isSuperAdmin
+                ? (Result ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.OrganizationCategory>());
             var data = Mapper.Map<IEnumerable<Entities.Lookups.OrganizationCategory>, IEnumerable<OrganizationCategoryDto>>(filteredResult);
 
             return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: Count, result: data,
@@ -62,13 +75,15 @@ namespace SonoTracker.Application.Services.LookUp.OrganizationCategory
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
-        static Expression<Func<Entities.Lookups.OrganizationCategory, bool>> PredicateBuilderFunction(OrganizationCategoryFilter filter)
+        static Expression<Func<Entities.Lookups.OrganizationCategory, bool>> PredicateBuilderFunction(OrganizationCategoryFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.OrganizationCategory>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
                 predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
             if (!string.IsNullOrWhiteSpace(filter.NameEn))
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            if (!string.IsNullOrWhiteSpace(governorateId))
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
             return predicate;
         }
 

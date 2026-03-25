@@ -7,5 +7,6 @@ namespace SonoTracker.Common.DTO.Identity.User
                               string Role, 
                               List<UserPermissionDto> Permissions, 
                               string OrganizationId,
-                              string FloatingUnitId);
+                              string FloatingUnitId,
+                              string GovernorateId);
 }

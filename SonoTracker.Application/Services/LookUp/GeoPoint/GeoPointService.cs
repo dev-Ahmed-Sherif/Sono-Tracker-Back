@@ -27,7 +27,9 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
         {
             IEnumerable<Domain.Entities.Lookups.GeoPoint> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.GeoPoint>();
+            var filtered = IsSuperAdmin()
+                ? (entities ?? Enumerable.Empty<Domain.Entities.Lookups.GeoPoint>())
+                : (entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.GeoPoint>());
             IEnumerable<GeoPointDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
@@ -36,18 +38,26 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<GeoPointFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var geoPointFilter = filter?.Filter ?? new GeoPointFilter();
+
+            if (!isSuperAdmin)
+                geoPointFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             (int Count, IEnumerable<Entities.Lookups.GeoPoint> Result) = await UnitOfWork.Repository.FindPagedAsync(
-                predicate: PredicateBuilderFunction(filter.Filter),
+                predicate: PredicateBuilderFunction(geoPointFilter),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
                 cancellationToken: cancellationToken);
 
-            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.GeoPoint>();
+            var filteredResult = isSuperAdmin
+                ? (Result ?? Enumerable.Empty<Entities.Lookups.GeoPoint>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.GeoPoint>());
             var data = Mapper.Map<IEnumerable<Entities.Lookups.GeoPoint>, IEnumerable<GeoPointDto>>(filteredResult);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);

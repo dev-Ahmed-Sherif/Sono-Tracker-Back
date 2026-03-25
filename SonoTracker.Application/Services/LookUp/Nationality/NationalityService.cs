@@ -23,8 +23,10 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
             // Retrieve all entities
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            // Filter out deleted records
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            // Filter out deleted records (except for SuperAdmin)
+            var filteredEntities = IsSuperAdmin()
+                ? entity
+                : entity.Where(e => !e.IsDeleted);
 
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Nationality>, IEnumerable<NationalityDto>>(filteredEntities);
 
@@ -33,17 +35,27 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<NationalityFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var nationalityFilter = filter?.Filter ?? new NationalityFilter();
+
+            if (!isSuperAdmin)
+                nationalityFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             var query = await UnitOfWork.Repository.FindPagedAsync
-                (predicate: PredicateBuilderFunction(filter.Filter),
+                (predicate: PredicateBuilderFunction(nationalityFilter),
                 pageNumber: offset,
                 pageSize: limit, filter.OrderByValue,
                 cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Nationality>, IEnumerable<NationalityDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var filteredItem2 = isSuperAdmin
+                ? query.Item2
+                : query.Item2.Where(x => x.IsDeleted != true);
+
+            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Nationality>, IEnumerable<NationalityDto>>(filteredItem2);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }

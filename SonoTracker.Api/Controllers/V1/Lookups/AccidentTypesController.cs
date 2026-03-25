@@ -30,17 +30,22 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await accidentTypeService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await accidentTypeService.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+            return Ok(res);
+        }
+                                         
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await accidentTypeService.GetByIdForEditAsync(id, cancellationToken);
+        //// <summary>
+        //// Get For Edit 
+        //// </summary>
+        //// <returns></returns>
+
+        // [HttpGet("getEdit/{id}")]
+        // public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                 => await accidentTypeService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -52,6 +57,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             IFinalResult res = await accidentTypeService.GetAllAsync(cancellationToken: cancellationToken);
+            
             return Ok(res);
         }
         
@@ -67,6 +73,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<AccidentTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await accidentTypeService.GetAllPagedAsync(filter, cancellationToken);
+            
             return Ok(res);
         }
 
@@ -83,6 +90,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await accidentTypeService.GetDropDownAsync(filter, cancellationToken);
+            
             return Ok(res);
         }
 

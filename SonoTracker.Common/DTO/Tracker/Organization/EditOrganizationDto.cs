@@ -27,7 +27,7 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         public string CommercialRegistrationNumber { get; set; }
         public string CommercialRegistrationAttachment { get; set; }
         public string WebSiteAddress { get; set; }
-        public int TouristMarinaNumber { get; set; }
+        public string TouristMarinaNumber { get; set; }
         public bool IsAccepted { get; set; }
         public bool IsReport { get; set; }
         public DateTime CreatedAt { get; set; }

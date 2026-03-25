@@ -193,12 +193,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.GetAllAsync(System.Threading.CancellationToken)">
             <summary>
             Get All 
@@ -272,12 +266,6 @@
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
             </summary>
             <returns></returns>
         </member>
@@ -437,12 +425,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.GeoPointsController.GetAllAsync(System.Threading.CancellationToken)">
             <summary>
             Get All 
@@ -510,12 +492,6 @@
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.InspectionTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
             </summary>
             <returns></returns>
         </member>
@@ -971,12 +947,6 @@
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.UnitTypesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
             </summary>
             <returns></returns>
         </member>
@@ -1875,12 +1845,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.GetAllAsync(System.Nullable{SonoTracker.Domain.Enum.OrganizationType},System.String,System.Threading.CancellationToken)">
             <summary>
             Get All 
@@ -1932,14 +1896,6 @@
             Soft Remove by id
             </summary>
             <param name="id">PK</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
-            <summary>
-            Remove Range by Organization Ids
-            </summary>
-            <param name="ids">PK</param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>

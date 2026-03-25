@@ -27,7 +27,7 @@ using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Application.Services.Tracker.Organization
 {
-    public class OrganizationService : BaseService<Domain.Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>, IOrganizationService
+    public class OrganizationService : BaseService<Entities.Tracker.Organization, AddOrganizationDto, EditOrganizationDto, OrganizationDto, string, string>, IOrganizationService
     {
         private readonly UserDataDto _user;
         private readonly IFloatingUnitOrganizationService _floatingUnitOrganizationService;
@@ -45,38 +45,62 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
-        public override Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
+        
+        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
+        {
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), include: src => src
+                //.Include(x=>x.InspectionType)
+                .Include(x => x.Nationality)
+                .Include(x => x.OrganizationStaffs), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.Organization, EditOrganizationDto>(entity);
+
+            return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
+        }
+        
+        public override Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
             => GetAllAsync(organizationTypeId: null, organizationCategoryId:"", cancellationToken: cancellationToken);
+        
         public async Task<IFinalResult> GetAllAsync(OrganizationType? organizationTypeId,string organizationCategoryId, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             var filter = new OrganizationFilter 
             { 
                 OrganizationType = organizationTypeId,
-                OrganizationCategoryId = organizationCategoryId
+                OrganizationCategoryId = organizationCategoryId,
+                IsDeleted = false
             };
 
             var entity = await UnitOfWork.Repository.FindAsync(
-                predicate: PredicateBuilderFunction(filter),
+                predicate: PredicateBuilderFunction(filter, includeDeleted: isSuperAdmin, governorateId: governorateId),
                 include: src => src
-                    .Include(t => t.InspectionType)
+                    //.Include(t => t.InspectionType)
                     .Include(x => x.Nationality),
                 cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<EditOrganizationDto>>(entity);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK, message: HttpStatusCode.OK.ToString());
         }
+        
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            var organizationFilter = filter?.Filter ?? new OrganizationFilter();
+
+            if (!isSuperAdmin)
+                organizationFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter),
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(organizationFilter, includeDeleted: false, governorateId: governorateId),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
                 include: src => src
-               .Include(t => t.InspectionType)
+               //.Include(t => t.InspectionType)
                .Include(x => x.Nationality),
                 cancellationToken: cancellationToken);
 
@@ -84,11 +108,14 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data,status:HttpStatusCode.OK, MessagesConstants.Success);
         }
+        
         public async Task<IFinalResult> GetFilterAsync(OrganizationFilter filter, CancellationToken cancellationToken = default)
         {
-            var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter),
+            // Used for internal code generation; always exclude deleted
+            filter.IsDeleted = false;
+            var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter, includeDeleted: false),
                 include: src => src
-               .Include(t => t.InspectionType)
+               //.Include(t => t.InspectionType)
                .Include(x => x.Nationality),
                 cancellationToken: cancellationToken);
 
@@ -97,21 +124,43 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             return  ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
                                               message: MessagesConstants.Success);
         }
-        public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
+        
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), include: src => src
-                .Include(x=>x.InspectionType)
-                .Include(x => x.Nationality), cancellationToken: cancellationToken);
-            var mapped = Mapper.Map<Domain.Entities.Tracker.Organization, EditOrganizationDto>(entity);
+            var isSuperAdmin = IsSuperAdmin();
+            var limit = filter.PageSize;
 
-            return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
+            var offset = --filter.PageNumber * filter.PageSize;
+
+            var predicate = DropDownPredicateBuilderFunction(filter.Filter, includeDeleted: isSuperAdmin);
+
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
+
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query.Result);
+
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+
         }
+        
+        public async Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
+        {
+            var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderReportFunction(filter),
+                 include: src => src
+                                 .Include(x => x.Nationality),
+                 cancellationToken: cancellationToken);
+
+            var data = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrgReportDTO>>(query);
+            
+            return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
+                message: HttpStatusCode.OK.ToString());
+        }
+        
         public override async Task<IFinalResult> AddAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
             try
             {
-           
-                var IsExisted = await UnitOfWork.Repository.Any(x => 
+
+                bool IsExisted = await UnitOfWork.Repository.Any(x =>
                                                     x.NameAr == model.NameAr &&
                                                     x.NameEn == model.NameEn &&
                                                     x.OrganizationCategoryId == model.OrganizationCategoryId &&
@@ -199,6 +248,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                                                  message: MessagesConstants.AddError + ex.Message);
             }
         }
+
         public override async Task<IFinalResult> UpdateAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
             try
@@ -256,13 +306,26 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                                                  message: MessagesConstants.UpdateError + ex.Message);
             }
         }
+
         public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
-                Entities.Tracker.Organization entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                Entities.Tracker.Organization entityToDelete = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), include: src => src
+                                                                //.Include(x=>x.InspectionType)
+                                                                .Include(x => x.Nationality),
+                    cancellationToken: cancellationToken);
 
                 _uploaderConfiguration.DeleteFile(entityToDelete.CommercialRegistrationAttachment);
+
+                // Ensure dependent rows are removed first to avoid FK constraint conflicts
+                // (FK_OrganizationStaffs_Organizations_OrganizationId).
+                var staffRepo = UnitOfWork.GetRepository<Entities.Tracker.OrganizationStaff>();
+                var staffToDelete = await staffRepo.FindAsync(
+                    predicate: x => x.OrganizationId == entityToDelete.Id,
+                    cancellationToken: cancellationToken);
+                if (staffToDelete != null)
+                    staffRepo.RemoveRange(staffToDelete);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
 
@@ -285,132 +348,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             }
 
         }
-        static Expression<Func<Domain.Entities.Tracker.Organization, bool>> PredicateBuilderFunction(OrganizationFilter filter)
-        {
-            var predicate = PredicateBuilder.New<Domain.Entities.Tracker.Organization>(x => x.IsDeleted != true);
-            //var predicate = PredicateBuilder.New<Domain.Entities.Tracker.Organization>();
-            if (!string.IsNullOrWhiteSpace(filter?.NameAr))
-            {
-                predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
-            }
-            if (!string.IsNullOrWhiteSpace(filter?.Code))
-            {
-                predicate = predicate.And(x => x.Code.Contains(filter.Code));
-            }
-
-            if (!string.IsNullOrWhiteSpace(filter?.NameEn))
-            {
-                predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
-            }
-            if (!string.IsNullOrWhiteSpace(filter?.OrganizationCategoryId))
-            {
-                predicate = predicate.And(x => x.OrganizationCategoryId.Equals(filter.OrganizationCategoryId));
-            }
-            if (filter.OrganizationType.HasValue)
-            {
-                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationType.Value);
-            }
-            //if (filter.AppliedOn.HasValue)
-            //{
-            //    predicate = predicate.And(x => x.AppliedOn == filter.AppliedOn.Value);
-            //}
-
-            return predicate;
-        }
-        //private async Task MapAttachmentInternalAsync(EditOrganizationDto mapped)
-        //{
-
-        //    if (mapped != null)
-        //    {
-        //        var tokens = await _fileRepository.GetTokens(mapped.OrganizationAttachments.Select(x => x.FileId).ToList());
-        //        mapped.OrganizationAttachments.ForEach(e =>
-        //        {
-        //            var token = tokens.First(x => x.Id == e.FileId);
-        //            e.Url = _urls.DownloadFileWithAppCode + "/" + e.FileId + "?token=" + token.Token;
-        //        });
-        //    }
-        //}
-        //TO-DO remove the loop here for finding the entities to be deleted
-        // get all entities at once using search first (FindAsync)
-        // then use remove range
-
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-        {
-            var idsList = ids.ToList();
-            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
-
-            UnitOfWork.Repository.RemoveRange(entitiesToDelete);
-
-            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
-        }
-
-        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
-        {
-            var limit = filter.PageSize;
-
-            var offset = --filter.PageNumber * filter.PageSize;
-
-            var predicate = DropDownPredicateBuilderFunction(filter.Filter);
-
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
-
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query.Item2.Where(x => x.IsDeleted != true));
-
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
-
-        }
-        static Expression<Func<Entities.Tracker.Organization, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
-        {
-            var predicate = PredicateBuilder.New<Entities.Tracker.Organization>(true);
-            if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
-            {
-                predicate = predicate.And(b => b.NameAr.Contains(filter.SearchCriteria));
-                predicate = predicate.Or(b => b.NameEn.Contains(filter.SearchCriteria));
-                predicate = predicate.Or(b => b.Code.Contains(filter.SearchCriteria));
-            }
-            return predicate;
-        }
-
-        public async Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
-        {
-            var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderReportFunction(filter),
-                 include: src => src
-                                 .Include(x => x.Nationality),
-                 cancellationToken: cancellationToken);
-
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Tracker.Organization>, IEnumerable<OrgReportDTO>>(query);
-            
-            return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
-        }
-
-        static Expression<Func<Domain.Entities.Tracker.Organization, bool>> PredicateBuilderReportFunction(FilterOrgReportDTO filter)
-        {
-            var predicate = PredicateBuilder.New<Domain.Entities.Tracker.Organization>(x => x.IsDeleted != true);
-
-            if (filter.OrganizationIds.Length > 0)
-            {
-                predicate = predicate.And(e => filter.OrganizationIds.Any(id => id == e.Id));
-            }
-            if (!string.IsNullOrWhiteSpace(filter?.NameAr))
-            {
-                predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
-            }
-            if (!string.IsNullOrWhiteSpace(filter?.NameEn))
-            {
-                predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
-            }
-            if (filter.OrganizationTypeId.HasValue)
-            {
-                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
-            }
-            
-
-            return predicate;
-        }
-
+        
         public async Task<byte[]> GenerateReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
         {
             // get report file
@@ -515,6 +453,96 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             return renderedBytes;
         }
 
+        static Expression<Func<Entities.Tracker.Organization, bool>> PredicateBuilderFunction(OrganizationFilter filter, bool includeDeleted, string governorateId = null)
+        {
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Domain.Entities.Tracker.Organization>(true)
+                : PredicateBuilder.New<Domain.Entities.Tracker.Organization>(x => x.IsDeleted == filter.IsDeleted);
+            if (!string.IsNullOrWhiteSpace(filter?.NameAr))
+            {
+                predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
+            }
+            if (!string.IsNullOrWhiteSpace(filter?.Code))
+            {
+                predicate = predicate.And(x => x.Code.Contains(filter.Code));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter?.NameEn))
+            {
+                predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            }
+            if (!string.IsNullOrWhiteSpace(filter?.OrganizationCategoryId))
+            {
+                predicate = predicate.And(x => x.OrganizationCategoryId.Equals(filter.OrganizationCategoryId));
+            }
+            if (filter.OrganizationType.HasValue)
+            {
+                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationType.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
+            }
+            //if (filter.AppliedOn.HasValue)
+            //{
+            //    predicate = predicate.And(x => x.AppliedOn == filter.AppliedOn.Value);
+            //}
+
+            return predicate;
+        }
+        
+        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            var idsList = ids.ToList();
+            var entitiesToDelete = await UnitOfWork.Repository.FindAsync(d => idsList.Contains(d.Id), cancellationToken: cancellationToken);
+
+            UnitOfWork.Repository.RemoveRange(entitiesToDelete);
+
+            var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+            return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
+        }
+
+        static Expression<Func<Entities.Tracker.Organization, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter, bool includeDeleted)
+        {
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Entities.Tracker.Organization>(true)
+                : PredicateBuilder.New<Entities.Tracker.Organization>(x => x.IsDeleted != true);
+            if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
+            {
+                predicate = predicate.And(b => b.NameAr.Contains(filter.SearchCriteria));
+                predicate = predicate.Or(b => b.NameEn.Contains(filter.SearchCriteria));
+                predicate = predicate.Or(b => b.Code.Contains(filter.SearchCriteria));
+            }
+            return predicate;
+        }
+
+        static Expression<Func<Entities.Tracker.Organization, bool>> PredicateBuilderReportFunction(FilterOrgReportDTO filter)
+        {
+            var predicate = PredicateBuilder.New<Domain.Entities.Tracker.Organization>(x => x.IsDeleted != true);
+
+            if (filter.OrganizationIds.Length > 0)
+            {
+                predicate = predicate.And(e => filter.OrganizationIds.Any(id => id == e.Id));
+            }
+            if (!string.IsNullOrWhiteSpace(filter?.NameAr))
+            {
+                predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
+            }
+            if (!string.IsNullOrWhiteSpace(filter?.NameEn))
+            {
+                predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            }
+            if (filter.OrganizationTypeId.HasValue)
+            {
+                predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
+            }
+            
+
+            return predicate;
+        }
+
         private IFinalResult UploadResponse(string res)
         {
             if (res == "Size")
@@ -532,9 +560,6 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                 return null;
             }
         }
-
     }
-
-
 }
 

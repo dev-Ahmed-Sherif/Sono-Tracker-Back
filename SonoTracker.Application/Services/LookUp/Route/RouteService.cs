@@ -23,7 +23,11 @@ namespace SonoTracker.Application.Services.Lookup.Route
         {
             IEnumerable<Domain.Entities.Lookups.Route> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
-            var filtered = entities?.Where(e => !e.IsDeleted) ?? Enumerable.Empty<Domain.Entities.Lookups.Route>();
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filtered = IsSuperAdmin()
+                ? (entities ?? Enumerable.Empty<Domain.Entities.Lookups.Route>())
+                : (entities?.Where(e =>
+                    !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId)) ?? Enumerable.Empty<Domain.Entities.Lookups.Route>());
             IEnumerable<RouteDto> mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Route>, IEnumerable<RouteDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
@@ -32,18 +36,27 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<RouteFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var routeFilter = filter?.Filter ?? new RouteFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            if (!isSuperAdmin)
+                routeFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
             (int Count, IEnumerable<Entities.Lookups.Route> Result) = await UnitOfWork.Repository.FindPagedAsync(
-                predicate: PredicateBuilderFunction(filter.Filter),
+                predicate: PredicateBuilderFunction(routeFilter, governorateId),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
                 cancellationToken: cancellationToken);
 
-            var filteredResult = Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.Route>();
+            var filteredResult = isSuperAdmin
+                ? (Result ?? Enumerable.Empty<Entities.Lookups.Route>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.Route>());
             var data = Mapper.Map<IEnumerable<Entities.Lookups.Route>, IEnumerable<RouteDto>>(filteredResult);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
@@ -64,7 +77,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
-        static Expression<Func<Entities.Lookups.Route, bool>> PredicateBuilderFunction(RouteFilter filter)
+        static Expression<Func<Entities.Lookups.Route, bool>> PredicateBuilderFunction(RouteFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.Route>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
@@ -74,6 +87,10 @@ namespace SonoTracker.Application.Services.Lookup.Route
             if (!string.IsNullOrWhiteSpace(filter.NameEn))
             {
                 predicate = predicate.And(x => x.NameEn.Contains(filter.NameEn));
+            }
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

@@ -20,6 +20,8 @@ namespace SonoTracker.Domain.Entities.Tracker
                 Id = Guid.CreateVersion7().ToString();
             }
         }
+        [MaxLength(2)]
+        public string? TouristMarinaNumber { get; set; }
 
         [Required, MaxLength(200)]
         public required string Address { get; set; }
@@ -35,11 +37,7 @@ namespace SonoTracker.Domain.Entities.Tracker
 
         [Required, MaxLength(100)]
         public required string Email { get; set; }
-
-        
         public OrganizationType OrganizationType { get; set; }
-
-        public DateTime? CreationDate { get; set; }
         public string? CommercialRegistrationAttachment { get; set; }
         public bool IsAccepted { get; set; }
         public bool IsReport { get; set; }
@@ -60,10 +58,9 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? OrganizationCategoryId { get; set; }
         public virtual OrganizationCategory? OrganizationCategory { get; set; }
 
-
-        [MaxLength(50), ForeignKey(nameof(InspectionType))]
-        public string? InspectionTypeId { get; set; }
-        public virtual InspectionType? InspectionType { get; set; }
+        //[MaxLength(50), ForeignKey(nameof(InspectionType))]
+        //public string? InspectionTypeId { get; set; }
+        //public virtual InspectionType? InspectionType { get; set; }
         public virtual HashSet<OrganizationStaff> OrganizationStaffs { get; set; } = [];
         public virtual HashSet<MarinaOrganization> MarinaOwners { get; set; } = [];
         public virtual HashSet<FloatingUnitOrganization> FloatingUnitOrganizations { get; set; } = [];

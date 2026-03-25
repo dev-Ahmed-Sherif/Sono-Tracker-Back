@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Common.Helpers.MediaUploader;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using SonoTracker.Common.Constants.Auth;
+using System.Security.Claims;
 
 namespace SonoTracker.Application.Services.Tracker.Governorate
 {
@@ -35,8 +37,11 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Lookups.Governorate, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync();
-            var filteredEntities = entity.Where(e => !e.IsDeleted);
+            var entity = await UnitOfWork.Repository.GetAllAsync(cancellationToken: cancellationToken);
+            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+            var filteredEntities = IsSuperAdmin()
+                ? entity
+                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.Id == governorateId));
             var mapped = Mapper.Map<IEnumerable<Entities.Lookups.Governorate>, IEnumerable<GovernorateDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
@@ -44,13 +49,24 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<GovernorateFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateFilter = filter?.Filter ?? new GovernorateFilter();
+            if (!isSuperAdmin)
+                governorateFilter.IsDeleted = false;
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            var query = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(governorateFilter, governorateId),
+                pageNumber: offset,
+                pageSize: limit,
+                filter.OrderByValue,
+                cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.Governorate>, IEnumerable<GovernorateDto>>(query.Result.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.Governorate>, IEnumerable<GovernorateDto>>(query.Result);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
@@ -60,18 +76,20 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
             var offset = --filter.PageNumber * filter.PageSize;
 
+            var isSuperAdmin = IsSuperAdmin();
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.Governorate>, IEnumerable<GovernorateDto>>(query.Result.Where(x => x.IsDeleted != true));
+            var items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Lookups.Governorate>, IEnumerable<GovernorateDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
 
 
-        static Expression<Func<Entities.Lookups.Governorate, bool>> PredicateBuilderFunction(GovernorateFilter filter)
+        static Expression<Func<Entities.Lookups.Governorate, bool>> PredicateBuilderFunction(GovernorateFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.Governorate>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.Name))
@@ -81,6 +99,10 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
             if (!string.IsNullOrWhiteSpace(filter.Url))
             {
                 predicate = predicate.And(x => x.WebsiteUrl.Contains(filter.Url));
+            }
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.Id == governorateId);
             }
 
 
@@ -96,6 +118,8 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
             }
             return predicate;
         }
+
+        
 
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {

@@ -13,6 +13,7 @@ using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Enum;
 using System.Net;
 using System.Net.Mime;
+using System.Reflection.Metadata;
 using System.Threading;
 
 namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
@@ -20,9 +21,11 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
     /// <summary>
     /// Constructor
     /// </summary>
+    
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
+    
     public class OrganizationsController(IOrganizationService organizationService) : BaseController
     {
         /// <summary>
@@ -32,17 +35,22 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await organizationService.GetByIdForEditAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await organizationService.GetByIdForEditAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+            return Ok(res);
+        }
+                                         
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await organizationService.GetByIdForEditAsync(id, cancellationToken);
+        // <summary>
+        // Get For Edit
+        // </summary>
+        // <returns></returns>
+
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await organizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -64,6 +72,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="filter">Filter responsible for search and sort</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
@@ -79,6 +88,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="filter">Filter responsible for search and sort</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        
         [HttpPost]
         [Route("getDropDown")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
@@ -166,20 +176,21 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         {
             IFinalResult res = await organizationService.DeleteSoftAsync(id, cancellationToken);
 
-            if (res.Status == HttpStatusCode.NotFound) return BadRequest("هذا البيان غير موجود");
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             return Accepted(res);
         }
 
-        /// <summary>
-        /// Remove Range by Organization Ids
-        /// </summary>
-        /// <param name="ids">PK</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await organizationService.DeleteRangeAsync(ids, cancellationToken);
+        // <summary>
+        // Remove Range by Organization Ids
+        // </summary>
+        // <param name="ids">PK</param>
+        // <param name="cancellationToken"></param>
+        // <returns></returns>
+        
+        //[HttpDelete("deleteRange")]
+        //public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        //                                => await organizationService.DeleteRangeAsync(ids, cancellationToken);
 
         /// <summary>
         /// Generates a project report based on the provided filter.
@@ -187,12 +198,13 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// <param name="filter">The filter containing report parameters.</param>
         /// <param name="cancellationToken">Token to observe while waiting for the task to complete.</param>
         /// <returns>A PDF file containing the generated report.</returns>
+        
         [HttpGet("GetReport")]
+        [ProducesResponseType<Blob>(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetProjectReportData([FromQuery] FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
         {
             var report = await organizationService.GenerateReportAsync(filter, cancellationToken);
             return File(report, MediaTypeNames.Application.Pdf, ReportHelper.GetReportDetails(filter.ReportName, filter.ReportType));
         }
-
     }
 }

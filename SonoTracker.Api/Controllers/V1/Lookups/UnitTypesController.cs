@@ -33,18 +33,22 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default) 
-                                        => await unitTypeService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await unitTypeService.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+            return Ok(res);
+        }
+                                        
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
         
-        [HttpGet("getEdit/{id}")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default) 
-                                        => await unitTypeService.GetByIdForEditAsync(id, cancellationToken);
+        //[HttpGet("getEdit/{id}")]
+        //[ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default) 
+        //                                => await unitTypeService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 

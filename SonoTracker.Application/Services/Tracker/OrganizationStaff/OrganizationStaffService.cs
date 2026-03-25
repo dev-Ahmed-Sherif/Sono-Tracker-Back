@@ -2,6 +2,7 @@ using LinqKit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using FuzzySharp;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.Tracker.Organization;
 using SonoTracker.Application.Services.Tracker.OrganizationStaffStaff;
@@ -39,6 +40,26 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
             _organizationService = organizationService;
         }
+        
+        private static string NormalizeText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            // Normalize whitespace + case only (keep letters as-is for Arabic)
+            var parts = value.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(' ', parts).ToLowerInvariant();
+        }
+
+        private static string NormalizeNationalId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            // NationalId should be digits only for fuzzy/ratio comparisons
+            return new string(value.Where(char.IsDigit).ToArray());
+        }
+
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
@@ -64,9 +85,18 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
         public async Task<IFinalResult> GetAllAsync(string organizationId, CancellationToken cancellationToken = default)
         {
-            var filter = new OrganizationStaffFilter { OrganizationId = organizationId };
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            var filter = new OrganizationStaffFilter
+            {
+                OrganizationId = organizationId,
+                // Non-superadmin always gets non-deleted rows
+                // (for superadmin, the predicate bypasses IsDeleted entirely)
+                IsDeleted = false
+            };
+
             var entity = await UnitOfWork.Repository.FindAsync(
-                predicate: PredicateBuilderFunction(filter),
+                predicate: PredicateBuilderFunction(filter, includeDeleted: isSuperAdmin, governorateId: governorateId),
                 include: src => src
                     .Include(x => x.Organization),
                 cancellationToken: cancellationToken);
@@ -76,16 +106,22 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default)
         {
+            var isSuperAdmin = IsSuperAdmin();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            var staffFilter = filter?.Filter ?? new OrganizationStaffFilter();
+            if (!isSuperAdmin)
+                staffFilter.IsDeleted = false;
+
             var limit = filter.PageSize;
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(filter.Filter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(staffFilter, includeDeleted: false, governorateId: governorateId), pageNumber: offset, pageSize: limit, filter.OrderByValue,
                 include: src => src
              .Include(x => x.Organization),
                 cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(query.Item2);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
@@ -95,20 +131,24 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             var offset = --filter.PageNumber * filter.PageSize;
 
+            var isSuperAdmin = IsSuperAdmin();
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(query.Item2.Where(x => x.IsDeleted != true));
+            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.OrganizationStaff>, IEnumerable<OrganizationStaffDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
 
 
-        static Expression<Func<Entities.Tracker.OrganizationStaff, bool>> PredicateBuilderFunction(OrganizationStaffFilter filter)
+        static Expression<Func<Entities.Tracker.OrganizationStaff, bool>> PredicateBuilderFunction(OrganizationStaffFilter filter, bool includeDeleted, string governorateId = null)
         {
-            var predicate = PredicateBuilder.New<Entities.Tracker.OrganizationStaff>(x => x.IsDeleted != true );
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Entities.Tracker.OrganizationStaff>(true)
+                : PredicateBuilder.New<Entities.Tracker.OrganizationStaff>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
                 predicate = predicate.And(x => x.Name.Contains(filter.Name));
@@ -124,6 +164,11 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             if (filter.IsDelegate)
             {
                 predicate = predicate.And(x => x.IsDelegate == filter.IsDelegate);
+            }
+
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;
@@ -154,6 +199,33 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         {
             try
             {
+                // Duplicate guard using fuzzy matching (Name) + exact/fuzzy matching (NationalId)
+                var existingStaff = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.OrganizationId == model.OrganizationId,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+                var normalizedName = NormalizeText(model.Name);
+                var normalizedNationalId = NormalizeNationalId(model.NationalId);
+
+                const int nameThreshold = 90;
+                const int nationalIdFuzzyThreshold = 90;
+
+                var nameDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Name) &&
+                    Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+                var nationalIdExactDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.NationalId) &&
+                    string.Equals(x.NationalId, model.NationalId, StringComparison.Ordinal));
+
+                var nationalIdFuzzyDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.NationalId) &&
+                    Fuzz.Ratio(normalizedNationalId, NormalizeNationalId(x.NationalId)) >= nationalIdFuzzyThreshold);
+
+                if (nameDuplicate || nationalIdExactDuplicate || nationalIdFuzzyDuplicate)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null, message: MessagesConstants.Existed);
+
                 Entities.Tracker.OrganizationStaff entity = Mapper.Map<Entities.Tracker.OrganizationStaff>(model);
 
                 if (model.DelegateAttachment != null)
@@ -206,6 +278,33 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                 Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
 
                 var entity = Mapper.Map(model, entityToUpdate);
+
+                // Duplicate guard (exclude current Id)
+                var existingStaff = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.OrganizationId == model.OrganizationId && x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+                var normalizedName = NormalizeText(model.Name);
+                var normalizedNationalId = NormalizeNationalId(model.NationalId);
+
+                const int nameThreshold = 90;
+                const int nationalIdFuzzyThreshold = 95;
+
+                var nameDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Name) &&
+                    Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+                var nationalIdExactDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.NationalId) &&
+                    string.Equals(x.NationalId, model.NationalId, StringComparison.Ordinal));
+
+                var nationalIdFuzzyDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.NationalId) &&
+                    Fuzz.Ratio(normalizedNationalId, NormalizeNationalId(x.NationalId)) >= nationalIdFuzzyThreshold);
+
+                if (nameDuplicate || nationalIdExactDuplicate || nationalIdFuzzyDuplicate)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null, message: MessagesConstants.Existed);
 
                 if (model.DelegateAttachment != null)
                 {

@@ -132,6 +132,10 @@ namespace SonoTracker.Api.Extensions
                 user.Claims.FirstOrDefault(x => x.Type == AuthConstants.FloatingUnitId)?.Value ??
                 string.Empty;
 
+                string governorateId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.GovId)?.Value ??
+                string.Empty;
+
                 string role =
                 user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? "";
 
@@ -153,7 +157,7 @@ namespace SonoTracker.Api.Extensions
                 //bool parsedUserId = int.TryParse(stringId, out int id);
                 //bool parsedOrgId = int.TryParse(stringOrganizationId, out int organizationId);
 
-                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId);
+                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId, governorateId);
             });
             services.AddCors(option =>
             {

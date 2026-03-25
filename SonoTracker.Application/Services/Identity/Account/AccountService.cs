@@ -427,6 +427,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 new Claim(ClaimTypes.Role, role),
                 new Claim(AuthConstants.OrgId, user.OrganizationId != null ? user.OrganizationId.ToString() : ""),
                 new Claim(AuthConstants.FloatingUnitId, user.FloatingUnitId != null ? user.FloatingUnitId.ToString() : ""),
+                new Claim(AuthConstants.GovId, user.GovernorateId != null ? user.GovernorateId.ToString() : ""),
 
             }.Union(claimDB);
 
