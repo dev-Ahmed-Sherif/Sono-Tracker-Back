@@ -16,10 +16,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 {
-    public class MarinaTripService : BaseService<Entities.Tracker.MarinaTrip, Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>, IMarinaTripService
+    public class MarinaTripService : BaseService<Entities.Tracker.TripMarinas, Common.DTO.Tracker.MarinaTrip.AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>, IMarinaTripService
     {
 
-        public MarinaTripService(IServiceBaseParameter<Entities.Tracker.MarinaTrip> businessBaseParameter) : base(businessBaseParameter)
+        public MarinaTripService(IServiceBaseParameter<Entities.Tracker.TripMarinas> businessBaseParameter) : base(businessBaseParameter)
         {
 
 
@@ -32,7 +32,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
                 .Include(t => t.TouristMarina)
                .Include(x => x.TripInformation)
                 );
-            var mapped = Mapper.Map<Domain.Entities.Tracker.MarinaTrip, EditMarinaTripDto>(entity);
+            var mapped = Mapper.Map<Domain.Entities.Tracker.TripMarinas, EditMarinaTripDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
@@ -44,21 +44,20 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
                .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
               .ThenInclude(x => x.FloatingUnit));
-            var mapped = Mapper.Map<Domain.Entities.Tracker.MarinaTrip, Common.DTO.Tracker.MarinaTrip.MarinaTripDto>(entity);
+            var mapped = Mapper.Map<Domain.Entities.Tracker.TripMarinas, Common.DTO.Tracker.MarinaTrip.MarinaTripDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.MarinaTrip, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.TripMarinas, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
               .ThenInclude(x => x.FloatingUnit));
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
-                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.MarinaTrip>, IEnumerable<MarinaTripDto>>(filteredEntities);
+                : entity.Where(e => !e.IsDeleted);
+            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.TripMarinas>, IEnumerable<MarinaTripDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
@@ -66,7 +65,6 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
         {
             var isSuperAdmin = IsSuperAdmin();
             var marinaTripFilter = filter?.Filter ?? new MarinaTripFilter();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             if (!isSuperAdmin)
                 marinaTripFilter.IsDeleted = false;
 
@@ -74,7 +72,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(marinaTripFilter, governorateId),
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(marinaTripFilter),
                 pageNumber: offset, pageSize: limit,
                 filter.OrderByValue, include: src => src
                 .Include(t => t.TouristMarina)
@@ -83,15 +81,15 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
                 cancellationToken: cancellationToken);
 
             var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.MarinaTrip>, IEnumerable<MarinaTripDto>>(items);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripMarinas>, IEnumerable<MarinaTripDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
 
-        static Expression<Func<Entities.Tracker.MarinaTrip, bool>> PredicateBuilderFunction(MarinaTripFilter filter, string governorateId = null)
+        static Expression<Func<Entities.Tracker.TripMarinas, bool>> PredicateBuilderFunction(MarinaTripFilter filter)
         {
-            var predicate = PredicateBuilder.New<Entities.Tracker.MarinaTrip>(x => x.IsDeleted == filter.IsDeleted);
+            var predicate = PredicateBuilder.New<Entities.Tracker.TripMarinas>(x => x.IsDeleted == filter.IsDeleted);
 
             if (!string.IsNullOrEmpty(filter.TouristMarinaId))
             {
@@ -105,11 +103,6 @@ namespace SonoTracker.Application.Services.Tracker.MarinaTrip
             if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
                 predicate = predicate.And(x => x.TripInformation.FloatingUnitId == filter.FloatingUnitId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(governorateId))
-            {
-                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

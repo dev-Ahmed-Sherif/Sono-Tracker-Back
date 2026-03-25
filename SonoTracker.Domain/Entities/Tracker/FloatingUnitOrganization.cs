@@ -25,9 +25,5 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
         public string? FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
-        public virtual Governorate? Governorate { get; set; }
     }
 }

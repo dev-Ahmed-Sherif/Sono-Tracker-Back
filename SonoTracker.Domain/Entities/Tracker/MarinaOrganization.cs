@@ -20,6 +20,9 @@ namespace SonoTracker.Domain.Entities.Tracker
 
         [MaxLength(100)]
         public string LicenseNumber { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public bool IsActive { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(TouristMarina))]
         public string? TouristMarinaId { get; set; }
@@ -28,12 +31,5 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(50), ForeignKey(nameof(Organization))]
         public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
-        public virtual Governorate? Governorate { get; set; }
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
-        public bool IsActive { get; set; }
     }
 }

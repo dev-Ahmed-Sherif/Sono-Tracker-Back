@@ -47,7 +47,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                 return string.Empty;
 
             // Normalize whitespace + case only (keep letters as-is for Arabic)
-            var parts = value.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Trim().Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(' ', parts).ToLowerInvariant();
         }
 
@@ -86,7 +86,6 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         public async Task<IFinalResult> GetAllAsync(string organizationId, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             var filter = new OrganizationStaffFilter
             {
                 OrganizationId = organizationId,
@@ -96,7 +95,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             };
 
             var entity = await UnitOfWork.Repository.FindAsync(
-                predicate: PredicateBuilderFunction(filter, includeDeleted: isSuperAdmin, governorateId: governorateId),
+                predicate: PredicateBuilderFunction(filter, includeDeleted: isSuperAdmin),
                 include: src => src
                     .Include(x => x.Organization),
                 cancellationToken: cancellationToken);
@@ -107,7 +106,6 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationStaffFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             var staffFilter = filter?.Filter ?? new OrganizationStaffFilter();
             if (!isSuperAdmin)
                 staffFilter.IsDeleted = false;
@@ -116,7 +114,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(staffFilter, includeDeleted: false, governorateId: governorateId), pageNumber: offset, pageSize: limit, filter.OrderByValue,
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(staffFilter, includeDeleted: false), pageNumber: offset, pageSize: limit, filter.OrderByValue,
                 include: src => src
              .Include(x => x.Organization),
                 cancellationToken: cancellationToken);
@@ -144,7 +142,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         }
 
 
-        static Expression<Func<Entities.Tracker.OrganizationStaff, bool>> PredicateBuilderFunction(OrganizationStaffFilter filter, bool includeDeleted, string governorateId = null)
+        static Expression<Func<Entities.Tracker.OrganizationStaff, bool>> PredicateBuilderFunction(OrganizationStaffFilter filter, bool includeDeleted)
         {
             var predicate = includeDeleted
                 ? PredicateBuilder.New<Entities.Tracker.OrganizationStaff>(true)
@@ -164,11 +162,6 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             if (filter.IsDelegate)
             {
                 predicate = predicate.And(x => x.IsDelegate == filter.IsDelegate);
-            }
-
-            if (!string.IsNullOrWhiteSpace(governorateId))
-            {
-                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

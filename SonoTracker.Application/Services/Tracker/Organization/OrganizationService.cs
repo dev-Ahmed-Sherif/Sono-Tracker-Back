@@ -165,6 +165,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                                                     x.NameEn == model.NameEn &&
                                                     x.OrganizationCategoryId == model.OrganizationCategoryId &&
                                                     x.OrganizationType == model.OrganizationType &&
+                                                    x.GovernorateId == GetGovernorateIdFromClaims() &&
                                                     x.IsDeleted != true, cancellationToken);
 
                 if (IsExisted)
@@ -258,6 +259,7 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                                         x.NameEn == model.NameEn &&
                                         x.OrganizationCategoryId == model.OrganizationCategoryId &&
                                         x.OrganizationType == model.OrganizationType &&
+                                        x.GovernorateId == GetGovernorateIdFromClaims() &&
                                         x.Id != model.Id && x.IsDeleted != true, cancellationToken);
 
                 if (IsExisted)

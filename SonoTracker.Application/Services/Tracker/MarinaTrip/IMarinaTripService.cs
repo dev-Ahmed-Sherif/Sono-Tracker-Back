@@ -11,7 +11,7 @@ using SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters;
 
 namespace SonoTracker.Application.Services.Tracker.MarinaTrip
 {
-    public interface IMarinaTripService : IBaseService<Domain.Entities.Tracker.MarinaTrip, AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>
+    public interface IMarinaTripService : IBaseService<Domain.Entities.Tracker.TripMarinas, AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default);
 

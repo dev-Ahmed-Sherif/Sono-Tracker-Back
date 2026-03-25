@@ -35,7 +35,7 @@ namespace SonoTracker.Infrastructure.Context
 
         public virtual DbSet<TripInformation> TripInformations { get; set; }
         public virtual DbSet<TripGeo> TripGeos { get; set; }
-        public virtual DbSet<MarinaTrip> MarinaTrips { get; set; }
+        public virtual DbSet<TripMarinas> MarinaTrips { get; set; }
         public virtual DbSet<NationalityTrip> NationalityTrips { get; set; }
         public virtual DbSet<PassengerTripAttachment> PassengerTripAttachments { get; set; }
 
@@ -129,12 +129,6 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(fo => fo.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<FloatingUnitOrganization>()
-                .HasOne(fo => fo.Governorate)
-                .WithMany()
-                .HasForeignKey(fo => fo.GovernorateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<FloatingUnitStaff>()
                 .HasOne(s => s.FloatingUnit)
                 .WithMany(f => f.FloatingUnitStaffs)
@@ -169,12 +163,6 @@ namespace SonoTracker.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OrganizationStaff>()
-                .HasOne(s => s.Governorate)
-                .WithMany()
-                .HasForeignKey(s => s.GovernorateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<OrganizationStaff>()
                 .Property(s => s.NationalId)
                 .IsRequired()
                 .HasMaxLength(14);
@@ -189,12 +177,6 @@ namespace SonoTracker.Infrastructure.Context
                 .HasOne(mo => mo.Organization)
                 .WithMany(o => o.MarinaOwners)
                 .HasForeignKey(mo => mo.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MarinaOrganization>()
-                .HasOne(mo => mo.Governorate)
-                .WithMany()
-                .HasForeignKey(mo => mo.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
@@ -212,22 +194,10 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(t => t.RouteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<TripInformation>()
-                .HasOne(t => t.Governorate)
-                .WithMany()
-                .HasForeignKey(t => t.GovernorateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<TripGeo>()
                 .HasOne(tg => tg.GeoPoint)
                 .WithMany()
                 .HasForeignKey(tg => tg.GeoPointId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TripGeo>()
-                .HasOne(tg => tg.Governorate)
-                .WithMany()
-                .HasForeignKey(tg => tg.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<NationalityTrip>()
@@ -242,22 +212,16 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(nt => nt.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<MarinaTrip>()
+            modelBuilder.Entity<TripMarinas>()
                 .HasOne(mt => mt.TripInformation)
-                .WithMany(t => t.MarinaTrips)
+                .WithMany(t => t.TripMarinas)
                 .HasForeignKey(mt => mt.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<MarinaTrip>()
+            modelBuilder.Entity<TripMarinas>()
                 .HasOne(mt => mt.TouristMarina)
                 .WithMany()
                 .HasForeignKey(mt => mt.TouristMarinaId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MarinaTrip>()
-                .HasOne(mt => mt.Governorate)
-                .WithMany()
-                .HasForeignKey(mt => mt.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<PassengerTripAttachment>()

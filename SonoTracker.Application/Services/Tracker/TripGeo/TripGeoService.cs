@@ -63,10 +63,9 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
              .Include(t => t.TripInformation)
              .ThenInclude(t => t.FloatingUnit)
 ,               cancellationToken: cancellationToken);
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
-                : entity.Where(e => e.IsDeleted != true && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
+                : entity.Where(e => e.IsDeleted != true);
             var mapped = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
@@ -75,7 +74,6 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
         {
             var isSuperAdmin = IsSuperAdmin();
             var tripGeoFilter = filter?.Filter ?? new TripGeoFilter();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             if (!isSuperAdmin)
                 tripGeoFilter.IsDeleted = false;
 
@@ -83,7 +81,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(tripGeoFilter, governorateId),
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(tripGeoFilter),
                 pageNumber: offset, pageSize: limit,
                 filter.OrderByValue,
                 include: src => src.Include(t => t.GeoPoint)
@@ -121,7 +119,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        static Expression<Func<Entities.Tracker.TripGeo, bool>> PredicateBuilderFunction(TripGeoFilter filter, string governorateId = null)
+        static Expression<Func<Entities.Tracker.TripGeo, bool>> PredicateBuilderFunction(TripGeoFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TripGeo>(x => x.IsDeleted == filter.IsDeleted);
 
@@ -141,11 +139,6 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             //{
             //    predicate = predicate.And(x => x.Code.Contains(filter.Code));
             //}
-
-            if (!string.IsNullOrWhiteSpace(governorateId))
-            {
-                predicate = predicate.And(x => x.GovernorateId == governorateId);
-            }
 
             return predicate;
         }

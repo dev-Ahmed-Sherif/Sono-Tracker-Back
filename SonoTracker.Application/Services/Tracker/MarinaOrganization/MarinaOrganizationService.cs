@@ -64,10 +64,9 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
              .Include(t => t.Organization)
              .Include(x => x.TouristMarina));
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
-                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
+                : entity.Where(e => !e.IsDeleted);
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.MarinaOrganization>, IEnumerable<MarinaOrganizationDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
@@ -76,7 +75,6 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
         {
             var isSuperAdmin = IsSuperAdmin();
             var marinaOrganizationFilter = filter?.Filter ?? new MarinaOrganizationFilter();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
             if (!isSuperAdmin)
                 marinaOrganizationFilter.IsDeleted = false;
 
@@ -84,7 +82,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(marinaOrganizationFilter, governorateId),
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(marinaOrganizationFilter),
                     pageNumber: offset,
                     pageSize: limit,
                     filter.OrderByValue,
@@ -116,7 +114,7 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
         }
 
 
-        static Expression<Func<Entities.Tracker.MarinaOrganization, bool>> PredicateBuilderFunction(MarinaOrganizationFilter filter, string governorateId = null)
+        static Expression<Func<Entities.Tracker.MarinaOrganization, bool>> PredicateBuilderFunction(MarinaOrganizationFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.MarinaOrganization>(x => x.IsDeleted == filter.IsDeleted);
 
@@ -132,11 +130,6 @@ namespace SonoTracker.Application.Services.Tracker.MarinaOrganization
             //{
             //    predicate = predicate.And(x => x.Code.Contains(filter.Code));
             //}
-
-            if (!string.IsNullOrWhiteSpace(governorateId))
-            {
-                predicate = predicate.And(x => x.GovernorateId == governorateId);
-            }
 
             return predicate;
         }

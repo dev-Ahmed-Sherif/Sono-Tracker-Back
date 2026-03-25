@@ -34,15 +34,11 @@ namespace SonoTracker.Domain.Entities.Tracker
         [Required]
         [MaxLength(14)]
         public required string NationalId { get; set; }
+        public bool IsDelegate { get; set; }
+        public string? DelegateAttachment { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Organization))]
         public string? OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
-        public virtual Governorate? Governorate { get; set; }
-        public bool IsDelegate { get; set; }
-        public string? DelegateAttachment { get; set; }
     }
 }

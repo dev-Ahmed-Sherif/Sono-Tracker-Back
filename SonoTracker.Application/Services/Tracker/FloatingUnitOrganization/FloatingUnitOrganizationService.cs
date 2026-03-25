@@ -53,10 +53,9 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                 .Include(t => t.FloatingUnit)
                 .Include(t => t.Organization));
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
-                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
+                : entity.Where(e => !e.IsDeleted);
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.FloatingUnitOrganization>, IEnumerable<FloatingUnitOrganizationDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
@@ -66,7 +65,6 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
         {
             var isSuperAdmin = IsSuperAdmin();
             var floatingUnitOrganizationFilter = filter?.Filter ?? new FloatingUnitOrganizationFilter();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
 
             if (!isSuperAdmin)
                 floatingUnitOrganizationFilter.IsDeleted = false;
@@ -75,7 +73,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(floatingUnitOrganizationFilter, governorateId), pageNumber: offset, pageSize: limit, filter.OrderByValue,
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(floatingUnitOrganizationFilter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
                 include: src => src
                 .Include(t => t.FloatingUnit)
                 .Include(t => t.Organization),
@@ -86,7 +84,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
-        static Expression<Func<Entities.Tracker.FloatingUnitOrganization, bool>> PredicateBuilderFunction(FloatingUnitOrganizationFilter filter, string governorateId = null)
+        static Expression<Func<Entities.Tracker.FloatingUnitOrganization, bool>> PredicateBuilderFunction(FloatingUnitOrganizationFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.FloatingUnitOrganization>(x => x.IsDeleted == filter.IsDeleted);
 
@@ -101,11 +99,6 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
                 predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(governorateId))
-            {
-                predicate = predicate.And(x => x.GovernorateId == governorateId);
             }
 
             return predicate;

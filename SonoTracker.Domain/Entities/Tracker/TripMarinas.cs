@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class MarinaTrip : BaseEntity<string>
+    public class TripMarinas : BaseEntity<string>
     {
-        public MarinaTrip()
+        public TripMarinas()
         {
             if (string.IsNullOrEmpty(Id))
             {
@@ -25,9 +25,5 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(50), ForeignKey(nameof(TripInformation))]
         public string? TripInformationId { get; set; }
         public virtual TripInformation? TripInformation { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
-        public virtual Governorate? Governorate { get; set; }
     }
 }

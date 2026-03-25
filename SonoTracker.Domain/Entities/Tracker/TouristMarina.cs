@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class TouristMarina : BaseEntity<string>
+    public class TouristMarina : BaseAudit<string>
     {
         public TouristMarina()
         {
@@ -40,6 +40,6 @@ namespace SonoTracker.Domain.Entities.Tracker
         public virtual Governorate? Governorate { get; set; }
         public string Note { get; set; }
         public virtual HashSet<MarinaOrganization> MarinaOwners { get; set; } = [];
-        public virtual HashSet<MarinaTrip> MarinaTrips { get; set; } = [];
+        public virtual HashSet<TripMarinas> MarinaTrips { get; set; } = [];
     }
 }

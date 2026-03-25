@@ -10,7 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class TripInformation : BaseEntity<string>
+    public class TripInformation : BaseAudit<string>
     {
         public TripInformation()
         {
@@ -20,26 +20,27 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
+        public string Code { get; set; }
         public DateTime SartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public string Code { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public string? FloatingUnitId { get; set; }
-        public virtual FloatingUnit? FloatingUnit { get; set; }
         public int StaffNumber { get; set; }
         public int PassengerNumber { get; set; }
+        public string? PassengerAttachment { get; set; }
+
+        [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
+        public required string FloatingUnitId { get; set; }
+        public virtual FloatingUnit? FloatingUnit { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Route))]
-        public string? RouteId { get; set; }
+        public required string RouteId { get; set; }
         public virtual Route? Route { get; set; }
         
         [MaxLength(50), ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
-        public string? PassengerAttachment { get; set; }
+
         public virtual HashSet<NationalityTrip> NationalityTrips { get; set; } = [];
-        public virtual HashSet<MarinaTrip> MarinaTrips { get; set; } = [];
+        public virtual HashSet<TripMarinas> TripMarinas { get; set; } = [];
         public virtual HashSet<Inspection> Inspections { get; set; } = [];
         public virtual HashSet<PassengerTripAttachment> PassengerTripAttachments { get; set; } = [];
     }
