@@ -30,8 +30,8 @@ namespace SonoTracker.Domain.Entities.Tracker
         public DateTime? LastMaintenanceDate { get; set; }
         public DateTime? NextMaintenanceDate { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(UnitType))]
-        public string? UnitTypeId { get; set; }
+        [Required, MaxLength(50), ForeignKey(nameof(UnitType))]
+        public required string UnitTypeId { get; set; }
         public virtual UnitType? UnitType { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Governorate))]

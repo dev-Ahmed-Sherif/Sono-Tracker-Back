@@ -182,6 +182,13 @@ namespace SonoTracker.Application.Services.Tracker.GeneralInspection
                 
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
+
                 if (dto.InspectionAttachment != null)
                 {
                     string res = await _uploaderConfiguration.UploadFile(dto.InspectionAttachment, "Inspection");

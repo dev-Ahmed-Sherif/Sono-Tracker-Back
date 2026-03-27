@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Common.DTO.Tracker.Maintenance;
-using SonoTracker.Application.Services.Tracker.MarinaOrganization;
 using SonoTracker.Common.DTO.Tracker.Maintenance.Parameters;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Common.Helpers.MediaUploader;
@@ -249,6 +248,12 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
 
                 if (entityToUpdate != null)
                 {  

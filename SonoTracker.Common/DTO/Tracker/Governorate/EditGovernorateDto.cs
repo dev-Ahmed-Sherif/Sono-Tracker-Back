@@ -13,9 +13,9 @@ namespace SonoTracker.Common.DTO.Tracker.Governorate
     public class EditGovernorateDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        public string Name { get; set; }
+        public string NameAr { get; set; }
         public string Code { get; set; }
-        public string Url { get; set; }
+        public string WebsiteUrl { get; set; }
         public string Address { get; set; }
         public string ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }

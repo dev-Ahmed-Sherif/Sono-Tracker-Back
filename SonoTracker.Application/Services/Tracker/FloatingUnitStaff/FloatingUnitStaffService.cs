@@ -216,6 +216,12 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
             var entity = Mapper.Map(model, entityToUpdate);
 
+            if (IsSuperAdmin())
+            {
+                if (entityToUpdate.IsDeleted)
+                    entity.IsDeleted = false;
+            }
+
             if (model.DelegateAttachment != null)
             {
                 string res = await _uploaderConfiguration

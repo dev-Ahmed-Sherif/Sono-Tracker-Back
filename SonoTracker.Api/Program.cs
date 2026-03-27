@@ -41,6 +41,8 @@ namespace SonoTracker.Api
                 await DatabaseSeed.SeedIdentityAsync(host);
                 await DatabaseSeed.SeedNationalitiesAsync(host);
                 await DatabaseSeed.SeedAccidentTypesAsync(host);
+                await DatabaseSeed.SeedGovernoratesAsync(host);
+                await DatabaseSeed.SeedCitiesAsync(host);
 
                 await host.RunAsync();
             }

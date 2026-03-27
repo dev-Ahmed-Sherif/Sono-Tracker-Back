@@ -26,8 +26,6 @@ namespace SonoTracker.Infrastructure.Context
 
         public virtual DbSet<Organization> Organizations { get; set; }
         public virtual DbSet<OrganizationStaff> OrganizationStaffs { get; set; }
-        public virtual DbSet<OrganizationAttachment> OrganizationAttachments { get; set; }
-        public virtual DbSet<MarinaOrganization> MarinaOrganizations { get; set; }
 
         #endregion
 
@@ -35,15 +33,16 @@ namespace SonoTracker.Infrastructure.Context
 
         public virtual DbSet<TripInformation> TripInformations { get; set; }
         public virtual DbSet<TripGeo> TripGeos { get; set; }
-        public virtual DbSet<TripMarinas> MarinaTrips { get; set; }
-        public virtual DbSet<NationalityTrip> NationalityTrips { get; set; }
-        public virtual DbSet<PassengerTripAttachment> PassengerTripAttachments { get; set; }
+        public virtual DbSet<TripMarina> TripMarinas { get; set; }
+        public virtual DbSet<TripNationality> TripNationalities { get; set; }
+        public virtual DbSet<TripPassengerAttachment> TripPassengerAttachments { get; set; }
 
         #endregion
 
         #region Marina
 
         public virtual DbSet<TouristMarina> TouristMarinas { get; set; }
+        public virtual DbSet<TouristMarinaOrganization> TouristMarinaOrganizations { get; set; }
         public virtual DbSet<LicenseApplication> LicenseApplications { get; set; }
 
         #endregion
@@ -112,6 +111,17 @@ namespace SonoTracker.Infrastructure.Context
         private static void ConfigureFloatingUnitRelations(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.UnitTypeId)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<FloatingUnit>()
+                .HasOne(f => f.UnitType)
+                .WithMany(u => u.FloatingUnits)
+                .HasForeignKey(f => f.UnitTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FloatingUnit>()
                 .HasOne(f => f.Governorate)
                 .WithMany()
                 .HasForeignKey(f => f.GovernorateId)
@@ -156,6 +166,12 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(o => o.NationalityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Organization>()
+                .HasOne(o => o.Governorate)
+                .WithMany()
+                .HasForeignKey(o => o.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<OrganizationStaff>()
                 .HasOne(s => s.Organization)
                 .WithMany(o => o.OrganizationStaffs)
@@ -167,21 +183,23 @@ namespace SonoTracker.Infrastructure.Context
                 .IsRequired()
                 .HasMaxLength(14);
 
-            modelBuilder.Entity<OrganizationAttachment>()
-                .HasOne(a => a.Organization)
-                .WithMany()
-                .HasForeignKey(a => a.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<MarinaOrganization>()
+            modelBuilder.Entity<TouristMarinaOrganization>()
                 .HasOne(mo => mo.Organization)
-                .WithMany(o => o.MarinaOwners)
+                .WithMany(o => o.TouristMarinaOrganizations)
                 .HasForeignKey(mo => mo.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
         private static void ConfigureTripRelations(ModelBuilder modelBuilder)
         {
+            // Keep DB table names consistent with the entity/type names.
+            // This avoids drift when earlier migrations mapped different table names.
+            modelBuilder.Entity<TripNationality>()
+                .ToTable("TripNationalities");
+
+            modelBuilder.Entity<TripMarina>()
+                .ToTable("TripMarinas");
+
             modelBuilder.Entity<TripInformation>()
                 .HasOne(t => t.FloatingUnit)
                 .WithMany(f => f.TripInformations)
@@ -194,39 +212,41 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(t => t.RouteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<TripInformation>()
+                .HasOne(t => t.Governorate)
+                .WithMany()
+                .HasForeignKey(t => t.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<TripGeo>()
                 .HasOne(tg => tg.GeoPoint)
                 .WithMany()
                 .HasForeignKey(tg => tg.GeoPointId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<NationalityTrip>()
+            modelBuilder.Entity<TripNationality>()
                 .HasOne(nt => nt.TripInformation)
                 .WithMany(t => t.NationalityTrips)
                 .HasForeignKey(nt => nt.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<NationalityTrip>()
-                .HasOne(nt => nt.Governorate)
-                .WithMany()
-                .HasForeignKey(nt => nt.GovernorateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TripMarinas>()
+            modelBuilder.Entity<TripMarina>()
                 .HasOne(mt => mt.TripInformation)
                 .WithMany(t => t.TripMarinas)
                 .HasForeignKey(mt => mt.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<TripMarinas>()
+            modelBuilder.Entity<TripMarina>()
                 .HasOne(mt => mt.TouristMarina)
                 .WithMany()
                 .HasForeignKey(mt => mt.TouristMarinaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PassengerTripAttachment>()
+            // Ensure DB table matches entity name.
+            modelBuilder.Entity<TripPassengerAttachment>()
+                .ToTable("TripPassengerAttachments")
                 .HasOne(a => a.TripInformation)
-                .WithMany(t => t.PassengerTripAttachments)
+                .WithMany(t => t.TripPassengerAttachments)
                 .HasForeignKey(a => a.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -239,10 +259,13 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureMarinaRelations(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TouristMarinaOrganization>()
+                .ToTable("TouristMarinaOrganizations");
+
             modelBuilder.Entity<TouristMarina>()
-                .HasOne(tm => tm.Town)
-                .WithMany(t => t.TouristMarinas)
-                .HasForeignKey(tm => tm.TownId)
+                .HasOne(tm => tm.City)
+                .WithMany()
+                .HasForeignKey(tm => tm.CityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TouristMarina>()
@@ -257,7 +280,7 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(tm => tm.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<MarinaOrganization>()
+            modelBuilder.Entity<TouristMarinaOrganization>()
                 .HasOne(mo => mo.TouristMarina)
                 .WithMany()
                 .HasForeignKey(mo => mo.TouristMarinaId)
@@ -398,7 +421,7 @@ namespace SonoTracker.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Nationality>()
-                .HasMany(n => n.NationalityTrips)
+                .HasMany(n => n.TripNationalities)
                 .WithOne(nt => nt.Nationality)
                 .HasForeignKey(nt => nt.NationalityId)
                 .OnDelete(DeleteBehavior.Restrict);

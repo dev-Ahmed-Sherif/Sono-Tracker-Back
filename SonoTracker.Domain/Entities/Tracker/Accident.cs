@@ -28,9 +28,9 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? Attach { get; set; }
 
       
-        [MaxLength(50), ForeignKey(nameof(Town))]
-        public string? TownId { get; set; }
-        public virtual Town? Town { get; set; }
+        [MaxLength(50), ForeignKey(nameof(City))]
+        public string? CityId { get; set; }
+        public virtual City? City { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(GeoPoint))]
         public string? GeoPointId { get; set; }

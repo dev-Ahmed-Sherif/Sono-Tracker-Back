@@ -267,7 +267,15 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
                 Entities.Tracker.Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
 
+                string currentCommercialRegistrationAttachment = entityToUpdate.CommercialRegistrationAttachment;
+
                 var entity = Mapper.Map(model, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
 
                 if (model.CommercialRegistrationAttachment != null)
                 {
@@ -280,15 +288,13 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                             return UploadResponse(res);
                     }
 
-                    _uploaderConfiguration.DeleteFile(entityToUpdate.CommercialRegistrationAttachment);
+                    _uploaderConfiguration.DeleteFile(currentCommercialRegistrationAttachment);
 
                     entity.CommercialRegistrationAttachment = res;
                 }
                 else
                 {
-                    IFinalResult entityExist = await GetByIdForEditAsync(model.Id, cancellationToken);
-                    EditOrganizationDto entityRes = (EditOrganizationDto)entityExist.Data;
-                    entity.CommercialRegistrationAttachment = entityRes.CommercialRegistrationAttachment;
+                    entity.CommercialRegistrationAttachment = currentCommercialRegistrationAttachment;
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);

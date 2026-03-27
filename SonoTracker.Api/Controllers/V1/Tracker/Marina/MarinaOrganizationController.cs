@@ -3,12 +3,12 @@ using DeputyOffice.Common.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Tracker.MarinaOrganization;
+using SonoTracker.Application.Services.Tracker.TouristMarinaOrganization;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Reports.TouristMarina;
-using SonoTracker.Common.DTO.Tracker.MarinaOrganization;
-using SonoTracker.Common.DTO.Tracker.MarinaOrganization.Parameters;
+using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization;
+using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.Parameters;
 using System.Net;
 using System.Net.Mime;
 using System.Threading;
@@ -21,7 +21,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class MarinaOrganizationController(IMarinaOrganizationService marinaOrganizationService) : BaseController
+    public class MarinaOrganizationController(ITouristMarinaOrganizationService marinaOrganizationService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -64,7 +64,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<MarinaOrganizationFilter> filter, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TouristMarinaOrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await marinaOrganizationService.GetAllPagedAsync(filter, cancellationToken);
 
@@ -82,7 +82,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddMarinaOrganizationDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddTouristMarinaOrganizationDto dto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaOrganizationService.AddAsync(dto, cancellationToken);
 
@@ -120,7 +120,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddMarinaOrganizationDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddTouristMarinaOrganizationDto model, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await marinaOrganizationService.UpdateAsync(model, cancellationToken);
 

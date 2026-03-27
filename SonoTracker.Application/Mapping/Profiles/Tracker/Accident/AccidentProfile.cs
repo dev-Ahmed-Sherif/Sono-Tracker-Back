@@ -15,7 +15,7 @@ namespace SonoTracker.Application.Mapping
                 .ForMember(des => des.AccidentType, opt => opt.MapFrom(src => src.AccidentType.NameAr))
                 .ForMember(des => des.FloatingUnit, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
                 .ForMember(des => des.Organization, opt => opt.MapFrom(src => src.Organization.NameAr))
-                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.Town.NameAr))
+                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.City.NameAr))
                 .ForMember(des => des.CaseId, opt => opt.MapFrom(src => src.Case))
                 .ForMember(des => des.Case, opt => opt.MapFrom(src => src.Case.GetName()));
 
@@ -26,7 +26,7 @@ namespace SonoTracker.Application.Mapping
                 .ForMember(des => des.AccidentType, opt => opt.MapFrom(src => src.AccidentType.NameAr))
                 .ForMember(des => des.FloatingUnit, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
                 .ForMember(des => des.Organization, opt => opt.MapFrom(src => src.Organization.NameAr))
-                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.Town.NameAr))
+                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.City.NameAr))
                 .ForMember(des => des.CaseId, opt => opt.MapFrom(src => src.Case))
                 .ForMember(des => des.Case, opt => opt.MapFrom(src => src.Case.GetName()));
 

@@ -62,7 +62,7 @@ namespace SonoTracker.Domain.Entities.Tracker
         //public string? InspectionTypeId { get; set; }
         //public virtual InspectionType? InspectionType { get; set; }
         public virtual HashSet<OrganizationStaff> OrganizationStaffs { get; set; } = [];
-        public virtual HashSet<MarinaOrganization> MarinaOwners { get; set; } = [];
+        public virtual HashSet<TouristMarinaOrganization> TouristMarinaOrganizations { get; set; } = [];
         public virtual HashSet<FloatingUnitOrganization> FloatingUnitOrganizations { get; set; } = [];
         public virtual HashSet<Inspection> Inspections { get; set; } = [];
         public virtual HashSet<LicenseApplication> LicenseApplications { get; set; } = [];

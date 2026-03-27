@@ -173,5 +173,61 @@ namespace SonoTracker.Api.Seed
                 Log.Warning(ex, "Accident types seed skipped or failed");
             }
         }
+
+        /// <summary>
+        /// Seed governorates from Governorates.json into the database on startup.
+        /// </summary>
+        public static async Task SeedGovernoratesAsync(IHost host)
+        {
+            try
+            {
+                await using var scope = host.Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<SonoTrackerDbContext>();
+                var initializer = scope.ServiceProvider.GetRequiredService<IDataInitializer>();
+
+                var governorates = initializer.SeedGovernoratesAsync().ToList();
+                if (governorates.Count == 0) return;
+
+                var existingIds = await db.Governorates.Select(x => x.Id).ToListAsync();
+                var toAdd = governorates.Where(g => !existingIds.Contains(g.Id)).ToList();
+                if (toAdd.Count == 0) return;
+
+                db.Governorates.AddRange(toAdd);
+                await db.SaveChangesAsync();
+                Log.Information("Seeded {Count} governorates from Governorates.json", toAdd.Count);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Governorates seed skipped or failed");
+            }
+        }
+
+        /// <summary>
+        /// Seed cities from Cities.json into the database on startup.
+        /// </summary>
+        public static async Task SeedCitiesAsync(IHost host)
+        {
+            try
+            {
+                await using var scope = host.Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<SonoTrackerDbContext>();
+                var initializer = scope.ServiceProvider.GetRequiredService<IDataInitializer>();
+
+                var cities = initializer.SeedCitiesAsync().ToList();
+                if (cities.Count == 0) return;
+
+                var existingIds = await db.Cities.Select(x => x.Id).ToListAsync();
+                var toAdd = cities.Where(c => !existingIds.Contains(c.Id)).ToList();
+                if (toAdd.Count == 0) return;
+
+                db.Cities.AddRange(toAdd);
+                await db.SaveChangesAsync();
+                Log.Information("Seeded {Count} cities from Cities.json", toAdd.Count);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Cities seed skipped or failed");
+            }
+        }
     }
 }

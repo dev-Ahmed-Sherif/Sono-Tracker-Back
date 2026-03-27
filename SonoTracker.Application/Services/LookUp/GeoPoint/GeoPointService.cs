@@ -130,6 +130,12 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
             var entity = Mapper.Map(model, entityToUpdate);
 
+            if (IsSuperAdmin())
+            {
+                if (entityToUpdate.IsDeleted)
+                    entity.IsDeleted = false;
+            }
+
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
             //SetEntityModifiedBaseProperties(entity);

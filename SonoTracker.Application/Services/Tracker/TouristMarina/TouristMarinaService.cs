@@ -27,7 +27,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
-                .Include(t => t.Town)
+                .Include(t => t.City)
                .Include(x => x.GeoPoint)
                 );
             var mapped = Mapper.Map<Domain.Entities.Tracker.TouristMarina, EditTouristMarinaDto>(entity);
@@ -39,7 +39,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
-                .Include(t => t.Town)
+                .Include(t => t.City)
                .Include(x => x.GeoPoint));
             var mapped = Mapper.Map<Domain.Entities.Tracker.TouristMarina, TouristMarinaDto>(entity);
 
@@ -49,7 +49,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.TouristMarina, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.Town)
+             .Include(t => t.City)
              .Include(x => x.GeoPoint));
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
@@ -84,7 +84,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                 pageSize: limit, filter.OrderByValue,
                 include: src => src
              .Include(t => t.GeoPoint)
-             .Include(x => x.Town),
+             .Include(x => x.City),
                 cancellationToken: cancellationToken);
 
 
@@ -122,7 +122,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
 
             if (!string.IsNullOrEmpty(filter.TownId))
             {
-                predicate = predicate.And(x => x.TownId == filter.TownId);
+                predicate = predicate.And(x => x.CityId == filter.TownId);
             }
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
@@ -194,6 +194,13 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
+
                 //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();

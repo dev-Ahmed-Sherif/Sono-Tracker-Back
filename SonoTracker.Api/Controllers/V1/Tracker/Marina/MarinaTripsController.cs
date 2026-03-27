@@ -2,7 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Tracker.MarinaTrip;
+using SonoTracker.Application.Services.Tracker.TripMarina;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.MarinaTrip;
@@ -19,7 +19,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class MarinaTripsController(IMarinaTripService marinaTripService) : BaseController
+    public class MarinaTripsController(ITripMarinaService marinaTripService) : BaseController
     {
         /// <summary>
         /// Get By Id 

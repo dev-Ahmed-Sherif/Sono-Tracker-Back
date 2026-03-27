@@ -209,6 +209,12 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
 
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
+
                 if (entityToUpdate != null) 
                 {
                     if (dto.PassengerAttachment != null)

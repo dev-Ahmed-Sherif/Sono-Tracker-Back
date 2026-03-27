@@ -344,6 +344,12 @@ namespace SonoTracker.Application.Services.Tracker.LicenseApplication
                 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
 
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
+
                 if (dto.Insurance != null)
                 {
                     string res = await _uploaderConfiguration

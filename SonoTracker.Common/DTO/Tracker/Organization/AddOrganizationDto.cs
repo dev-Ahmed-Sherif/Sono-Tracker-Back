@@ -43,11 +43,7 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         [Required]
         public required OrganizationType OrganizationType { get; set; }
         
-        public string? InspectionTypeId { get; set; }
-        
-        public DateTime? CreationDate { get; set; }
-        
-        [RegularExpression("^(https?:\\/\\/)?(www\\.)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}\\/?([^\\s]*)$",ErrorMessage = "Unvalid Web Site Address")]
+        [RegularExpression("^(https?://)?(www\\.)?([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}\\/?([^\\s]*)$",ErrorMessage = "Unvalid Web Site Address")]
         public string WebSiteAddress { get; set; }
         
         [RegularExpression("^[0-9]{1,2}$", ErrorMessage = "Must be number and length less than 3")]
@@ -57,10 +53,10 @@ namespace SonoTracker.Common.DTO.Tracker.Organization
         
         public bool IsAccepted { get; set; }
         
-        //[
-        //    MaxLength(15), 
-        //    RegularExpression("^[0-9]{15}$",ErrorMessage = "Must be number and length less than 15")
-        //    ]
+        [
+            MaxLength(15),
+            RegularExpression("^[0-9]{1,15}$", ErrorMessage = "Must be number and length less than 16")
+        ]
         public string CommercialRegistrationNumber { get; set; }
         
         public IFormFile CommercialRegistrationAttachment { get; set; }

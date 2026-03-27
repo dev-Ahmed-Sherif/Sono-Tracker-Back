@@ -55,7 +55,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                                .Include(t => t.FloatingUnit)
                                .Include(x => x.AccidentType)
                                .Include(x => x.Organization)
-                               .Include(a => a.Town));
+                               .Include(a => a.City));
 
             var mapped = Mapper.Map<Domain.Entities.Tracker.Accident, AccidentDto>(entity);
 
@@ -67,7 +67,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                                          .Include(t => t.FloatingUnit)
                                          .Include(x => x.AccidentType)
                                          .Include(x => x.Organization)
-                                         .Include(a => a.Town));
+                                         .Include(a => a.City));
 
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
@@ -101,7 +101,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                       .Include(t => t.FloatingUnit)
                       .Include(x => x.AccidentType)
                       .Include(x => x.Organization)
-                      .Include(a => a.Town),
+                      .Include(a => a.City),
                     cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Accident>, IEnumerable<AccidentDto>>(query.Item2);
@@ -131,7 +131,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
             if (!string.IsNullOrEmpty(filter.TownId))
             {
-                predicate = predicate.And(x => x.TownId == filter.TownId);
+                predicate = predicate.And(x => x.CityId == filter.TownId);
             }
             if (filter.AccidentDate.HasValue)
             {
@@ -265,6 +265,12 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
 
                 if (entityToUpdate != null)
                 {

@@ -272,6 +272,12 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
                 var entity = Mapper.Map(model, entityToUpdate);
 
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
                 // Duplicate guard (exclude current Id)
                 var existingStaff = await UnitOfWork.Repository.FindAsync(
                     predicate: x => x.OrganizationId == model.OrganizationId && x.Id != model.Id,

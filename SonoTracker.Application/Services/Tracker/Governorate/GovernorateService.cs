@@ -1,24 +1,25 @@
+using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SonoTracker.Application.Services.Base;
+using SonoTracker.Common.Constants.Auth;
+using SonoTracker.Common.Core;
+using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Tracker.Governorate;
+using SonoTracker.Common.DTO.Tracker.Governorate.Parameters;
+using SonoTracker.Common.DTO.Tracker.Organization;
+using SonoTracker.Common.Helpers.MediaUploader;
+using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqKit;
-using SonoTracker.Application.Services.Base;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.Governorate.Parameters;
-using SonoTracker.Common.DTO.Tracker.Governorate;
-using SonoTracker.Domain;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Common.Helpers.MediaUploader;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using SonoTracker.Common.Constants.Auth;
-using System.Security.Claims;
 
 namespace SonoTracker.Application.Services.Tracker.Governorate
 {
@@ -173,11 +174,19 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
             {
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
+                var currentImageUrl = entityToUpdate.ImageUrl;
+
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        newEntity.IsDeleted = false;
+                }
 
                 if (dto.ImageUrl != null)
                 {
-                    string res = await _uploaderConfiguration.UploadFile(dto.ImageUrl, "Governorate");
+                    string res = await _uploaderConfiguration.UploadFile(dto.ImageUrl, "Governorate", cancellationToken);
 
                     if (res != null)
                     {
@@ -185,27 +194,29 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
                             return UploadResponse(res);
                     }
 
-                    newEntity.ImageUrl = res;
+                    _uploaderConfiguration.DeleteFile(currentImageUrl);
 
-                    _uploaderConfiguration.DeleteFile(entityToUpdate.ImageUrl);
+                    newEntity.ImageUrl = res;
+                }
+                else
+                {
+                    // Keep existing image when no new file is uploaded.
+                    newEntity.ImageUrl = currentImageUrl;
                 }
 
                 //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.UpdateSuccess);
-                    return Result;
-                }
-                else
-                {
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                if (affectedRows < 0)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,
                         message: MessagesConstants.UpdateError);
-                }
+                    
+                
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
+                        message: MessagesConstants.UpdateSuccess);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
@@ -237,7 +248,7 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));

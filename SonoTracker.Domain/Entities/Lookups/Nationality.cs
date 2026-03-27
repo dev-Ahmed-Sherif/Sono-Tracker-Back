@@ -20,7 +20,7 @@ namespace SonoTracker.Domain.Entities.Lookups
 
         public virtual HashSet<FloatingUnitStaff> FloatingUnitStaffs { get; set; } = [];
 
-        public virtual HashSet<NationalityTrip> NationalityTrips { get; set; } = [];
+        public virtual HashSet<TripNationality> TripNationalities { get; set; } = [];
 
     }
 }

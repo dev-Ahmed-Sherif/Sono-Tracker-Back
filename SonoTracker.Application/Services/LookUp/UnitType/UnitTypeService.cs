@@ -165,6 +165,12 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
 
             var entity = Mapper.Map(model, entityToUpdate);
 
+            if (IsSuperAdmin())
+            {
+                if (entityToUpdate.IsDeleted)
+                    entity.IsDeleted = false;
+            }
+
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);

@@ -1525,7 +1525,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.#ctor(SonoTracker.Application.Services.Tracker.MarinaOrganization.IMaintenanceService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.#ctor(SonoTracker.Application.Services.Tracker.Maintenance.IMaintenanceService)">
             <summary>
             Constructor
             </summary>
@@ -1601,7 +1601,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.#ctor(SonoTracker.Application.Services.Tracker.MarinaOrganization.IMarinaOrganizationService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarinaOrganization.ITouristMarinaOrganizationService)">
             <summary>
             Constructor
             </summary>
@@ -1624,7 +1624,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.MarinaOrganization.Parameters.MarinaOrganizationFilter},System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.Parameters.TouristMarinaOrganizationFilter},System.Threading.CancellationToken)">
             <summary>
             GetAll Data paged
             </summary>
@@ -1632,7 +1632,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.AddAsync(SonoTracker.Common.DTO.Tracker.MarinaOrganization.AddMarinaOrganizationDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.AddAsync(SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.AddTouristMarinaOrganizationDto,System.Threading.CancellationToken)">
             <summary>
             Add 
             </summary>
@@ -1648,7 +1648,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.MarinaOrganization.AddMarinaOrganizationDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaOrganizationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.AddTouristMarinaOrganizationDto,System.Threading.CancellationToken)">
             <summary>
             Update  
             </summary>
@@ -1682,7 +1682,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.#ctor(SonoTracker.Application.Services.Tracker.MarinaTrip.IMarinaTripService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.MarinaTripsController.#ctor(SonoTracker.Application.Services.Tracker.TripMarina.ITripMarinaService)">
             <summary>
             Constructor
             </summary>
@@ -2419,6 +2419,16 @@
         <member name="M:SonoTracker.Api.Seed.DatabaseSeed.SeedAccidentTypesAsync(Microsoft.Extensions.Hosting.IHost)">
             <summary>
             Seed accident types from AccidentTypes.json into the database on startup.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Seed.DatabaseSeed.SeedGovernoratesAsync(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Seed governorates from Governorates.json into the database on startup.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Seed.DatabaseSeed.SeedCitiesAsync(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Seed cities from Cities.json into the database on startup.
             </summary>
         </member>
         <member name="T:SonoTracker.Api.Startup">

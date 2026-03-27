@@ -13,8 +13,12 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapGovernorate()
         {
-            CreateMap<Governorate, GovernorateDto>().ReverseMap();
-            CreateMap<Governorate, EditGovernorateDto>().ReverseMap();
+            CreateMap<Governorate, GovernorateDto>()
+                .ForMember(des => des.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ReverseMap();
+            CreateMap<Governorate, EditGovernorateDto>()
+                .ForMember(des => des.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+                .ReverseMap();
             CreateMap<Governorate, AddGovernorateDto>().ReverseMap();
         }
     }
