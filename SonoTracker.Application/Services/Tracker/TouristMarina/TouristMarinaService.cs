@@ -1,10 +1,14 @@
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Lookup.City;
+using SonoTracker.Application.Services.Lookup.Town;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Lookup.Town;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
+using SonoTracker.Common.Helpers;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -16,71 +20,84 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarina
 {
-    public class MarinaOrganizationService : BaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, string, string>, ITouristMarinaService
+    public class MarinaOrganizationService(
+        IServiceBaseParameter<Entities.Tracker.TouristMarina> businessBaseParameter,
+        ICityService cityService) 
+        : BaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, string, string>(businessBaseParameter), ITouristMarinaService
     {
-        public MarinaOrganizationService(IServiceBaseParameter<Entities.Tracker.TouristMarina> businessBaseParameter) : base(businessBaseParameter)
-        {
-
-        }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
-            var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
-                .Include(t => t.City)
-               .Include(x => x.GeoPoint)
-                );
-            var mapped = Mapper.Map<Domain.Entities.Tracker.TouristMarina, EditTouristMarinaDto>(entity);
-            return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
+            Entities.Tracker.TouristMarina entity = await UnitOfWork.Repository
+                                            .FirstOrDefaultAsync(x => x.Id.Equals(id.ToString()), include: src => src
+                                            .Include(t => t.City)
+                                            .Include(x => x.GeoPoint),
+                                             cancellationToken: cancellationToken);
+
+            EditTouristMarinaDto mapped = Mapper.Map<Entities.Tracker.TouristMarina, EditTouristMarinaDto>(entity);
+            
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
         }
 
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
-                .Include(t => t.City)
-               .Include(x => x.GeoPoint));
-            var mapped = Mapper.Map<Domain.Entities.Tracker.TouristMarina, TouristMarinaDto>(entity);
+            Entities.Tracker.TouristMarina entity = await UnitOfWork.Repository
+                                    .FirstOrDefaultAsync(x => x.Id.Equals(id.ToString()), include: src => src
+                                    .Include(t => t.City)
+                                    .Include(x => x.GeoPoint), 
+                                    cancellationToken: cancellationToken);
 
-            return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
+            TouristMarinaDto mapped = Mapper.Map<Entities.Tracker.TouristMarina, TouristMarinaDto>(entity);
+
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
         }
 
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.TouristMarina, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.City)
-             .Include(x => x.GeoPoint));
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
-            var filteredEntities = IsSuperAdmin()
+            IEnumerable<Entities.Tracker.TouristMarina> entity = await UnitOfWork.Repository
+                                         .GetAllAsync(include: src => src
+                                         .Include(t => t.City)
+                                         .Include(x => x.GeoPoint), 
+                                          cancellationToken: cancellationToken);
+            
+            string governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
+
+            IEnumerable<Entities.Tracker.TouristMarina> filteredEntities = IsSuperAdmin()
                 ? entity
                 : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(filteredEntities);
+
+            IEnumerable<TouristMarinaDto> mapped = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(filteredEntities);
+            
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
         public async Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
+            IEnumerable<Entities.Tracker.TouristMarina> entity = await UnitOfWork.Repository
+                                .FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(entity.Where(x => x.IsDeleted != true));
+            IEnumerable<TouristMarinaDto> data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(entity.Where(x => x.IsDeleted != true));
 
-            return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> filter, CancellationToken cancellationToken = default)
         {
-            var isSuperAdmin = IsSuperAdmin();
-            var touristMarinaFilter = filter?.Filter ?? new TouristMarinaFilter();
-            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            bool isSuperAdmin = IsSuperAdmin();
+
+            TouristMarinaFilter touristMarinaFilter = filter?.Filter ?? new TouristMarinaFilter();
+            
+            string governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+            
             if (!isSuperAdmin)
                 touristMarinaFilter.IsDeleted = false;
 
-            var limit = filter.PageSize;
+            int limit = filter.PageSize;
 
-            var offset = --filter.PageNumber * filter.PageSize;
+            int offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId), pageNumber: offset,
+            (int Count, IEnumerable<Entities.Tracker.TouristMarina> Result) query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId), pageNumber: offset,
                 pageSize: limit, filter.OrderByValue,
                 include: src => src
              .Include(t => t.GeoPoint)
@@ -88,10 +105,10 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                 cancellationToken: cancellationToken);
 
 
-            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
             var data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -120,9 +137,9 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TouristMarina>(x => x.IsDeleted == filter.IsDeleted);
 
-            if (!string.IsNullOrEmpty(filter.TownId))
+            if (!string.IsNullOrEmpty(filter.CityId))
             {
-                predicate = predicate.And(x => x.CityId == filter.TownId);
+                predicate = predicate.And(x => x.CityId == filter.CityId);
             }
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
@@ -166,34 +183,73 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
       
         public override async Task<IFinalResult> AddAsync(AddTouristMarinaDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                x.Name == model.Name && x.IsDeleted != true);
+            try
+            {
+                await AssignMarinaCodeFromCityAsync(model, cancellationToken);
 
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+                bool isSuperAdmin = IsSuperAdmin();
+                
+                string govId = GetGovernorateIdFromClaims();
 
-            var entity = Mapper.Map<Domain.Entities.Tracker.TouristMarina>(model);
+                IEnumerable<Entities.Tracker.TouristMarina> existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
 
-            var result = await UnitOfWork.Repository.AddAsync(entity);
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.Name, m => string.Empty, model.Name, string.Empty))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+                Entities.Tracker.TouristMarina entity = Mapper.Map<Entities.Tracker.TouristMarina>(model);
 
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+                
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result :false, status: HttpStatusCode.BadRequest, exception: null, 
+                                                     message: MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.AddError + ex.Message);
+            }
         }
 
         public override async Task<IFinalResult> UpdateAsync(AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
         {
-
             try
             {
-                var IsExisted = await UnitOfWork.Repository.Any(x => x.Name == dto.Name && x.IsDeleted != true);
+                bool isSuperAdmin = IsSuperAdmin();
 
+                string govId = GetGovernorateIdFromClaims();
 
-                if (IsExisted)
-                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-                var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
-                var newEntity = Mapper.Map(dto, entityToUpdate);
+                IEnumerable<Entities.Tracker.TouristMarina> existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.Id != dto.Id && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.Id != dto.Id && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.Name, m => string.Empty, dto.Name, string.Empty))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                Entities.Tracker.TouristMarina entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
+
+                Entities.Tracker.TouristMarina newEntity = Mapper.Map(dto, entityToUpdate);
 
                 if (IsSuperAdmin())
                 {
@@ -201,24 +257,60 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                         newEntity.IsDeleted = false;
                 }
 
-                //SetEntityModifiedBaseProperties(newEntity);
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.UpdateSuccess);
-                }
+                
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                return Result;
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.UpdateSuccess);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.UpdateError + ex.Message);
+            }
+        }
+
+        private async Task AssignMarinaCodeFromCityAsync(AddTouristMarinaDto model, CancellationToken cancellationToken)
+        {
+            IFinalResult city = await cityService.GetByIdAsync(model.CityId, cancellationToken);
+            
+            if (city.Data is not TownDto townDto)
+                return;
+
+            var cityCode = townDto.Code ?? string.Empty;
+
+            var filter = new TouristMarinaFilter
+            {
+                CityId = model.CityId,
+                IsDeleted = false
+            };
+
+            IFinalResult exist = await GetAllFilterAsync(filter, cancellationToken);
+
+            ICollection<TouristMarinaDto> existDataCollection = exist.Data as ICollection<TouristMarinaDto>;
+
+            int nextSeq = 1;
+            
+            if (existDataCollection is { Count: > 0 })
+            {
+                TouristMarinaDto lastItem = existDataCollection
+                                .Where(x => x.Code != null &&
+                                    x.Code.Length >= cityCode.Length + 3 &&
+                                    x.Code.StartsWith(cityCode, StringComparison.Ordinal))
+                                .OrderByDescending(x => x.Code)
+                                .FirstOrDefault();
+
+                if (lastItem?.Code != null &&
+                    int.TryParse(lastItem.Code.AsSpan(lastItem.Code.Length - 3), out var number))
+                    nextSeq = number + 1;
             }
 
+            model.Code = cityCode + nextSeq.ToString("D3");
         }
     }
 }

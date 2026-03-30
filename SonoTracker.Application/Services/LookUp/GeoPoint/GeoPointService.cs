@@ -103,12 +103,6 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
         }
         public override async Task<IFinalResult> AddAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            //var IsExisted = await UnitOfWork.Repository.Any(x => (x.NameAr == model.NameAr
-            //|| x.NameEn == model.NameEn) && x.IsDeleted != true);
-
-            //if (IsExisted)
-            //    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-
             var entity = Mapper.Map<Domain.Entities.Lookups.GeoPoint>(model);
 
             var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
@@ -120,12 +114,6 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
         }
         public override async Task<IFinalResult> UpdateAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            //var IsExisted = await UnitOfWork.Repository.Any(x =>(x.NameAr == model.NameAr
-            //&& x.NameEn == model.NameEn ) && x.Id != model.Id && x.IsDeleted != true);
-
-            //if (IsExisted)
-            //    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-
             Domain.Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);

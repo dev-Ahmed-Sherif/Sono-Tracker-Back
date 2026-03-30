@@ -269,10 +269,12 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetAllAsync(System.String,System.Threading.CancellationToken)">
             <summary>
-            Get All 
+            Get all cities. SuperAdmin may pass an optional governorate filter; other users are scoped by JWT governorate when the query is omitted.
             </summary>
+            <param name="governorateId">Optional query: filter by governorate ID (e.g. <c>?governorateId=...</c>).</param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Lookups.CitiesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Lookup.City.Parameters.CityFilter},System.Threading.CancellationToken)">
@@ -1758,7 +1760,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarina.ITouristMarinaService,SonoTracker.Application.Services.Lookup.Town.ITownService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Marina.TouristMarinaController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarina.ITouristMarinaService)">
             <summary>
             Constructor
             </summary>
@@ -1923,12 +1925,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetEditAsync(System.String)">
-            <summary>
-            Get For Edit 
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetAllAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get All 
@@ -1945,19 +1941,19 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.AddAsync(SonoTracker.Common.DTO.Tracker.OrganizationStaff.AddOrganizationStaffDto)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <returns></returns>
-        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
             <param name="filter">Filter responsible for search and sort</param>
             <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.AddAsync(SonoTracker.Common.DTO.Tracker.OrganizationStaff.AddOrganizationStaffDto)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
             <returns></returns>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationStaffsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.OrganizationStaff.AddOrganizationStaffDto)">

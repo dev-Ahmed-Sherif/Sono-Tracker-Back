@@ -11,7 +11,7 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters
     public  class TouristMarinaFilter
     {
         public string Code { get; set; }
-        public string? TownId { get; set; }
+        public string CityId { get; set; }
         public string Name { get; set; }
         public bool IsDeleted { get; set; } = false;
 

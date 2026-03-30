@@ -2,11 +2,10 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Lookup.Town;
+using SonoTracker.Application.Services.Tracker.Governorate;
 using SonoTracker.Application.Services.Tracker.TouristMarina;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.Town;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
 using System.Net;
@@ -20,9 +19,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class TouristMarinaController(
-        ITouristMarinaService touristMarinaService,
-        ITownService townService) : BaseController
+    public class TouristMarinaController(ITouristMarinaService touristMarinaService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -31,17 +28,21 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await touristMarinaService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await touristMarinaService.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+            return Ok(res);
+        }
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await touristMarinaService.GetByIdForEditAsync(id, cancellationToken);
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
+
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await touristMarinaService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -79,57 +80,36 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromBody] AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
         {
-            string gov = "28", townCode = "";
-            var town = await townService.GetByIdAsync(dto.TownId, cancellationToken);
-            if (town.Data is TownDto townDto)
-            {
-                townCode = townDto.Code;
+            IFinalResult res = await touristMarinaService.AddAsync(dto, cancellationToken);
 
-                TouristMarinaFilter filter = new()
-                {
-                    TownId = dto.TownId,
-                    IsDeleted = false
-                };
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-                var exist = await touristMarinaService.GetAllFilterAsync(filter, cancellationToken);
-                var existDataCollection = exist.Data as ICollection<TouristMarinaDto>;
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
-                if (existDataCollection?.Count > 0)
-                {
-                    var lastItem = existDataCollection.OrderByDescending(x => x.Code).FirstOrDefault();
-
-                    if (int.TryParse(lastItem!.Code.AsSpan(4, 3), out int number))
-                    {
-                        number++;
-                        dto.Code = gov + townCode + number.ToString("D3");
-                    }
-                }
-                else
-                {
-                    dto.Code = $"{gov}{townCode}001";
-                }
-            }
-
-            return await touristMarinaService.AddAsync(dto, cancellationToken);
-        } 
-
-        /// <summary>
-        /// Get All Data paged For Drop Down
-        /// </summary>
-        /// <param name="filter">Filter responsible for search and sort</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("getDropDown")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
-        {
-            PagingResult res = await touristMarinaService.GetDropDownAsync(filter, cancellationToken);
-
-            return Ok(res);
+            return Created("", res);
         }
+             
+
+        ///// <summary>
+        ///// Get All Data paged For Drop Down
+        ///// </summary>
+        ///// <param name="filter">Filter responsible for search and sort</param>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //[HttpPost]
+        //[Route("getDropDown")]
+        //[ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        //public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        //{
+        //    PagingResult res = await touristMarinaService.GetDropDownAsync(filter, cancellationToken);
+
+        //    return Ok(res);
+        //}
 
         /// <summary>
         /// Update  

@@ -30,14 +30,14 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Governorate
         public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
                                         => await governorateService.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await governorateService.GetByIdForEditAsync(id, cancellationToken);
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await governorateService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 

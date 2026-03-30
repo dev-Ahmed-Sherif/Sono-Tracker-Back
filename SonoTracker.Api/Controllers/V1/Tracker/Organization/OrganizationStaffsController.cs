@@ -25,14 +25,19 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// </summary>
         /// <returns></returns>
         [HttpGet("get/{id}")]
-        public async Task<IFinalResult> GetAsync(string id) => await organizationStaffService.GetByIdAsync(id);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id)
+        {
+            IFinalResult res = await organizationStaffService.GetByIdAsync(id);
+            
+            return Ok(res);
+        }  
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id) => await organizationStaffService.GetByIdForEditAsync(id);
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id) => await organizationStaffService.GetByIdForEditAsync(id);
 
         /// <summary>
         /// Get All 
@@ -65,14 +70,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         }
 
         /// <summary>
-        /// Add 
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromForm] AddOrganizationStaffDto dto) => await organizationStaffService.AddAsync(dto);
-
-        /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
@@ -89,12 +86,44 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         }
 
         /// <summary>
+        /// Add 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        [HttpPost("add")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddOrganizationStaffDto dto)
+        {
+            IFinalResult res = await organizationStaffService.AddAsync(dto);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res); 
+
+            return Created("",res);
+        }
+
+        /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
         /// <returns></returns>
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromForm] AddOrganizationStaffDto model) => await organizationStaffService.UpdateAsync(model);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddOrganizationStaffDto model)
+        {
+            IFinalResult res = await organizationStaffService.UpdateAsync(model);
+            
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted("", res);
+        }  
 
         /// <summary>
         /// Remove  by id

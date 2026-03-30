@@ -48,15 +48,17 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         //                                => await cityService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
-        /// Get All 
+        /// Get all cities. SuperAdmin may pass an optional governorate filter; other users are scoped by JWT governorate when the query is omitted.
         /// </summary>
+        /// <param name="governorateId">Optional query: filter by governorate ID (e.g. <c>?governorateId=...</c>).</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string governorateId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await cityService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await cityService.GetAllAsync(governorateId, cancellationToken);
             return Ok(res);
         }
         

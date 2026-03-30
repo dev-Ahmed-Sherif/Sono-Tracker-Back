@@ -1,5 +1,6 @@
 using LinqKit;
 using SonoTracker.Application.Services.Base;
+using SonoTracker.Common.Helpers;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.DTO.Base;
@@ -108,10 +109,16 @@ namespace SonoTracker.Application.Services.LookUp.AccidentType
         }
         public override async Task<IFinalResult> AddAsync(AddAccidentTypeDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x =>
-               (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && !x.IsDeleted, cancellationToken);
+            var isSuperAdmin = IsSuperAdmin();
+            var govId = GetGovernorateIdFromClaims();
+            var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                ? await UnitOfWork.Repository.FindAsync(disableTracking: true, cancellationToken: cancellationToken)
+                : await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.GovernorateId == govId,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
 
-            if (IsExisted)
+            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
                 return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                     message: MessagesConstants.Existed);
 
@@ -148,10 +155,19 @@ namespace SonoTracker.Application.Services.LookUp.AccidentType
         }
         public override async Task<IFinalResult> UpdateAsync(AddAccidentTypeDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => 
-                (x.NameAr == model.NameAr || x.NameEn == model.NameEn) && x.Id != model.Id && !x.IsDeleted, cancellationToken);
-   
-            if (IsExisted)
+            var isSuperAdmin = IsSuperAdmin();
+            var govId = GetGovernorateIdFromClaims();
+            var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                ? await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken)
+                : await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.GovernorateId == govId && x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
                 return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                     message: MessagesConstants.Existed);
 

@@ -251,7 +251,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows <= 0) 
+                if (affectedRows < 0) 
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.AddError);
 
@@ -269,6 +269,8 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
             try
             {
                 Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+
+                string currentDelegateAttachment = entityToUpdate.DelegateAttachment;
 
                 var entity = Mapper.Map(model, entityToUpdate);
 
@@ -288,7 +290,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                 var normalizedNationalId = NormalizeNationalId(model.NationalId);
 
                 const int nameThreshold = 90;
-                const int nationalIdFuzzyThreshold = 95;
+                const int nationalIdFuzzyThreshold = 90;
 
                 var nameDuplicate = existingStaff.Any(x =>
                     !string.IsNullOrWhiteSpace(x.Name) &&
@@ -303,7 +305,8 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                     Fuzz.Ratio(normalizedNationalId, NormalizeNationalId(x.NationalId)) >= nationalIdFuzzyThreshold);
 
                 if (nameDuplicate || nationalIdExactDuplicate || nationalIdFuzzyDuplicate)
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null, message: MessagesConstants.Existed);
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null, 
+                                                     message: MessagesConstants.Existed);
 
                 if (model.DelegateAttachment != null)
                 {
@@ -332,14 +335,12 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
                 }
                 else
                 {
-                    var entityExist = await GetByIdForEditAsync(model.Id, cancellationToken);
-                    var entityRes = (EditOrganizationStaffDto)entityExist.Data;
-                    entity.DelegateAttachment = entityRes.DelegateAttachment;
+                    entity.DelegateAttachment = currentDelegateAttachment;
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows < 0) 
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 

@@ -209,15 +209,17 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows < 0)
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,
-                        message: MessagesConstants.UpdateError);
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception:null,
+                                                     message: MessagesConstants.UpdateError);
                     
                 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
                         message: MessagesConstants.UpdateSuccess);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,exception: ex,
+                                                 message: MessagesConstants.UpdateError + ex.Message);
                 //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
                 throw;
@@ -230,16 +232,19 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
             {
                 var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
 
-                if (entityToDelete == null)
-                {
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,
-                        message: MessagesConstants.DeleteError);
-                }
                 // Reomve Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);
 
+                var cityRepo = UnitOfWork.GetRepository<Entities.Lookups.City>();
+                var citiesToDelete = await cityRepo.FindAsync(
+                    predicate: x => x.GovernorateId == entityToDelete.Id,
+                    cancellationToken: cancellationToken);
+                if (citiesToDelete != null)
+                    cityRepo.RemoveRange(citiesToDelete);
+
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
@@ -248,8 +253,10 @@ namespace SonoTracker.Application.Services.Tracker.Governorate
 
                 return Result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,exception:ex,
+                                                 message: MessagesConstants.DeleteError);
                 //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
                 throw;

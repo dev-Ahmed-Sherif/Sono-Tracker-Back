@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using SonoTracker.Common.Caching.Redis;
-using SonoTracker.Common.DTO.Hr.Employee;
 using SonoTracker.Common.Helpers.HttpClient.RestSharp;
 
 namespace SonoTracker.Integration.CacheRepository
@@ -14,10 +13,10 @@ namespace SonoTracker.Integration.CacheRepository
         }
 
 
-        public async Task<EmployeeProfileDto> GetEmployeeAsync(string nationalId)
-        {
-            var employee =  RedisCacheHelper.GetT<EmployeeProfileDto>(nationalId);
-            return await Task.FromResult(employee);
-        }
+        //public async Task<EmployeeProfileDto> GetEmployeeAsync(string nationalId)
+        //{
+        //    var employee =  RedisCacheHelper.GetT<EmployeeProfileDto>(nationalId);
+        //    return await Task.FromResult(employee);
+        //}
     }
 }

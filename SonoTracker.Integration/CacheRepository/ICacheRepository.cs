@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using SonoTracker.Common.DTO.Hr.Employee;
-
-namespace SonoTracker.Integration.CacheRepository
+﻿namespace SonoTracker.Integration.CacheRepository
 {
     public interface ICacheRepository
     {
@@ -10,6 +7,6 @@ namespace SonoTracker.Integration.CacheRepository
         /// </summary>
         /// <param name="nationalId"></param>
         /// <returns></returns>
-        Task<EmployeeProfileDto> GetEmployeeAsync(string nationalId);
+        //Task<EmployeeProfileDto> GetEmployeeAsync(string nationalId);
     }
 }

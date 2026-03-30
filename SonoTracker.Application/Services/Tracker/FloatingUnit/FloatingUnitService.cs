@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using SonoTracker.Common.Helpers;
 using SonoTracker.Common.Helpers.MediaUploader;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnit
@@ -157,54 +158,95 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
         }
         public override async Task<IFinalResult> AddAsync(AddFloatingUnitDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x =>
-            (x.NameAr == model.NameAr
-            || x.NameEn == model.NameEn
-            || x.Code==model.Code)
-            && x.IsDeleted != true);
+            try
+            {
+                var isSuperAdmin = IsSuperAdmin();
+                var govId = GetGovernorateIdFromClaims();
+                var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
 
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.BadRequest, message: MessagesConstants.Existed);
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
 
-            var entity = Mapper.Map<Domain.Entities.Tracker.FloatingUnit>(model);
+                if (LookupDuplicateGuard.HasFuzzyCodeDuplicate(existingForDup, x => x.Code, model.Code))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
 
-            var result = await UnitOfWork.Repository.AddAsync(entity);
+                var entity = Mapper.Map<Domain.Entities.Tracker.FloatingUnit>(model);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
         public override async Task<IFinalResult> UpdateAsync(AddFloatingUnitDto model, CancellationToken cancellationToken = default)
         {
-            var IsExisted = await UnitOfWork.Repository.Any(x => (x.NameAr == model.NameAr
-            || x.NameEn == model.NameEn
-            || x.Code == model.Code)
-            && x.IsDeleted != true);
-
-            if (IsExisted)
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.BadRequest, message: MessagesConstants.Existed);
-
-            Domain.Entities.Tracker.FloatingUnit entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var isSuperAdmin = IsSuperAdmin();
+                var govId = GetGovernorateIdFromClaims();
+                var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.Id != model.Id && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.Id != model.Id && x.IsDeleted != true,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                if (LookupDuplicateGuard.HasFuzzyCodeDuplicate(existingForDup, x => x.Code, model.Code))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                Entities.Tracker.FloatingUnit entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                    message: MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
 
     }
