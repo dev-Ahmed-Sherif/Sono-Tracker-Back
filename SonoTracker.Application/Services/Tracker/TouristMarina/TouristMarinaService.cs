@@ -5,6 +5,7 @@ using SonoTracker.Application.Services.Lookup.City;
 using SonoTracker.Application.Services.Lookup.Town;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Lookup.City;
 using SonoTracker.Common.DTO.Lookup.Town;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
@@ -279,10 +280,10 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
         {
             IFinalResult city = await cityService.GetByIdAsync(model.CityId, cancellationToken);
             
-            if (city.Data is not TownDto townDto)
+            if (city.Data is not CityDto cityDto)
                 return;
 
-            var cityCode = townDto.Code ?? string.Empty;
+            var cityCode = cityDto.Code ?? string.Empty;
 
             var filter = new TouristMarinaFilter
             {
