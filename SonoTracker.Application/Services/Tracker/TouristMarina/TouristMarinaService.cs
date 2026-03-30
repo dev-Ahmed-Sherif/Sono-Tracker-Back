@@ -283,9 +283,9 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             if (city.Data is not CityDto cityDto)
                 return;
 
-            var cityCode = cityDto.Code ?? string.Empty;
+            string cityCode = cityDto.Code ?? string.Empty;
 
-            var filter = new TouristMarinaFilter
+            TouristMarinaFilter filter = new()
             {
                 CityId = model.CityId,
                 IsDeleted = false
