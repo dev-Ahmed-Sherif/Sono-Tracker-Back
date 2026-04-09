@@ -27,17 +27,21 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await floatingUnitService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitService.GetByIdForEditAsync(id, cancellationToken);
+            
+            return Ok(res);
+        }
+                                        
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
-
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await floatingUnitService.GetByIdForEditAsync(id, cancellationToken);
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await floatingUnitService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -69,28 +73,6 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         }
 
         /// <summary>
-        /// Add 
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-
-        [HttpPost("add")]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddFloatingUnitDto dto, CancellationToken cancellationToken = default)
-        {
-            IFinalResult res = await floatingUnitService.AddAsync(dto, cancellationToken);
-
-            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
-
-            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
-
-            return Created("", res);
-        }
-
-        /// <summary>
         /// Get All Data paged For Drop Down
         /// </summary>
         /// <param name="filter">Filter responsible for search and sort</param>
@@ -107,6 +89,28 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         }
 
         /// <summary>
+        /// Add 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+
+        [HttpPost("add")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddFloatingUnitDto dto, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitService.AddAsync(dto, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Created("", res);
+        }
+
+        /// <summary>
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
@@ -117,7 +121,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddFloatingUnitDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddFloatingUnitDto model, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await floatingUnitService.UpdateAsync(model, cancellationToken);
 

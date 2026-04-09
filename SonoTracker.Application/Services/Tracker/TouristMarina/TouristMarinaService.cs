@@ -1,15 +1,21 @@
+using Azure.Core;
 using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.Lookup.City;
 using SonoTracker.Application.Services.Lookup.Town;
+using SonoTracker.Application.Services.LookUp.GeoPoint;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.City;
+using SonoTracker.Common.DTO.Lookup.GeoPoint;
 using SonoTracker.Common.DTO.Lookup.Town;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
 using SonoTracker.Common.Helpers;
+using SonoTracker.Common.Helpers.MediaUploader;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -21,11 +27,26 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarina
 {
-    public class MarinaOrganizationService(
-        IServiceBaseParameter<Entities.Tracker.TouristMarina> businessBaseParameter,
-        ICityService cityService) 
-        : BaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, string, string>(businessBaseParameter), ITouristMarinaService
+    public class MarinaOrganizationService : BaseService<Entities.Tracker.TouristMarina, AddTouristMarinaDto, EditTouristMarinaDto, TouristMarinaDto, string, string>, ITouristMarinaService
     {
+        private readonly ICityService _cityService;
+        private readonly IGeoPointService _geoPointService;
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IHttpContextAccessor _request;
+        private readonly UploaderConfiguration _uploaderConfiguration;
+
+        public MarinaOrganizationService(
+            IServiceBaseParameter<Entities.Tracker.TouristMarina> businessBaseParameter,
+            ICityService cityService, IGeoPointService geoPointService,
+            IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request) : base(businessBaseParameter)
+        {
+            _cityService = cityService;
+            _geoPointService = geoPointService;
+            _hostingEnvironment = hostingEnvironment;
+            _request = request;
+            _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
+        }
+
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             Entities.Tracker.TouristMarina entity = await UnitOfWork.Repository
@@ -70,8 +91,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
 
             IEnumerable<TouristMarinaDto> mapped = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(filteredEntities);
             
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
-                message: HttpStatusCode.OK.ToString());
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
+                                             message: HttpStatusCode.OK.ToString());
         }
         public async Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter, CancellationToken cancellationToken = default)
         {
@@ -98,41 +119,45 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
 
             int offset = --filter.PageNumber * filter.PageSize;
 
-            (int Count, IEnumerable<Entities.Tracker.TouristMarina> Result) query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId), pageNumber: offset,
-                pageSize: limit, filter.OrderByValue,
-                include: src => src
-             .Include(t => t.GeoPoint)
-             .Include(x => x.City),
-                cancellationToken: cancellationToken);
+            (int Count, IEnumerable<Entities.Tracker.TouristMarina> Result) query = await UnitOfWork.Repository
+                .FindPagedAsync(
+                    predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId), 
+                    pageNumber: offset,
+                    pageSize: limit, filter.OrderByValue,
+                    include: src => src
+                             .Include(t => t.GeoPoint)
+                             .Include(x => x.City),
+                    cancellationToken: cancellationToken);
 
+            IEnumerable<Entities.Tracker.TouristMarina> items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
 
-            var items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
+            IEnumerable<TouristMarinaDto> data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: query.Count, result: data, 
+                                    status: HttpStatusCode.OK, message: MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
-            var limit = filter.PageSize;
+            int limit = filter.PageSize;
 
-            var offset = --filter.PageNumber * filter.PageSize;
+            int offset = --filter.PageNumber * filter.PageSize;
 
-            var isSuperAdmin = IsSuperAdmin();
-            var predicate = DropDownPredicateBuilderFunction(filter.Filter);
+            bool isSuperAdmin = IsSuperAdmin();
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(
+            Expression<Func<Entities.Tracker.TouristMarina, bool>> predicate = DropDownPredicateBuilderFunction(filter.Filter);
+
+            (int Count, IEnumerable<Entities.Tracker.TouristMarina> Result) query = await UnitOfWork.Repository.FindPagedAsync(
                     predicate: predicate,
                     pageNumber: offset,
                     pageSize: limit,
                     cancellationToken: cancellationToken);
 
-            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
+            IEnumerable<Entities.Tracker.TouristMarina> items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            IEnumerable<TouristMarinaDto> data = Mapper.Map<IEnumerable<Entities.Tracker.TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
 
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-
 
         static Expression<Func<Entities.Tracker.TouristMarina, bool>> PredicateBuilderFunction(TouristMarinaFilter filter, string governorateId = null)
         {
@@ -144,7 +169,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             }
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
-                predicate = predicate.And(x => x.Name.Contains(filter.Name));
+                predicate = predicate.And(x => x.NameAr.Contains(filter.Name));
             }
             if (!string.IsNullOrWhiteSpace(filter.Code))
             {
@@ -202,11 +227,43 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                         disableTracking: true,
                         cancellationToken: cancellationToken);
 
-                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.Name, m => string.Empty, model.Name, string.Empty))
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.NameAr, m => string.Empty, model.NameAr, string.Empty))
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                      message: MessagesConstants.Existed);
 
                 Entities.Tracker.TouristMarina entity = Mapper.Map<Entities.Tracker.TouristMarina>(model);
+
+                if (model.ImageUrl != null)
+                {
+                    string res = await _uploaderConfiguration.UploadFile(model.ImageUrl, $"Marina", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.ImageUrl = res;
+                }
+
+                if (model.NorthGeo != null && model.EastGeo != null)
+                {
+                    IFinalResult geoPoint = await _geoPointService.AddAsync(
+                    new AddGeoPointDto
+                    {
+                        Code = "01",
+                        NameAr = $"مرسى + {model.NameAr}",
+                        NameEn = $"Marina + {model.NameEn}",
+                        North = model.NorthGeo,
+                        East = model.EastGeo
+                    }, cancellationToken);
+
+                    if (geoPoint.Data is false)
+                        return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                         message: MessagesConstants.AddError);
+
+                    entity.GeoPointId = geoPoint.Data?.ToString();
+                }
 
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
                 
@@ -244,11 +301,13 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                         disableTracking: true,
                         cancellationToken: cancellationToken);
 
-                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.Name, m => string.Empty, dto.Name, string.Empty))
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, m => m.NameAr, m => string.Empty, dto.NameAr, string.Empty))
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
-                        message: MessagesConstants.Existed);
+                                                     message: MessagesConstants.Existed);
 
                 Entities.Tracker.TouristMarina entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
+
+                string currentImageUrl = entityToUpdate.ImageUrl;
 
                 Entities.Tracker.TouristMarina newEntity = Mapper.Map(dto, entityToUpdate);
 
@@ -257,6 +316,36 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
                     if (entityToUpdate.IsDeleted)
                         newEntity.IsDeleted = false;
                 }
+
+                if (dto.ImageUrl != null)
+                {
+                    string res = await _uploaderConfiguration.UploadFile(dto.ImageUrl, $"Marina", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    _uploaderConfiguration.DeleteFile(currentImageUrl);
+
+                    newEntity.ImageUrl = res;
+                }
+                else
+                {
+                    newEntity.ImageUrl = currentImageUrl;
+                }
+
+                IFinalResult geoPoint = await _geoPointService.UpdateAsync(
+                new AddGeoPointDto
+                {
+                    Id = dto.GeoPointId,
+                    Code = "01",
+                    NameAr = $"مرسى + {dto.NameAr}",
+                    NameEn = $"Marina + {dto.NameEn}",
+                    North = dto.NorthGeo,
+                    East = dto.EastGeo
+                }, cancellationToken);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
                 
@@ -278,7 +367,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
 
         private async Task AssignMarinaCodeFromCityAsync(AddTouristMarinaDto model, CancellationToken cancellationToken)
         {
-            IFinalResult city = await cityService.GetByIdAsync(model.CityId, cancellationToken);
+            IFinalResult city = await _cityService.GetByIdAsync(model.CityId, cancellationToken);
             
             if (city.Data is not CityDto cityDto)
                 return;
@@ -312,6 +401,24 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarina
             }
 
             model.Code = cityCode + nextSeq.ToString("D3");
+        }
+
+        private IFinalResult UploadResponse(string res)
+        {
+            if (res == "Size")
+            {
+                var message = "File Size Larger than 5 Mega Bytes";
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+            else if (res == "Type")
+            {
+                var message = "File type not allowed.";
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

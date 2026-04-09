@@ -12,9 +12,14 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapTouristMarina()
         {
-            CreateMap<TouristMarina, TouristMarinaDto>().ReverseMap();
-            CreateMap<TouristMarina, AddTouristMarinaDto>().ReverseMap();
+            CreateMap<TouristMarina, TouristMarinaDto>()
+                .ForMember(des => des.NorthGeo, opt => opt.MapFrom(src => src.GeoPoint.North))
+                .ForMember(des => des.EastGeo, opt => opt.MapFrom(src => src.GeoPoint.East))
+                .ReverseMap();
             CreateMap<TouristMarina, EditTouristMarinaDto>().ReverseMap();
+            CreateMap<AddTouristMarinaDto, TouristMarina>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

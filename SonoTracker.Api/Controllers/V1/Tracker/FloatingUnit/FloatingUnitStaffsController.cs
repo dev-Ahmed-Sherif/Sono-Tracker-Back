@@ -27,28 +27,33 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
 
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await floatingUnitStaffsService.GetByIdAsync(id, cancellationToken);
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await floatingUnitStaffsService.GetByIdForEditAsync(id, cancellationToken);
+            
+            return Ok(res);
+        }
 
-        /// <summary>
-        /// Get For Edit 
-        /// </summary>
-        /// <returns></returns>
+        ///// <summary>
+        ///// Get For Edit 
+        ///// </summary>
+        ///// <returns></returns>
 
-        [HttpGet("getEdit/{id}")]
-        public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await floatingUnitStaffsService.GetByIdForEditAsync(id, cancellationToken);
+        //[HttpGet("getEdit/{id}")]
+        //public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
+        //                                => await floatingUnitStaffsService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
         /// </summary>
+        /// <param name="floatingUnitId">Optional. Filter by floating unit ID.</param>
         /// <returns></returns>
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string? floatingUnitId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await floatingUnitStaffsService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await floatingUnitStaffsService.GetAllAsync(floatingUnitId, cancellationToken);
 
             return Ok(res);
         }

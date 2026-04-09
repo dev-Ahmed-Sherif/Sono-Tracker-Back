@@ -27,7 +27,7 @@ namespace SonoTracker.Domain.Entities.Tracker
         public DateTime? EndDate { get; set; }
         public int StaffNumber { get; set; }
         public int PassengerNumber { get; set; }
-        public string? PassengerAttachment { get; set; }
+        public int AttachmentNumber { get; set; }
 
         [Required, MaxLength(50)] 
         [ForeignKey(nameof(FloatingUnit))]

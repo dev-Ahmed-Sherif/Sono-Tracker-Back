@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using FuzzySharp;
 using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.LookUp.GeoPoint;
@@ -101,20 +102,73 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
             }
             return predicate;
         }
+
+        private static string NormalizeText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var parts = value.Trim().Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(' ', parts).ToLowerInvariant();
+        }
+
+        private static string? FindFuzzyNorthEastDuplicate(IEnumerable<Entities.Lookups.GeoPoint> existing, string north, string east, int threshold = 90)
+        {
+            var list = existing as IList<Entities.Lookups.GeoPoint> ?? [.. existing];
+            var normalizedNorth = NormalizeText(north);
+            var normalizedEast = NormalizeText(east);
+
+            var match = list.FirstOrDefault(x =>
+                             x.Code == "02" ||
+                          ((!string.IsNullOrWhiteSpace(x.North) &&
+                            !string.IsNullOrWhiteSpace(normalizedNorth) &&
+                             Fuzz.TokenSetRatio(normalizedNorth, NormalizeText(x.North)) >= threshold)
+                             ||
+                           (!string.IsNullOrWhiteSpace(x.East) &&
+                            !string.IsNullOrWhiteSpace(normalizedEast) &&
+                             Fuzz.TokenSetRatio(normalizedEast, NormalizeText(x.East)) >= threshold)));
+
+            return match?.Id;
+        }
+
         public override async Task<IFinalResult> AddAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            var entity = Mapper.Map<Domain.Entities.Lookups.GeoPoint>(model);
+            var existingForDup = await UnitOfWork.Repository.FindAsync(
+                predicate: x => x.IsDeleted != true && x.NameAr == model.NameAr,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
+            if (duplicateId is not null)
+                return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
+                                                 message: MessagesConstants.Existed);
+
+            var entity = Mapper.Map<Entities.Lookups.GeoPoint>(model);
 
             var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
             var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+            if (affectedRows <= 0) 
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                 message:  MessagesConstants.AddError);
 
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                             message: MessagesConstants.AddSuccess);
         }
         public override async Task<IFinalResult> UpdateAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            Domain.Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+            var existingForDup = await UnitOfWork.Repository.FindAsync(
+                predicate: x => x.Id != model.Id && x.IsDeleted != true && x.NameAr == model.NameAr,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
+            if (duplicateId is not null)
+                return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
+                                                 message: MessagesConstants.Existed);
+
+            Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
 
@@ -125,8 +179,6 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
             }
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
 
             var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 

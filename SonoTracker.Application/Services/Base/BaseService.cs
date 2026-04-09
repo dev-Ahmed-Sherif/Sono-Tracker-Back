@@ -185,7 +185,7 @@ namespace SonoTracker.Application.Services.Base
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                
-                if (affectedRows <= 0)
+                if (affectedRows < 0)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.UpdateError);
 

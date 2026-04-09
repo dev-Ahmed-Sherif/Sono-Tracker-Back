@@ -11,7 +11,7 @@ using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
 using System.Net;
 using System.Threading;
 
-namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
+namespace SonoTracker.Api.Controllers.V1.Tracker.TouristMarina
 {
     /// <summary>
     /// Constructor
@@ -19,7 +19,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class TouristMarinaController(ITouristMarinaService touristMarinaService) : BaseController
+    public class TouristMarinasController(ITouristMarinaService touristMarinaService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -83,7 +83,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddTouristMarinaDto dto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await touristMarinaService.AddAsync(dto, cancellationToken);
 
@@ -118,8 +118,20 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromBody] AddTouristMarinaDto model, CancellationToken cancellationToken = default)
-                                        => await touristMarinaService.UpdateAsync(model, cancellationToken);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddTouristMarinaDto model, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await touristMarinaService.UpdateAsync(model, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted("", res);
+        }
+        
 
         /// <summary>
         /// Remove  by id

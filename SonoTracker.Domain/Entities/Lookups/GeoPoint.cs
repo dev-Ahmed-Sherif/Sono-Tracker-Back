@@ -22,7 +22,8 @@ namespace SonoTracker.Domain.Entities.Lookups
         [Required, MaxLength(50)]
         public required string East { get; set; }
 
-        public virtual HashSet<TouristMarina> TouristMarinas { get; set; } = [];
         public virtual HashSet<Accident> Accidents { get; set; } = [];
+        public virtual HashSet<TouristMarina> TouristMarinas { get; set; } = [];
+        public virtual HashSet<TripGeo> TripGeos { get; set; } = [];
     }
 }

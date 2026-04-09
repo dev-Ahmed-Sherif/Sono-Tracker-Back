@@ -210,7 +210,7 @@ namespace SonoTracker.Domain.Enum
         [Values("Male", "ذكر", "Male")]
         Male = 1,
         [Values("Female", "أنثى", "Female")]
-        Female,
+        Female = 2,
         //[Values("Both", "الكل", "Both")]
         //Both
     }

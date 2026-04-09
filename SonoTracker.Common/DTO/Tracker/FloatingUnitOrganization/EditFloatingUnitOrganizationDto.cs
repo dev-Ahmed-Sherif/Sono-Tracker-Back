@@ -11,6 +11,8 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization
         public string Id { get; set; }
 
         public string OrganizationId { get; set; }
+        public string OrganizationNameAr { get; set; }
+        public string OrganizationNameEn { get; set; }
 
         public string FloatingUnitId { get; set; }
 

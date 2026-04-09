@@ -63,6 +63,7 @@ namespace SonoTracker.Infrastructure.Context
 
         #region Lookups – Core
 
+        public virtual DbSet<Attachment> Attachments { get; set; }
         public virtual DbSet<AccidentType> AccidentTypes { get; set; }
         public virtual DbSet<InspectionType> InspectionTypes { get; set; }
         public virtual DbSet<MaintenanceType> MaintenanceTypes { get; set; }
@@ -110,6 +111,40 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureFloatingUnitRelations(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.LicenseNumber)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.Length)
+                .IsRequired();
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.Width)
+                .IsRequired();
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.ManufactureYear)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.LastMaintenanceDate)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.NextMaintenanceDate)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.ImageUrl)
+                .IsRequired()
+                .HasMaxLength(250);
+
+            modelBuilder.Entity<FloatingUnit>()
+                .Property(f => f.IsAccepted)
+                .IsRequired();
+
             modelBuilder.Entity<FloatingUnit>()
                 .Property(f => f.UnitTypeId)
                 .IsRequired()
@@ -194,6 +229,9 @@ namespace SonoTracker.Infrastructure.Context
         {
             // Keep DB table names consistent with the entity/type names.
             // This avoids drift when earlier migrations mapped different table names.
+            modelBuilder.Entity<Attachment>()
+                .ToTable("Attachments");
+
             modelBuilder.Entity<TripNationality>()
                 .ToTable("TripNationalities");
 
@@ -263,6 +301,26 @@ namespace SonoTracker.Infrastructure.Context
                 .ToTable("TouristMarinaOrganizations");
 
             modelBuilder.Entity<TouristMarina>()
+                .Property(tm => tm.MarinaAddress)
+                .HasMaxLength(250);
+
+            modelBuilder.Entity<TouristMarina>()
+                .Property(tm => tm.ImageUrl)
+                .HasMaxLength(250);
+
+            modelBuilder.Entity<TouristMarina>()
+                .Property(tm => tm.Note)
+                .HasMaxLength(250);
+
+            modelBuilder.Entity<TouristMarina>()
+                .Property(tm => tm.NorthSide)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<TouristMarina>()
+                .Property(tm => tm.SouthSide)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<TouristMarina>()
                 .HasOne(tm => tm.City)
                 .WithMany()
                 .HasForeignKey(tm => tm.CityId)
@@ -282,7 +340,7 @@ namespace SonoTracker.Infrastructure.Context
 
             modelBuilder.Entity<TouristMarinaOrganization>()
                 .HasOne(mo => mo.TouristMarina)
-                .WithMany()
+                .WithMany(tm => tm.TouristMarinaOwners)
                 .HasForeignKey(mo => mo.TouristMarinaId)
                 .OnDelete(DeleteBehavior.Restrict);
 

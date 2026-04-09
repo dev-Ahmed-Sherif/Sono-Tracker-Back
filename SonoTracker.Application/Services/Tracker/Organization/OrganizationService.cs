@@ -161,10 +161,20 @@ namespace SonoTracker.Application.Services.Tracker.Organization
             try
             {
 
-                var govIdForDup = GetGovernorateIdFromClaims();
-                var existingForDup = await UnitOfWork.Repository.FindAsync(
+                string govIdForDup = GetGovernorateIdFromClaims();
+
+                var existingForDup = model.OrganizationCategoryId != null ? 
+                    await UnitOfWork.Repository.FindAsync(
                     predicate: x =>
                         x.OrganizationCategoryId == model.OrganizationCategoryId &&
+                        x.OrganizationType == model.OrganizationType &&
+                        x.GovernorateId == govIdForDup &&
+                        x.IsDeleted != true,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken) 
+                    :
+                    await UnitOfWork.Repository.FindAsync(
+                    predicate: x =>
                         x.OrganizationType == model.OrganizationType &&
                         x.GovernorateId == govIdForDup &&
                         x.IsDeleted != true,
@@ -172,6 +182,10 @@ namespace SonoTracker.Application.Services.Tracker.Organization
                     cancellationToken: cancellationToken);
 
                 if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, o => o.NameAr, o => o.NameEn, model.NameAr, model.NameEn))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
+                
+                if (LookupDuplicateGuard.HasFuzzyCodeDuplicate(existingForDup, o => o.CommercialRegistrationNumber, model.CommercialRegistrationNumber))
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                      message: MessagesConstants.Existed);
 
@@ -270,6 +284,9 @@ namespace SonoTracker.Application.Services.Tracker.Organization
 
                 if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, o => o.NameAr, o => o.NameEn, model.NameAr, model.NameEn))
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+                if (LookupDuplicateGuard.HasFuzzyCodeDuplicate(existingForDup, o => o.CommercialRegistrationNumber, model.CommercialRegistrationNumber))
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
 
                 Entities.Tracker.Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
 

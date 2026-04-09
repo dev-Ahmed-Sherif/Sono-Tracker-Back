@@ -1,25 +1,27 @@
 using Asp.Versioning;
+using DeputyOffice.Common.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Tracker.TripMarina;
+using SonoTracker.Application.Services.Tracker.TouristMarinaOrganization;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters;
+using SonoTracker.Common.DTO.Reports.TouristMarina;
+using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization;
+using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.Parameters;
 using System.Net;
+using System.Net.Mime;
 using System.Threading;
 
-namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
+namespace SonoTracker.Api.Controllers.V1.Tracker.TouristMarina
 {
-
     /// <summary>
     /// Constructor
     /// </summary>
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class MarinaTripsController(ITripMarinaService marinaTripService) : BaseController
+    public class TouristMarinaOrganizationsController(ITouristMarinaOrganizationService marinaOrganizationService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -29,7 +31,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<IFinalResult> GetAsync(string id, CancellationToken cancellationToken = default)
-                                        => await marinaTripService.GetByIdAsync(id, cancellationToken);
+                                        => await marinaOrganizationService.GetByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Get For Edit 
@@ -38,7 +40,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
 
         [HttpGet("getEdit/{id}")]
         public async Task<IFinalResult> GetEditAsync(string id, CancellationToken cancellationToken = default)
-                                        => await marinaTripService.GetByIdForEditAsync(id, cancellationToken);
+                                        => await marinaOrganizationService.GetByIdForEditAsync(id, cancellationToken);
 
         /// <summary>
         /// Get All 
@@ -49,7 +51,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await marinaTripService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await marinaOrganizationService.GetAllAsync(cancellationToken: cancellationToken);
 
             return Ok(res);
         }
@@ -62,9 +64,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TouristMarinaOrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
-            PagingResult res = await marinaTripService.GetAllPagedAsync(filter, cancellationToken);
+            PagingResult res = await marinaOrganizationService.GetAllPagedAsync(filter, cancellationToken);
 
             return Ok(res);
         }
@@ -80,15 +82,32 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddMarinaTripDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddTouristMarinaOrganizationDto dto, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await marinaTripService.AddAsync(dto, cancellationToken);
+            IFinalResult res = await marinaOrganizationService.AddAsync(dto, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
             return Created("", res);
+        }
+
+        /// <summary>
+        /// Get All Data paged For Drop Down
+        /// </summary>
+        /// <param name="filter">Filter responsible for search and sort</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        
+        [HttpPost]
+        [Route("getDropDown")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagingResult>> GetDropDownAsync([FromBody] BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            PagingResult res = await marinaOrganizationService.GetDropDownAsync(filter, cancellationToken);
+
+            return Ok(res);
         }
 
         /// <summary>
@@ -102,9 +121,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddMarinaTripDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddTouristMarinaOrganizationDto model, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await marinaTripService.UpdateAsync(model, cancellationToken);
+            IFinalResult res = await marinaOrganizationService.UpdateAsync(model, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -125,7 +144,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await marinaTripService.DeleteAsync(id, cancellationToken);
+            IFinalResult res = await marinaOrganizationService.DeleteAsync(id, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -133,7 +152,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         }
 
         /// <summary>
-        /// Soft Remove by id
+        /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
         /// <param name="cancellationToken"></param>
@@ -144,7 +163,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await marinaTripService.DeleteSoftAsync(id, cancellationToken);
+            IFinalResult res = await marinaOrganizationService.DeleteSoftAsync(id, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -152,13 +171,13 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Marina
         }
 
         /// <summary>
-        /// Remove Range by Organization Ids
+        /// Generates a project report based on the provided filter.
         /// </summary>
-        /// <param name="ids">PK</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await marinaTripService.DeleteRangeAsync(ids, cancellationToken);
+        [HttpGet("GetReport")]
+        public async Task<IActionResult> GetProjectReportData([FromQuery] FilterTouristMarinaReportDto filter, CancellationToken cancellationToken = default)
+        {
+            var report = await marinaOrganizationService.GenerateReportAsync(filter, cancellationToken);
+            return File(report, MediaTypeNames.Application.Pdf, ReportHelper.GetReportDetails(filter.ReportName, filter.ReportType));
+        }
     }
 }

@@ -1,5 +1,6 @@
 using SonoTracker.Common.Core;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization
@@ -8,11 +9,13 @@ namespace SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization
 
     public class AddFloatingUnitOrganizationDto : IEntityDto<string>
     {
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
-        public string OrganizationId { get; set; }
-
-        public string FloatingUnitId { get; set; }
+        [Required, MaxLength(50)]
+        public required string OrganizationId { get; set; }
+        
+        [Required, MaxLength(50)]
+        public required string FloatingUnitId { get; set; }
 
     }
 }

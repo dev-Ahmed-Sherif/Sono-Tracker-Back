@@ -22,7 +22,9 @@ namespace SonoTracker.Application.Mapping
                  .ForMember(des => des.TripInformationCode, opt => opt.MapFrom(src => src.TripInformation.Code))
                  .ReverseMap();
             CreateMap<Inspection, EditGeneralInspectionDto>().ReverseMap();
-            CreateMap<Inspection, AddGeneralInspectionDto>().ReverseMap();
+            CreateMap<AddGeneralInspectionDto, Inspection>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

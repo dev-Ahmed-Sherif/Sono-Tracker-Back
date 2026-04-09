@@ -15,20 +15,14 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization
     {
         public string Id { get; set; }
         public string TouristMarinaId { get; set; }
-        public string TouristMarinaName { get; set; }
+        public string TouristMarina { get; set; }
         public string OrganizationId { get; set; }
         public string OrganizationNameAr { get; set; }
         public string OrganizationNameEn { get; set; }
-        public bool IsActive { get; set; }
         public string LicenseNumber { get; set; }
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string CreatedBy { get; set; }
-        public string CreatedById { get; set; }
+        public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
-        public DateTime ModifiedAt { get; set; }
-        public string ModifiedBy { get; set; }
-        public string ModifiedById { get; set; }
     }
 }

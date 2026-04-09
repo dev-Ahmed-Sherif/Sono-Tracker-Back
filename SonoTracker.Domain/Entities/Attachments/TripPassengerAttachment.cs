@@ -16,23 +16,13 @@ namespace SonoTracker.Domain.Entities.Attachments
             }
         }
 
-        [MaxLength(50)]
-        public required string FileId { get; set; }
-
-        public required string FileName { get; set; }
-
-        public required string Extension { get; set; }
-
-        public required string Size { get; set; }
-
-        public bool IsPublic { get; set; }
-
-        public required string AttachmentDisplaySize { get; set; }
-
-        public required string Url { get; set; }
-
-        [Required]
-        [MaxLength(50), ForeignKey(nameof(TripInformation))]
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Attachment))]
+        public required string AttachmentId { get; set; }
+        public virtual Attachment? Attachment { get; set; }
+        
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(TripInformation))]
         public required string TripInformationId { get; set; }
         public virtual TripInformation? TripInformation { get; set; }
     }

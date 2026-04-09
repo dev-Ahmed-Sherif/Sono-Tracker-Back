@@ -30,18 +30,13 @@ namespace SonoTracker.Application.Mapping
                 .ForMember(des => des.CaseId, opt => opt.MapFrom(src => src.Case))
                 .ForMember(des => des.Case, opt => opt.MapFrom(src => src.Case.GetName()));
 
-            CreateMap<Accident, AddAccidentDto>()
-                .ForMember(des => des.Number, opt => opt.MapFrom(src => src.Code))
-                .ForMember(des => des.AccidentDate, opt => opt.MapFrom(src => src.AccidentDate.ToDateTime(TimeOnly.MinValue)))
-                .ForMember(des => des.ResponseDate, opt => opt.MapFrom(src => src.ResponseDate.HasValue ? src.ResponseDate.Value.ToDateTime(TimeOnly.MinValue) : (DateTime?)null))
-                .ForMember(des => des.Attach, opt => opt.Ignore());
-
             CreateMap<AddAccidentDto, Accident>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
                 .ForMember(des => des.Code, opt => opt.MapFrom(src => src.Number))
                 .ForMember(des => des.AccidentDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.AccidentDate)))
                 .ForMember(des => des.ResponseDate, opt => opt.MapFrom(src => src.ResponseDate.HasValue ? DateOnly.FromDateTime(src.ResponseDate.Value) : (DateOnly?)null))
-                .ForMember(des => des.Case, opt => opt.MapFrom(src => src.CaseId))
-                .ForMember(des => des.Attach, opt => opt.Ignore());
+                .ForMember(des => des.Attach, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

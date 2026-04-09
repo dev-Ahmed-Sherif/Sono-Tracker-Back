@@ -188,7 +188,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                         return UploadResponse(res);
                 }
 
-                mapped.PassengerAttachment = res;
+                //mapped.PassengerAttachment = res;
             }
 
             mapped.IsDeleted = false;
@@ -227,9 +227,9 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                                 return UploadResponse(res);
                         }
 
-                        newEntity.PassengerAttachment = res;
+                        //newEntity.PassengerAttachment = res;
 
-                        _uploaderConfiguration.DeleteFile(entityToUpdate.PassengerAttachment);
+                        //_uploaderConfiguration.DeleteFile(entityToUpdate.PassengerAttachment);
                     }
                 }
 
@@ -237,7 +237,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                 {
                     var entity = await GetByIdForEditAsync(dto.Id);
                     var entityRes = (EditTripInformationDto)entity.Data;
-                    newEntity.PassengerAttachment = entityRes.PassengerAttachment;
+                    //newEntity.PassengerAttachment = entityRes.PassengerAttachment;
                 }
 
                 //SetEntityModifiedBaseProperties(newEntity);
@@ -269,7 +269,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                 var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
 
                 // Reomve Uploaded File
-                _uploaderConfiguration.DeleteFile(entityToDelete.PassengerAttachment);
+                //_uploaderConfiguration.DeleteFile(entityToDelete.PassengerAttachment);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
                 var affectedRows = await UnitOfWork.SaveChangesAsync();

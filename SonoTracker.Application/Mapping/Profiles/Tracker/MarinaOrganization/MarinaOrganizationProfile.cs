@@ -15,13 +15,15 @@ namespace SonoTracker.Application.Mapping
         public void MapMarinaOrganization()
         {
             CreateMap<TouristMarinaOrganization, TouristMarinaOrganizationDto>().ReverseMap();
-            CreateMap<TouristMarinaOrganization, AddTouristMarinaOrganizationDto>().ReverseMap();
+            CreateMap<AddTouristMarinaOrganizationDto, TouristMarinaOrganization>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
             CreateMap<TouristMarinaOrganization, EditTouristMarinaOrganizationDto>().ReverseMap();
             CreateMap<TouristMarinaOrganization, TouristMarinaReportDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TouristMarina.Name))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TouristMarina.NameAr))
                 .ForMember(dest => dest.NameOwner, opt => opt.MapFrom(src => src.Organization.NameAr))
                 .ForMember(dest => dest.Length, opt => opt.MapFrom(src => src.TouristMarina.Length))
-                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.TouristMarina.Url))
+                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.TouristMarina.MarinaAddress))
                 .ForMember(dest => dest.Town, opt => opt.MapFrom(src => src.TouristMarina.City.NameAr))
                 .ForMember(dest => dest.North, opt => opt.MapFrom(src => src.TouristMarina.GeoPoint.North))
                 .ForMember(dest => dest.East, opt => opt.MapFrom(src => src.TouristMarina.GeoPoint.East))

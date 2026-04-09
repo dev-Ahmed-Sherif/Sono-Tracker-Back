@@ -19,7 +19,9 @@ namespace SonoTracker.Application.Mapping
             CreateMap<Governorate, EditGovernorateDto>()
                 .ForMember(des => des.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
                 .ReverseMap();
-            CreateMap<Governorate, AddGovernorateDto>().ReverseMap();
+            CreateMap<AddGovernorateDto, Governorate>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

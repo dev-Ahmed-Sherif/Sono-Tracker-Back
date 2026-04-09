@@ -2,6 +2,7 @@ using LinqKit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using FuzzySharp;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -34,40 +35,63 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
 
+        private static string NormalizeText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var parts = value.Trim().Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(' ', parts).ToLowerInvariant();
+        }
+
+        private static string NormalizeIdentity(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            return new string(value.Where(char.IsDigit).ToArray());
+        }
+
 
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr, include: src => src
             
-                .Include(t => t.Nationality));
-            var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnitStaff, EditFloatingUnitStaffDto>(entity);
+                .Include(t => t.Nationality), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.FloatingUnitStaff, EditFloatingUnitStaffDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
-                include: src => src
-                .Include(t => t.FloatingUnit)
-                .Include(t => t.Nationality));
-            var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnitStaff, EditFloatingUnitStaffDto>(entity);
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr, include: src => src
+                .Include(t => t.Nationality), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.FloatingUnitStaff, EditFloatingUnitStaffDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.FloatingUnitStaff, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.FloatingUnitStaff, bool>> predicate = null, CancellationToken cancellationToken = default)
+            => await GetAllAsync(floatingUnitId: null, cancellationToken);
+
+        public async Task<IFinalResult> GetAllAsync(string? floatingUnitId, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.FloatingUnit)
-             .Include(t => t.Nationality));
-            var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
-            var filteredEntities = IsSuperAdmin()
-                ? entity
-                : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.FloatingUnitStaff>, IEnumerable<FloatingUnitStaffDto>>(filteredEntities);
+            var isSuperAdmin = IsSuperAdmin();
+            var filter = new FloatingUnitStaffFilter
+            {
+                FloatingUnitId = floatingUnitId,
+                IsDeleted = false
+            };
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            var entity = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(filter, governorateId, includeDeleted: isSuperAdmin),
+                include: src => src
+                    .Include(t => t.Nationality),
+                cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnitStaff>, IEnumerable<FloatingUnitStaffDto>>(entity);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
@@ -85,7 +109,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(floatingUnitStaffFilter, governorateId), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
+            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(floatingUnitStaffFilter, governorateId, includeDeleted: false), pageNumber: offset, pageSize: limit, filter.OrderByValue, cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnitStaff>, IEnumerable<FloatingUnitStaffDto>>(query.Item2);
 
@@ -110,9 +134,11 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
         }
 
-        static Expression<Func<Entities.Tracker.FloatingUnitStaff, bool>> PredicateBuilderFunction(FloatingUnitStaffFilter filter, string governorateId = null)
+        static Expression<Func<Entities.Tracker.FloatingUnitStaff, bool>> PredicateBuilderFunction(FloatingUnitStaffFilter filter, string governorateId = null, bool includeDeleted = false)
         {
-            var predicate = PredicateBuilder.New<Entities.Tracker.FloatingUnitStaff>(x => x.IsDeleted == filter.IsDeleted);
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Entities.Tracker.FloatingUnitStaff>(true)
+                : PredicateBuilder.New<Entities.Tracker.FloatingUnitStaff>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.Name))
             {
                 predicate = predicate.And(x => x.Name.Contains(filter.Name));
@@ -149,7 +175,6 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
             {
                 predicate = predicate.And(x => x.IsDelegate == filter.IsDelegate.Value);
             }
-
             if (!string.IsNullOrWhiteSpace(governorateId))
             {
                 predicate = predicate.And(x => x.GovernorateId == governorateId);
@@ -182,12 +207,38 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
         public override async Task<IFinalResult> AddAsync(AddFloatingUnitStaffDto model, CancellationToken cancellationToken = default)
         {
-            var entity = Mapper.Map<Domain.Entities.Tracker.FloatingUnitStaff>(model);
+            var existingStaff = await UnitOfWork.Repository.FindAsync(
+                predicate: x => x.FloatingUnitId == model.FloatingUnitId,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            var normalizedName = NormalizeText(model.Name);
+            var normalizedIdentity = NormalizeIdentity(model.Identity);
+            const int nameThreshold = 90;
+            const int identityThreshold = 90;
+
+            var nameDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Name) &&
+                Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+            var identityExactDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Identity) &&
+                string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
+
+            var identityFuzzyDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Identity) &&
+                Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
+
+            if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                 message: MessagesConstants.Existed);
+
+            var entity = Mapper.Map<Entities.Tracker.FloatingUnitStaff>(model);
 
             if (model.DelegateAttachment != null)
             {
                 string res = await _uploaderConfiguration
-                                   .UploadFile(model.DelegateAttachment, "FloatingUnitStaff");
+                                   .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
 
                 if (res != null)
                 {
@@ -202,9 +253,9 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
             entity.IsDeleted = false;
 
-            await UnitOfWork.Repository.AddAsync(entity);
+            await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
+            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
             if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
 
@@ -212,7 +263,9 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
         }
         public override async Task<IFinalResult> UpdateAsync(AddFloatingUnitStaffDto model, CancellationToken cancellationToken = default)
         {
-            Domain.Entities.Tracker.FloatingUnitStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+            Entities.Tracker.FloatingUnitStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+
+            string currentAttachment = entityToUpdate.DelegateAttachment;
 
             var entity = Mapper.Map(model, entityToUpdate);
 
@@ -222,10 +275,36 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
                     entity.IsDeleted = false;
             }
 
+            var existingStaff = await UnitOfWork.Repository.FindAsync(
+                predicate: x => x.FloatingUnitId == model.FloatingUnitId && x.Id != model.Id,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            var normalizedName = NormalizeText(model.Name);
+            var normalizedIdentity = NormalizeIdentity(model.Identity);
+            const int nameThreshold = 90;
+            const int identityThreshold = 90;
+
+            var nameDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Name) &&
+                Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+            var identityExactDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Identity) &&
+                string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
+
+            var identityFuzzyDuplicate = existingStaff.Any(x =>
+                !string.IsNullOrWhiteSpace(x.Identity) &&
+                Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
+
+            if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                 message: MessagesConstants.Existed);
+
             if (model.DelegateAttachment != null)
             {
                 string res = await _uploaderConfiguration
-                               .UploadFile(model.DelegateAttachment, "FloatingUnitStaff");
+                               .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
 
                 if (res != null)
                 {
@@ -233,32 +312,23 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
                         return UploadResponse(res);
                 }
 
+                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
+                
                 entity.DelegateAttachment = res;
 
                 entity.IsDelegate = true;
 
-                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
-            }
-            else if (model.IsDelegate == false)
-            {
-                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
-
-                entity.DelegateAttachment = "";
             }
             else
             {
-                var entityExist = await GetByIdForEditAsync(model.Id);
-                var entityRes = (EditFloatingUnitStaffDto)entityExist.Data;
-                entity.DelegateAttachment = entityRes.DelegateAttachment;
+                entity.DelegateAttachment = currentAttachment;
             }
 
             UnitOfWork.Repository.Update(entityToUpdate, entity);
 
-            //SetEntityModifiedBaseProperties(entity);
+            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync();
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+            if (affectedRows < 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
 
             return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
@@ -272,7 +342,9 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
                 _uploaderConfiguration.DeleteFile(entityToDelete.DelegateAttachment);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
@@ -281,11 +353,13 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.DeleteError);
                 //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                //throw;
             }
 
         }

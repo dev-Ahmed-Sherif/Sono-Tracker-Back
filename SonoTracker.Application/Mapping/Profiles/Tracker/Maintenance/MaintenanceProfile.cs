@@ -14,8 +14,10 @@ namespace SonoTracker.Application.Mapping
         public void MapMaintenance()
         {
             CreateMap<Maintenance, MaintenanceDto>().ReverseMap();
-            CreateMap<Maintenance, AddMaintenanceDto>().ReverseMap();
             CreateMap<Maintenance, EditMaintenanceDto>().ReverseMap();
+            CreateMap<AddMaintenanceDto, Maintenance>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

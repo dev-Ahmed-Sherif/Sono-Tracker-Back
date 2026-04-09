@@ -14,8 +14,10 @@ namespace SonoTracker.Application.Mapping
         public void MapLicenseApplication()
         {
             CreateMap<LicenseApplication, LicenseApplicationDto>().ReverseMap();
-            CreateMap<LicenseApplication, AddLicenseApplicationDto>().ReverseMap();
             CreateMap<LicenseApplication, EditLicenseApplicationDto>().ReverseMap();
+            CreateMap<AddLicenseApplicationDto, LicenseApplication>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

@@ -25,7 +25,9 @@ namespace SonoTracker.Application.Mapping
                            .MapFrom(src => src.TripInformation.FloatingUnit.NameAr
                            ))
                 .ReverseMap();
-            CreateMap<TripGeo, AddTripGeoDto>().ReverseMap();
+            CreateMap<AddTripGeoDto, TripGeo>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

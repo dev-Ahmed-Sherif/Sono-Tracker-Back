@@ -20,15 +20,31 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
-        [Required]
+        [MaxLength(20), Required]
         public required string LicenseNumber { get; set; }
-        public float Length { get; set; }
-        public float Width { get; set; }
-        public int PassengerNumber { get; set; }
-        public int RoomNumber { get; set; }
-        public DateOnly ManufactureYear { get; set; }
-        public DateTime? LastMaintenanceDate { get; set; }
-        public DateTime? NextMaintenanceDate { get; set; }
+        
+        [Required]
+        public required float Length { get; set; }
+
+        [Required]
+        public required float Width { get; set; }
+        
+        [Required]
+        public required int PassengerNumber { get; set; }
+        
+        [Required]
+        public required int RoomNumber { get; set; }
+
+        [Required]
+        public required DateOnly ManufactureYear { get; set; }
+        public DateOnly? LastMaintenanceDate { get; set; }
+        public DateOnly? NextMaintenanceDate { get; set; }
+
+        [Required]
+        public required string ImageUrl { get; set; }
+        
+        [Required]
+        public required bool IsAccepted { get; set; }
 
         [Required, MaxLength(50), ForeignKey(nameof(UnitType))]
         public required string UnitTypeId { get; set; }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoTracker.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoTracker.Infrastructure.Context;
 namespace SonoTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoTrackerDbContext))]
-    partial class SonoTrackerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406111512_FloatingUnitChanges")]
+    partial class FloatingUnitChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1294,7 +1297,6 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
@@ -1311,13 +1313,13 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Property<DateOnly?>("LastMaintenanceDate")
                         .HasColumnType("date");
 
-                    b.Property<float>("Length")
+                    b.Property<float?>("Length")
                         .HasColumnType("real");
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateOnly>("ManufactureYear")
                         .HasColumnType("date");
@@ -1358,7 +1360,7 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<float>("Width")
+                    b.Property<float?>("Width")
                         .HasColumnType("real");
 
                     b.HasKey("Id");

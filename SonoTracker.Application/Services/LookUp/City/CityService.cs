@@ -182,7 +182,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                 var governorateCode = governorateDto.Code.Trim();
 
                 var lastCity = existingCities
-                    .OrderByDescending(x => x.CreatedAt)
+                    .OrderByDescending(x => x.Code)
                     .FirstOrDefault();
 
                 if (lastCity != null)

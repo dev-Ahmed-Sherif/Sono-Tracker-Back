@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.Helpers;
 using SonoTracker.Common.Helpers.MediaUploader;
+using SonoTracker.Common.Infrastructure.Repository;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnit
 {
@@ -33,32 +34,29 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
-                include: src => src
-                .Include(t => t.UnitType)
-               );
-            var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnit, EditFloatingUnitDto>(entity);
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id), include: src => src
+                .Include(t => t.UnitType), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.FloatingUnit, EditFloatingUnitDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
-                include: src => src
-                .Include(t => t.UnitType)
-               );
-            var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnit, FloatingUnitDto>(entity);
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id), include: src => src
+                                         .Include(t => t.UnitType), cancellationToken: cancellationToken);
+
+            var mapped = Mapper.Map<Entities.Tracker.FloatingUnit, FloatingUnitDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.FloatingUnit, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-             .Include(t => t.UnitType));
+                                         .Include(t => t.UnitType), cancellationToken: cancellationToken);
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
                 : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.FloatingUnit>, IEnumerable<FloatingUnitDto>>(filteredEntities);
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnit>, IEnumerable<FloatingUnitDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
@@ -79,13 +77,12 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
                 pageNumber: offset, pageSize: limit,
                 filter.OrderByValue,
                 include: src => src
-               .Include(t => t.UnitType),
-                cancellationToken: cancellationToken);
+               .Include(t => t.UnitType), cancellationToken: cancellationToken);
 
-            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var items = isSuperAdmin ? query.Result : query.Result.Where(x => x.IsDeleted != true);
             var data = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnit>, IEnumerable<FloatingUnitDto>>(items);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
@@ -180,7 +177,21 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                         message: MessagesConstants.Existed);
 
-                var entity = Mapper.Map<Domain.Entities.Tracker.FloatingUnit>(model);
+                var entity = Mapper.Map<Entities.Tracker.FloatingUnit>(model);
+
+                if (model.ImageUrl != null)
+                {
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.ImageUrl, $"FloatingUnits", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.ImageUrl = res;
+                }
 
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
@@ -223,12 +234,34 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
 
                 Entities.Tracker.FloatingUnit entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
+                string currentImageUrl = entityToUpdate.ImageUrl;
+
                 var entity = Mapper.Map(model, entityToUpdate);
 
                 if (IsSuperAdmin())
                 {
                     if (entityToUpdate.IsDeleted)
                         entity.IsDeleted = false;
+                }
+
+                if (model.ImageUrl != null)
+                {
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.ImageUrl, $"FloatingUnit", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    _uploaderConfiguration.DeleteFile(currentImageUrl);
+
+                    entity.ImageUrl = res;
+                }
+                else
+                {
+                    entity.ImageUrl = currentImageUrl;
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);
@@ -246,6 +279,68 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnit
             {
                 return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
                     message: MessagesConstants.UpdateError + ex.Message);
+            }
+        }
+        public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                Entities.Tracker.FloatingUnit entityToDelete = await UnitOfWork.Repository
+                                .FirstOrDefaultAsync(x => x.Id == id.ToString(),cancellationToken: cancellationToken);
+
+                _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);
+
+                // Ensure dependent rows are removed first to avoid FK constraint conflicts
+                // (FK_OrganizationStaffs_Organizations_OrganizationId).
+                var staffRepo = UnitOfWork.GetRepository<Entities.Tracker.FloatingUnitStaff>();
+                var staffToDelete = await staffRepo.FindAsync(
+                    predicate: x => x.FloatingUnitId == entityToDelete.Id,
+                    cancellationToken: cancellationToken);
+                if (staffToDelete != null)
+                    staffRepo.RemoveRange(staffToDelete);
+
+                IRepository<Entities.Tracker.FloatingUnitOrganization> orgsRepo = UnitOfWork.GetRepository<Entities.Tracker.FloatingUnitOrganization>();
+                
+                IEnumerable<Entities.Tracker.FloatingUnitOrganization> orgsToDelete = await orgsRepo.FindAsync(
+                    predicate: x => x.FloatingUnitId == entityToDelete.Id,
+                    cancellationToken: cancellationToken);
+                
+                if (orgsToDelete != null)
+                    orgsRepo.RemoveRange(orgsToDelete);
+
+                UnitOfWork.Repository.Remove(entityToDelete);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.DeleteError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                                                 message: MessagesConstants.DeleteSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.DeleteError + ex.Message);
+            }
+        }
+
+        private IFinalResult UploadResponse(string res)
+        {
+            if (res == "Size")
+            {
+                var message = "File Size Larger than 5 Mega Bytes";
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+            else if (res == "Type")
+            {
+                var message = "File type not allowed.";
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+            else
+            {
+                return null;
             }
         }
 

@@ -56,7 +56,7 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string governorateId, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string? governorateId, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await cityService.GetAllAsync(governorateId, cancellationToken);
             return Ok(res);

@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class TouristMarina : BaseAudit<string>
+    public class TouristMarina : Lookup<string>
     {
         public TouristMarina()
         {
@@ -18,15 +18,18 @@ namespace SonoTracker.Domain.Entities.Tracker
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-
-        [MaxLength(50)]
-        public string Code { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Url { get; set; } = string.Empty;
-        public float Length { get; set; }
-        public string NorthSide { get; set; } = string.Empty;
-        public string SouthSide { get; set; } = string.Empty;
-        public string Note { get; set; } = string.Empty;
+        [Required, MaxLength(250)]
+        public required string MarinaAddress { get; set; }
+        [Required]
+        public required float Length { get; set; }
+        [Required, MaxLength(50)]
+        public required string NorthSide { get; set; }
+        [Required, MaxLength(50)]
+        public required string SouthSide { get; set; }
+        [MaxLength(250)]
+        public string? Note { get; set; }
+        [MaxLength(250)]
+        public string? ImageUrl { get; set; }
 
         [Required, MaxLength(50)]
         [ForeignKey(nameof(City))]
@@ -40,7 +43,8 @@ namespace SonoTracker.Domain.Entities.Tracker
         [MaxLength(50), ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
+
         public virtual HashSet<TouristMarinaOrganization> TouristMarinaOwners { get; set; } = [];
-        public virtual HashSet<TripMarina> MarinaTrips { get; set; } = [];
+        public virtual HashSet<TripMarina> TripMarinas { get; set; } = [];
     }
 }

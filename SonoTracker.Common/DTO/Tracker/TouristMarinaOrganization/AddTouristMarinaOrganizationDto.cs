@@ -11,17 +11,13 @@ namespace SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization
     public class AddTouristMarinaOrganizationDto : IEntityDto<string>
     {
         public string Id { get; set; }
-       
-        public string TouristMarinaId { get; set; }
-        public string OrganizationId { get; set; }
+        
+        [Required ,MaxLength(50)]
+        public required string LicenseNumber { get; set; }
+        public required string TouristMarinaId { get; set; }
+        public required string OrganizationId { get; set; }
+        public required DateOnly FromDate { get; set; }
+        public required DateOnly ToDate { get; set; }
         public bool IsActive { get; set; }
-
-        [MaxLength(100)]
-        public string LicenseNumber { get; set; }
-
-        public DateTime FromDate { get; set; }
-
-        public DateTime ToDate { get; set; }
-
     }
 }

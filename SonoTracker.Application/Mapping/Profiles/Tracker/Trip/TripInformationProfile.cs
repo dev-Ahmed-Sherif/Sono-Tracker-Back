@@ -19,7 +19,9 @@ namespace SonoTracker.Application.Mapping
                  .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
                  .ForMember(des => des.FloatingUnitCode, opt => opt.MapFrom(src => src.FloatingUnit.Code)).ReverseMap();
             CreateMap<TripInformation, EditTripInformationDto>().ReverseMap();
-            CreateMap<TripInformation, AddTripInformationDto>().ReverseMap();
+            CreateMap<AddTripInformationDto, TripInformation>()
+                .ForMember(des => des.Id, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

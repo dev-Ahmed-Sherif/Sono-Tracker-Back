@@ -13,6 +13,9 @@ namespace SonoTracker.Common.DTO.Lookup.GeoPoint
     public class EditGeoPointDto : IEntityDto<string>
     {
         public string Id { get; set; }
+        public string Code { get; set; }
+        public string NameAr { get; set; }
+        public string NameEn { get; set; }
         public string North { get; set; }
         public string East { get; set; }
         public DateTime CreatedAt { get; set; }
