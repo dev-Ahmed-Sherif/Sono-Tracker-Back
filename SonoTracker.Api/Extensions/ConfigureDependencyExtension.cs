@@ -12,10 +12,12 @@ using SonoTracker.Api.Extensions.Swagger.Options;
 using SonoTracker.Application.Helper;
 using SonoTracker.Application.Mapping;
 using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Email;
 using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Application.Services.Tracker.Organization;
+using SonoTracker.Application.Services.Tracker.Organizations;
 using SonoTracker.Application.Services.Validators.Base;
 using SonoTracker.Common.Constants.Auth;
+using SonoTracker.Common.DTO.Email;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Extensions;
 using SonoTracker.Common.Helpers.HttpClient.RestSharp;
@@ -173,9 +175,12 @@ namespace SonoTracker.Api.Extensions
                     ;
                 });
             });
+
+            // Register Email Service
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            services.AddScoped<IEmailService, EmailService>();
+
             return services;
-
-
         }
 
         /// <summary>

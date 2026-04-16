@@ -17,9 +17,9 @@ namespace SonoTracker.Application.Mapping
             CreateMap<Inspection, GeneralInspectionDto>()
                  .ForMember(des => des.OrganizationNameAr, opt => opt.MapFrom(src => src.Organization.NameAr))
                  .ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
-                 .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.TripInformation.FloatingUnit.NameAr))
-                 .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.TripInformation.FloatingUnit.NameEn))
-                 .ForMember(des => des.TripInformationCode, opt => opt.MapFrom(src => src.TripInformation.Code))
+                 .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
+                 .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
+                 .ForMember(des => des.TripInformationCode, opt => opt.MapFrom(src => src.FloatingUnit.Code))
                  .ReverseMap();
             CreateMap<Inspection, EditGeneralInspectionDto>().ReverseMap();
             CreateMap<AddGeneralInspectionDto, Inspection>()

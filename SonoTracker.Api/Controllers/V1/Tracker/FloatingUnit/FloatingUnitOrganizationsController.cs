@@ -42,13 +42,14 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit
         /// <summary>
         /// Get All 
         /// </summary>
+        /// <param name="floatingUnitId">Optional. Filter by floating unit ID.</param>
         /// <returns></returns>
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string? floatingUnitId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await floatingUnitOrganizationService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await floatingUnitOrganizationService.GetAllAsync(floatingUnitId, cancellationToken);
 
             return Ok(res);
         }

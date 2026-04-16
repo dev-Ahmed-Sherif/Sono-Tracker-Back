@@ -1,23 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.Constants.Auth;
+using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain;
+using SonoTracker.Domain.Entities.Audit;
 using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
+using SonoTracker.Domain.Entities.Tracker;
 using SonoTracker.Integration.CacheRepository;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Base
 {
@@ -35,13 +40,14 @@ namespace SonoTracker.Application.Services.Base
         protected IHttpContextAccessor HttpContextAccessor;
         protected IConfiguration Configuration;
         protected ICacheRepository CacheRepository;
-        protected List<string> AppCodes = new();
+        protected List<string> AppCodes = [];
         private readonly ILogger _logger;
         private readonly JsonSerializerSettings _serializerSettings = new()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
         protected TokenClaimDto ClaimData { get; set; }
+        protected UserDataDto _user;
 
         /// <summary>
         /// Determines whether the current authenticated user has the `SuperAdmin` role.
@@ -49,10 +55,7 @@ namespace SonoTracker.Application.Services.Base
         /// <returns>True when the current role is SuperAdmin; otherwise false.</returns>
         protected bool IsSuperAdmin()
         {
-            var role = HttpContextAccessor?.HttpContext?.User?.Claims?
-                .FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? string.Empty;
-
-            return string.Equals(role, Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(_user.Role, Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -61,13 +64,12 @@ namespace SonoTracker.Application.Services.Base
         /// </summary>
         protected string GetGovernorateIdFromClaims()
         {
-            return HttpContextAccessor?.HttpContext?.User?.Claims?
-                       .FirstOrDefault(c => c.Type == AuthConstants.GovId)?.Value ?? string.Empty;
+            return _user.GovernorateId ?? string.Empty;
         }
 
         protected internal BaseService(IServiceBaseParameter<T> businessBaseParameter)
         {
-            _logger = businessBaseParameter.Logger ?? throw new ArgumentNullException(nameof(businessBaseParameter.Logger));
+            _logger = businessBaseParameter.Logger ?? throw new(nameof(businessBaseParameter.Logger));
             HttpContextAccessor = businessBaseParameter.HttpContextAccessor;
             UnitOfWork = businessBaseParameter.UnitOfWork;
             ResponseResult = businessBaseParameter.ResponseResult;
@@ -77,10 +79,9 @@ namespace SonoTracker.Application.Services.Base
             var claims = HttpContextAccessor?.HttpContext?.User;
             var ip = HttpContextAccessor?.HttpContext?.Connection.RemoteIpAddress?.ToString();
             ClaimData = GetTokenClaimDto(claims);
+            _user = GetTokenDataDto(claims);
             ClaimData.IpAddress = ip;
-
         }
-
     
         public virtual async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -265,27 +266,24 @@ namespace SonoTracker.Application.Services.Base
                                              message: MessagesConstants.Success);
         }
 
-        //protected virtual void SetEntityCreatedBaseProperties(BaseEntity<TKey> entity)
-        //{
-        //    entity.CreatedById = ClaimData.UserId;
-        //    entity.CreatedByEmployeeId = ClaimData.EmployeeId;
-        //    entity.CreatedDate = DateTime.Now;
-        //    entity.CreatedByEmployeeEn = ClaimData.EmployeeEn;
-        //    entity.CreatedByEmployeeAr = ClaimData.EmployeeAr;
-        //    entity.IpAddress = ClaimData.IpAddress;
+        protected virtual void SetEntityCreatedBaseProperties(BaseAudit<TKey> entity)
+        {
+            entity.CreatedById = _user.Id != "" ? _user.Id : "System";
+            entity.CreatedBy = _user.Name != "" ? _user.Name : "System";
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
+            entity.ModifiedBy = _user.Name != "" ? _user.Name : "System";
+            entity.ModifiedAt = DateTime.UtcNow;
+            entity.IpAddress = ClaimData.IpAddress;
+        }
 
-        //}
-
-        //protected virtual void SetEntityModifiedBaseProperties(BaseEntity<TKey> entity)
-        //{
-        //    entity.ModifiedById = ClaimData.UserId;
-        //    entity.ModifiedByEmployeeId = ClaimData.EmployeeId;
-        //    entity.ModifiedDate = DateTime.Now;
-        //    entity.ModifiedByEmployeeEn = ClaimData.EmployeeEn;
-        //    entity.ModifiedByEmployeeAr = ClaimData.EmployeeAr;
-        //    entity.IpAddress = ClaimData.IpAddress;
-
-        //}
+        protected virtual void SetEntityModifiedBaseProperties(BaseAudit<TKey> entity)
+        {
+            entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
+            entity.ModifiedBy = _user.Name != "" ? _user.Name : "System";
+            entity.ModifiedAt = DateTime.UtcNow;
+            entity.IpAddress = ClaimData.IpAddress;
+        }
 
         //protected virtual async Task<List<RoleDto>> GetRoles(string nationalId)
         //{
@@ -295,20 +293,28 @@ namespace SonoTracker.Application.Services.Base
         //    return roles.ToList();
         //}
 
-
-
         private TokenClaimDto GetTokenClaimDto(ClaimsPrincipal claims)
         {
             var claimData = new TokenClaimDto()
             {
-                UserId = claims?.FindFirst(t => t.Type == "UserId")?.Value,
-                EmployeeId = claims?.FindFirst(t => t.Type == "EmployeeId")?.Value,
+                UserId = claims?.FindFirst(t => t.Type == ClaimTypes.NameIdentifier)?.Value,
+                EmployeeId = claims?.FindFirst(t => t.Type == ClaimTypes.Name)?.Value,
                 EmployeeEn = claims?.FindFirst(t => t.Type == "EmployeeEn")?.Value,
                 EmployeeAr = claims?.FindFirst(t => t.Type == "EmployeeAr")?.Value,
                 UnitId = claims?.FindFirst(t => t.Type == "UnitId")?.Value,
                 TeamId = claims?.FindFirst(t => t.Type == "TeamId")?.Value,
                 NationalId = claims?.FindFirst(t => t.Type == "NationalId")?.Value
             };
+            return claimData;
+        }
+
+        private static UserDataDto GetTokenDataDto(ClaimsPrincipal claims)
+        {
+            var claimData = new UserDataDto(
+                claims?.FindFirst(t => t.Type == ClaimTypes.NameIdentifier)?.Value,
+                claims?.FindFirst(t => t.Type == ClaimTypes.Name)?.Value,
+                claims?.FindFirst(t => t.Type == ClaimTypes.Role)?.Value, [], "", "",
+                claims?.FindFirst(x => x.Type == AuthConstants.GovId)?.Value);
             return claimData;
         }
     }

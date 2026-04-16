@@ -1,14 +1,14 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class Maintenance : BaseEntity<string>
+    public class Maintenance : BaseAudit<string>
     {
         public Maintenance()
         {
@@ -19,8 +19,11 @@ namespace SonoTracker.Domain.Entities.Tracker
         }
 
         public string Number { get; set; } = string.Empty;
-        public DateTime MaintenanceDate { get; set; }
-        public DateTime? NextMaintenanceDate { get; set; }
+        public required DateOnly MaintenanceDate { get; set; }
+        public DateOnly? NextMaintenanceDate { get; set; }
+        public string MaintenanceReport { get; set; } = string.Empty;
+        public string? OtherAttach { get; set; }
+        public string? Notes { get; set; }
 
         [Required, MaxLength(50)]
         [ForeignKey(nameof(MaintenanceType))]
@@ -32,11 +35,9 @@ namespace SonoTracker.Domain.Entities.Tracker
         public required string FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        [MaxLength(50)]
+        [ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
-        public string MaintenanceReport { get; set; } = string.Empty;
-        public string? Other{ get; set; }
-        public string? Notes { get; set; }
     }
 }

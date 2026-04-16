@@ -1,6 +1,5 @@
 using LinqKit;
 using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.Tracker.Organization;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
@@ -30,6 +29,7 @@ using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization.Parameters;
 using SonoTracker.Common.DTO.Tracker.TouristMarinaOrganization;
 using SonoTracker.Common.DTO.Tracker.Organization;
 using SonoTracker.Common.Helpers;
+using SonoTracker.Application.Services.Tracker.Organizations;
 
 namespace SonoTracker.Application.Services.Tracker.TouristMarinaOrganization
 {

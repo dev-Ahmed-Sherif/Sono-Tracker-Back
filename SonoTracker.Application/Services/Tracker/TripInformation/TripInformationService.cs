@@ -135,11 +135,13 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
             }
             if (filter.SartDate.HasValue)
             {
-                predicate = predicate.And(x => x.SartDate.Date >= filter.SartDate.Value.Date);
+                var startDate = DateOnly.FromDateTime(filter.SartDate.Value);
+                predicate = predicate.And(x => x.SartDate >= startDate);
             }
             if (filter.EndDate.HasValue)
             {
-                predicate = predicate.And(x => x.EndDate<= filter.EndDate.Value.Date);
+                var endDate = DateOnly.FromDateTime(filter.EndDate.Value);
+                predicate = predicate.And(x => x.EndDate <= endDate);
             }
             if (!string.IsNullOrWhiteSpace(filter.Code))
             {
@@ -177,6 +179,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         public override async Task<IFinalResult> AddAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
         {
             var mapped = Mapper.Map<Domain.Entities.Tracker.TripInformation>(dto);
+            SetEntityCreatedBaseProperties(mapped);
 
             if (dto.PassengerAttachment != null)
             {
@@ -208,6 +211,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
                 {
@@ -239,8 +243,6 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                     var entityRes = (EditTripInformationDto)entity.Data;
                     //newEntity.PassengerAttachment = entityRes.PassengerAttachment;
                 }
-
-                //SetEntityModifiedBaseProperties(newEntity);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 

@@ -12,9 +12,9 @@ namespace SonoTracker.Common.DTO.Tracker.Maintenance
     public class AddMaintenanceDto : IEntityDto<string>
     {
         public string? Id { get; set; }
-        public int Number { get; set; }
-        public DateTime MaintenanceDate { get; set; }
-        public DateTime? NextMaintenanceDate { get; set; }
+        public string Number { get; set; }
+        public DateOnly MaintenanceDate { get; set; }
+        public DateOnly? NextMaintenanceDate { get; set; }
         public string MaintenanceTypeId { get; set; }
         public string FloatingUnitId { get; set; }
         public IFormFile MaintenanceReport { get; set; }

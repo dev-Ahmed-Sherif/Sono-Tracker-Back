@@ -10,7 +10,7 @@ namespace SonoTracker.Domain.Entities.TrackerNotification
 {
     [ExcludeFromCodeCoverage]
 
-    public class Message : BaseEntity<string>
+    public class Message : BaseAudit<string>
     {
         public Message()
         {

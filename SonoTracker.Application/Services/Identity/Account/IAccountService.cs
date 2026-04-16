@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.User;
-using SonoTracker.Common.DTO.Tracker.LicenseApplication.Parameters;
 using SonoTracker.Domain.Entities.Identity;
 using System.Collections.Generic;
 using System.Threading;

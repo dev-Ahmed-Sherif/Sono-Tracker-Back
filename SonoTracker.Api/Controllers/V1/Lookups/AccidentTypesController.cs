@@ -2,7 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.LookUp.AccidentType;
+using SonoTracker.Application.Services.LookUp.AccidentTypes;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.AccidentType;

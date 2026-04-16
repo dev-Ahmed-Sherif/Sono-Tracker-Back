@@ -2,7 +2,6 @@ using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.FloatingUnit;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -17,14 +16,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 {
-    public class FloatingUnitOrganizationService : BaseService<Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, string, string>, IFloatingUnitOrganizationService
+    public class FloatingUnitOrganizationService(IServiceBaseParameter<Entities.Tracker.FloatingUnitOrganization> businessBaseParameter) : BaseService<Entities.Tracker.FloatingUnitOrganization, AddFloatingUnitOrganizationDto, EditFloatingUnitOrganizationDto, FloatingUnitOrganizationDto, string, string>(businessBaseParameter), IFloatingUnitOrganizationService
     {
-
-        public FloatingUnitOrganizationService(IServiceBaseParameter<Entities.Tracker.FloatingUnitOrganization> businessBaseParameter) : base(businessBaseParameter)
-        {
-
-
-        }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var idStr = id?.ToString();
@@ -48,15 +41,26 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
        
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.FloatingUnitOrganization, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.FloatingUnitOrganization, bool>> predicate = null, CancellationToken cancellationToken = default)
+            => await GetAllAsync(floatingUnitId: null, cancellationToken);
+
+        public async Task<IFinalResult> GetAllAsync(string floatingUnitId, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
-                .Include(t => t.FloatingUnit)
-                .Include(t => t.Organization));
-            var filteredEntities = IsSuperAdmin()
-                ? entity
-                : entity.Where(e => !e.IsDeleted);
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.FloatingUnitOrganization>, IEnumerable<FloatingUnitOrganizationDto>>(filteredEntities);
+            var isSuperAdmin = IsSuperAdmin();
+            var filter = new FloatingUnitOrganizationFilter
+            {
+                FloatingUnitId = floatingUnitId,
+                IsDeleted = false
+            };
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
+
+            var entity = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(filter, governorateId, includeDeleted: isSuperAdmin),
+                include: src => src
+                    .Include(t => t.FloatingUnit)
+                    .Include(t => t.Organization),
+                cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnitOrganization>, IEnumerable<FloatingUnitOrganizationDto>>(entity);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
@@ -65,6 +69,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
         {
             var isSuperAdmin = IsSuperAdmin();
             var floatingUnitOrganizationFilter = filter?.Filter ?? new FloatingUnitOrganizationFilter();
+            var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
 
             if (!isSuperAdmin)
                 floatingUnitOrganizationFilter.IsDeleted = false;
@@ -73,10 +78,14 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: PredicateBuilderFunction(floatingUnitOrganizationFilter), pageNumber: offset, pageSize: limit, filter.OrderByValue,
+            var query = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: PredicateBuilderFunction(floatingUnitOrganizationFilter, governorateId, includeDeleted: false),
+                pageNumber: offset,
+                pageSize: limit,
+                filter.OrderByValue,
                 include: src => src
-                .Include(t => t.FloatingUnit)
-                .Include(t => t.Organization),
+                    .Include(t => t.FloatingUnit)
+                    .Include(t => t.Organization),
                 cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.FloatingUnitOrganization>, IEnumerable<FloatingUnitOrganizationDto>>(query.Item2);
@@ -84,9 +93,14 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
-        static Expression<Func<Entities.Tracker.FloatingUnitOrganization, bool>> PredicateBuilderFunction(FloatingUnitOrganizationFilter filter)
+        static Expression<Func<Entities.Tracker.FloatingUnitOrganization, bool>> PredicateBuilderFunction(
+            FloatingUnitOrganizationFilter filter,
+            string governorateId = null,
+            bool includeDeleted = false)
         {
-            var predicate = PredicateBuilder.New<Entities.Tracker.FloatingUnitOrganization>(x => x.IsDeleted == filter.IsDeleted);
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Entities.Tracker.FloatingUnitOrganization>(true)
+                : PredicateBuilder.New<Entities.Tracker.FloatingUnitOrganization>(x => x.IsDeleted == filter.IsDeleted);
 
             if (!string.IsNullOrEmpty(filter.OrganizationId))
             {
@@ -94,11 +108,17 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             }
             if (filter.OrganizationType.HasValue)
             {
-                predicate = predicate.And(x => x.Organization.OrganizationType == filter.OrganizationType);
+                predicate = predicate.And(x => x.Organization != null && x.Organization.OrganizationType == filter.OrganizationType);
             }
             if (!string.IsNullOrEmpty(filter.FloatingUnitId))
             {
                 predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
+            }
+            if (!string.IsNullOrWhiteSpace(governorateId))
+            {
+                predicate = predicate.And(x =>
+                    (x.FloatingUnit != null && x.FloatingUnit.GovernorateId == governorateId) ||
+                    (x.Organization != null && x.Organization.GovernorateId == governorateId));
             }
 
             return predicate;

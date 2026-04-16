@@ -18,7 +18,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Maintenance
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class MaintenanceController(IMaintenanceService maintenanceService) : BaseController
+    public class MaintenancesController(IMaintenanceService maintenanceService) : BaseController
     {
         /// <summary>
         /// Get By Id 

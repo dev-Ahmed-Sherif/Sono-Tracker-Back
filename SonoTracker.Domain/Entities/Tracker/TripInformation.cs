@@ -23,8 +23,8 @@ namespace SonoTracker.Domain.Entities.Tracker
         [Required, MaxLength(50)]
         public required string Code { get; set; }
         [Required]
-        public DateTime SartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateOnly SartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
         public int StaffNumber { get; set; }
         public int PassengerNumber { get; set; }
         public int AttachmentNumber { get; set; }

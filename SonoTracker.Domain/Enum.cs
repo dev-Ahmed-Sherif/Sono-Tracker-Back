@@ -219,8 +219,8 @@ namespace SonoTracker.Domain.Enum
     {
         [Values("Approved", "مقبول", "APPROVED")]
         Approved = 1,
-        [Values("Rejected", "مرفوض", "REJECTED")]
-        Rejected,
+        [Values("NeedCompelete", "مطلوب الإستكمال", "NEEDCOMPELETE")]
+        NeedCompelete,
         [Values("Pending", "جارى المراجعة", "PENDING")]
         Pending
     }

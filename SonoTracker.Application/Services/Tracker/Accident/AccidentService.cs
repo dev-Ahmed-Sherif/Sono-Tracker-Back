@@ -17,8 +17,8 @@ using SonoTracker.Common.DTO.Tracker.Accident;
 using SonoTracker.Common.DTO.Tracker.Accident.Parameters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using SonoTracker.Application.Services.Tracker.FloatingUnit;
 using SonoTracker.Common.DTO.Tracker.FloatingUnit;
+using SonoTracker.Application.Services.Tracker.FloatingUnits;
 
 namespace SonoTracker.Application.Services.Tracker.Accident
 {
@@ -188,6 +188,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             try
             {
                 var mapped = Mapper.Map<Entities.Tracker.Accident>(dto);
+                SetEntityCreatedBaseProperties(mapped);
 
                 var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId);
 
@@ -265,6 +266,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
                 {
@@ -300,8 +302,6 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                     return ResponseResult.PostResult(null, status: HttpStatusCode.NotFound,
                                           message: MessagesConstants.NotFound);
                 }
-
-                //SetEntityModifiedBaseProperties(newEntity);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 

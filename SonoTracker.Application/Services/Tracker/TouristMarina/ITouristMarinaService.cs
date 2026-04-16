@@ -4,17 +4,14 @@ using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.TouristMarina;
 using SonoTracker.Common.DTO.Tracker.TouristMarina.Parameters;
 using SonoTracker.Common.DTO.Tracker.TripInformation.Parameters;
-using System;
+using SonoTracker.Domain.Entities.Tracker;
 using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Tracker.TouristMarina
+namespace SonoTracker.Application.Services.Tracker.Marinas
 {
-   public  interface ITouristMarinaService : IBaseService<Domain.Entities.Tracker.TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, string, string>
+   public  interface ITouristMarinaService : IBaseService<TouristMarina, AddTouristMarinaDto,EditTouristMarinaDto, TouristMarinaDto, string, string>
    {
         Task<PagingResult> GetAllPagedAsync(BaseParam<TouristMarinaFilter> Filter, CancellationToken cancellationToken = default);
         Task<IFinalResult> GetAllFilterAsync(TouristMarinaFilter filter, CancellationToken cancellationToken = default);

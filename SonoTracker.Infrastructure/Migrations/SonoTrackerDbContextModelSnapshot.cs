@@ -1473,7 +1473,21 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("FloatingUnitId")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1484,22 +1498,37 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Property<string>("InspectionAttachment")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("InspectionDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("InspectionDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("InspectionTypeId")
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsInspected")
-                        .HasColumnType("bit");
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OrganizationId")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1508,10 +1537,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Property<bool>("SaftyPetroleumWaste")
                         .HasColumnType("bit");
-
-                    b.Property<string>("TripInformationId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -1523,93 +1548,99 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.HasIndex("TripInformationId");
-
                     b.ToTable("Inspections");
                 });
 
-            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.LicenseApplication", b =>
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.InspectionClause", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("CivilProtection")
+                    b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CommercialRegister")
+                    b.Property<string>("InspectionTypeId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FromOrganizationId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("GovernorateId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Insurance")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Irrigation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LicenseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LicenseNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Other")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("SendMail")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("StateProperty")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Taxes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ToOrganizationId")
+                    b.Property<string>("ParentId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("TouristMarinaNumber")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
+
+                    b.HasIndex("InspectionTypeId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("InspectionClauses");
+                });
+
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.InspectionFloatingUnitClause", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("InspectionClauseId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("InspectionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsInspected")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Number")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FromOrganizationId");
+                    b.HasIndex("InspectionClauseId");
 
-                    b.HasIndex("GovernorateId");
+                    b.HasIndex("InspectionId");
 
-                    b.HasIndex("ToOrganizationId");
-
-                    b.ToTable("LicenseApplications");
+                    b.ToTable("InspectionFloatingUnitClauses");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.Maintenance", b =>
                 {
                     b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1622,11 +1653,15 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("MaintenanceDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("MaintenanceDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("MaintenanceReport")
                         .IsRequired()
@@ -1637,8 +1672,21 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("NextMaintenanceDate")
+                    b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly?>("NextMaintenanceDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -1650,7 +1698,7 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Property<string>("OrganizationId")
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Other")
+                    b.Property<string>("OtherAttach")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -1953,6 +2001,114 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.ToTable("TouristMarinas");
                 });
 
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.TouristMarinaLicenseApplication", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CivilProtection")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CommercialRegister")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FromOrganizationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("GovernorateId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Insurance")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
+
+                    b.Property<string>("Irrigation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly>("LicenseDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LicenseNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("OtherAttach")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StateProperty")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Taxes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ToOrganizationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TouristMarinaNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromOrganizationId");
+
+                    b.HasIndex("GovernorateId");
+
+                    b.HasIndex("ToOrganizationId");
+
+                    b.ToTable("TouristMarinaLicenseApplications", (string)null);
+                });
+
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.TouristMarinaOrganization", b =>
                 {
                     b.Property<string>("Id")
@@ -2053,8 +2209,8 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("FloatingUnitId")
                         .IsRequired()
@@ -2093,8 +2249,8 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("SartDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("SartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("StaffNumber")
                         .HasColumnType("int");
@@ -2181,9 +2337,26 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(14000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -2192,6 +2365,19 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("MessagingGroupId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -2298,15 +2484,45 @@ namespace SonoTracker.Infrastructure.Migrations
                         .HasMaxLength(14000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("GovernorateId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("NotificationGroupId")
                         .HasMaxLength(50)
@@ -2707,7 +2923,8 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.FloatingUnit", "FloatingUnit")
                         .WithMany("Inspections")
                         .HasForeignKey("FloatingUnitId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
                         .WithMany()
@@ -2721,44 +2938,51 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "Organization")
                         .WithMany("Inspections")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SonoTracker.Domain.Entities.Tracker.TripInformation", "TripInformation")
-                        .WithMany("Inspections")
-                        .HasForeignKey("TripInformationId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("FloatingUnit");
 
                     b.Navigation("Governorate");
 
                     b.Navigation("Organization");
-
-                    b.Navigation("TripInformation");
                 });
 
-            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.LicenseApplication", b =>
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.InspectionClause", b =>
                 {
-                    b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "FromOrganization")
-                        .WithMany("LicenseApplications")
-                        .HasForeignKey("FromOrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
+                    b.HasOne("SonoTracker.Domain.Entities.Lookups.InspectionType", "InspectionType")
                         .WithMany()
-                        .HasForeignKey("GovernorateId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("InspectionTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "ToOrganization")
+                    b.HasOne("SonoTracker.Domain.Entities.Tracker.InspectionClause", "Parent")
                         .WithMany()
-                        .HasForeignKey("ToOrganizationId")
+                        .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("FromOrganization");
+                    b.Navigation("InspectionType");
 
-                    b.Navigation("Governorate");
+                    b.Navigation("Parent");
+                });
 
-                    b.Navigation("ToOrganization");
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.InspectionFloatingUnitClause", b =>
+                {
+                    b.HasOne("SonoTracker.Domain.Entities.Tracker.InspectionClause", "InspectionClause")
+                        .WithMany("InspectionFloatingUnitClauses")
+                        .HasForeignKey("InspectionClauseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SonoTracker.Domain.Entities.Tracker.Inspection", "Inspection")
+                        .WithMany("InspectionFloatingUnitClauses")
+                        .HasForeignKey("InspectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Inspection");
+
+                    b.Navigation("InspectionClause");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.Maintenance", b =>
@@ -2777,7 +3001,7 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.HasOne("SonoTracker.Domain.Entities.Lookups.MaintenanceType", "MaintenanceType")
                         .WithMany("Maintenances")
                         .HasForeignKey("MaintenanceTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", null)
@@ -2852,6 +3076,32 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Navigation("GeoPoint");
 
                     b.Navigation("Governorate");
+                });
+
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.TouristMarinaLicenseApplication", b =>
+                {
+                    b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "FromOrganization")
+                        .WithMany("TouristMarinaLicenseApplication")
+                        .HasForeignKey("FromOrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SonoTracker.Domain.Entities.Lookups.Governorate", "Governorate")
+                        .WithMany()
+                        .HasForeignKey("GovernorateId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SonoTracker.Domain.Entities.Tracker.Organization", "ToOrganization")
+                        .WithMany()
+                        .HasForeignKey("ToOrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromOrganization");
+
+                    b.Navigation("Governorate");
+
+                    b.Navigation("ToOrganization");
                 });
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.TouristMarinaOrganization", b =>
@@ -3141,6 +3391,16 @@ namespace SonoTracker.Infrastructure.Migrations
                     b.Navigation("TripInformations");
                 });
 
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.Inspection", b =>
+                {
+                    b.Navigation("InspectionFloatingUnitClauses");
+                });
+
+            modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.InspectionClause", b =>
+                {
+                    b.Navigation("InspectionFloatingUnitClauses");
+                });
+
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.Organization", b =>
                 {
                     b.Navigation("Accidents");
@@ -3149,11 +3409,11 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Navigation("Inspections");
 
-                    b.Navigation("LicenseApplications");
-
                     b.Navigation("Maintenances");
 
                     b.Navigation("OrganizationStaffs");
+
+                    b.Navigation("TouristMarinaLicenseApplication");
 
                     b.Navigation("TouristMarinaOrganizations");
                 });
@@ -3167,8 +3427,6 @@ namespace SonoTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoTracker.Domain.Entities.Tracker.TripInformation", b =>
                 {
-                    b.Navigation("Inspections");
-
                     b.Navigation("NationalityTrips");
 
                     b.Navigation("TripMarinas");

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using SonoTracker.Application.Services.Tracker.FloatingUnit;
+using SonoTracker.Application.Services.Tracker.FloatingUnits;
 using SonoTracker.Application.Services.Tracker.TripGeo;
 using SonoTracker.Common.DTO.Tracker.FloatingUnit;
 using SonoTracker.Common.DTO.Tracker.TripGeo;

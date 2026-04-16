@@ -3,7 +3,7 @@ using DeputyOffice.Common.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Tracker.Organization;
+using SonoTracker.Application.Services.Tracker.Organizations;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Reports.Org;

@@ -19,12 +19,10 @@ namespace SonoTracker.Infrastructure.UnitOfWork
         private DbContext _context;
         private IDbContextTransaction _transaction;
         private Dictionary<string, dynamic> _repositories;
-        private readonly UserDataDto _user;
         public IRepository<T> Repository { get; }
-        public UnitOfWork(DbContext context,UserDataDto user)
+        public UnitOfWork(DbContext context)
         {
             _context = context;
-            _user = user;
             Repository = new Repository<T>(_context);
         }
 
@@ -54,32 +52,9 @@ namespace SonoTracker.Infrastructure.UnitOfWork
         /// <returns></returns>
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            ApplyChangesDate();
             return await _context.SaveChangesAsync(cancellationToken);
         }
-        public void ApplyChangesDate()
-        {
-            var entries = _context.ChangeTracker.Entries<BaseAudit<string>>();
-            foreach (var item in entries)
-            {
-                switch (item.State)
-                {
-                    case EntityState.Added:
-                        item.Entity.CreatedAt = DateTime.UtcNow;
-                        item.Entity.CreatedById = _user.Id != "" ? _user.Id : "System";
-                        item.Entity.CreatedBy = _user.Name ?? null;
-                        item.Entity.ModifiedAt = DateTime.UtcNow;
-                        item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
-                        item.Entity.ModifiedBy = _user.Name ?? null;
-                        break;
-                    case EntityState.Modified:
-                        item.Entity.ModifiedAt = DateTime.UtcNow;
-                        item.Entity.ModifiedById = _user.Id != "" ? _user.Id : "System";
-                        item.Entity.ModifiedBy = _user.Name ?? null;
-                        break;
-                }
-            }
-        }
+       
         /// <summary>
         /// Save Changes
         /// </summary>

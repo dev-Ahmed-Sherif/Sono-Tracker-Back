@@ -179,7 +179,7 @@
             Constructor
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.#ctor(SonoTracker.Application.Services.LookUp.AccidentType.IAccidentTypeService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Lookups.AccidentTypesController.#ctor(SonoTracker.Application.Services.LookUp.AccidentTypes.IAccidentTypeService)">
             <summary>
             EntityTypes Controller
             </summary>
@@ -1096,10 +1096,11 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetAllAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get All 
             </summary>
+            <param name="floatingUnitId">Optional. Filter by floating unit ID.</param>
             <returns></returns>
         </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitOrganizationsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.FloatingUnitOrganization.Parameters.FloatingUnitOrganizationFilter},System.Threading.CancellationToken)">
@@ -1147,7 +1148,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.#ctor(SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.FloatingUnit.FloatingUnitsController.#ctor(SonoTracker.Application.Services.Tracker.FloatingUnits.IFloatingUnitService)">
             <summary>
             Constructor
             </summary>
@@ -1283,88 +1284,12 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.#ctor(SonoTracker.Application.Services.Tracker.GeneralInspection.IGeneralInspectionService)">
-            <summary>
-            Constructor
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get By Id 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Get For Edit 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetAllAsync(System.Threading.CancellationToken)">
-            <summary>
-            Get All 
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.GeneralInspection.Parameters.GeneralInspectionFilter},System.Threading.CancellationToken)">
-            <summary>
-            GetAll Data paged
-            </summary>
-            <param name="filter">Filter responsible for search and sort</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.AddAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto,System.Threading.CancellationToken)">
-            <summary>
-            Add 
-            </summary>
-            <param name="dto"></param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto,System.Threading.CancellationToken)">
-            <summary>
-            Update  
-            </summary>
-            <param name="model">Object content</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Remove  by id
-            </summary>
-            <param name="id">PK</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
-            <summary>
-            Soft Remove by id
-            </summary>
-            <param name="id">PK</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.GeneralInspection.GeneralInspectionsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
-            <summary>
-            Remove Range by Organization Ids
-            </summary>
-            <param name="ids">PK</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.#ctor(SonoTracker.Application.Services.Tracker.Governorate.IGovernorateService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.GovernoratesController.#ctor(SonoTracker.Application.Services.Tracker.Governorates.IGovernorateService)">
             <summary>
             Constructor
             </summary>
@@ -1429,35 +1354,35 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController">
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.#ctor(SonoTracker.Application.Services.Tracker.LicenseApplication.ILicenseApplicationService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.#ctor(SonoTracker.Application.Services.Tracker.Inspection.IInspectionService)">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.GetAllAsync(System.Threading.CancellationToken)">
             <summary>
             Get All 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.LicenseApplication.Parameters.LicenseApplicationFilter},System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.GeneralInspection.Parameters.GeneralInspectionFilter},System.Threading.CancellationToken)">
             <summary>
             GetAll Data paged
             </summary>
@@ -1465,7 +1390,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.AddAsync(SonoTracker.Common.DTO.Tracker.LicenseApplication.AddLicenseApplicationDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.AddAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto,System.Threading.CancellationToken)">
             <summary>
             Add 
             </summary>
@@ -1473,15 +1398,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
-            <summary>
-            Get All Data paged For Drop Down
-            </summary>
-            <param name="filter">Filter responsible for search and sort</param>
-            <param name="cancellationToken"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.UpdateAsync(SonoTracker.Common.DTO.Tracker.LicenseApplication.AddLicenseApplicationDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.GeneralInspection.AddGeneralInspectionDto,System.Threading.CancellationToken)">
             <summary>
             Update  
             </summary>
@@ -1489,7 +1406,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1497,43 +1414,51 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Governorate.LicenseApplicationController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
-            Soft Remove  by id
+            Soft Remove by id
             </summary>
             <param name="id">PK</param>
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by Organization Ids
+            </summary>
+            <param name="ids">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.#ctor(SonoTracker.Application.Services.Tracker.Maintenance.IMaintenanceService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.#ctor(SonoTracker.Application.Services.Tracker.Maintenance.IMaintenanceService)">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.GetAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get By Id 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Get For Edit 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetAllAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.GetAllAsync(System.Threading.CancellationToken)">
             <summary>
             Get All 
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Maintenance.Parameters.MaintenanceFilter},System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.Maintenance.Parameters.MaintenanceFilter},System.Threading.CancellationToken)">
             <summary>
             GetAll Data paged
             </summary>
@@ -1541,7 +1466,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.AddAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.AddAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto,System.Threading.CancellationToken)">
             <summary>
             Add 
             </summary>
@@ -1549,7 +1474,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
             <summary>
             Get All Data paged For Drop Down
             </summary>
@@ -1557,7 +1482,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.UpdateAsync(SonoTracker.Common.DTO.Tracker.Maintenance.AddMaintenanceDto,System.Threading.CancellationToken)">
             <summary>
             Update  
             </summary>
@@ -1565,7 +1490,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Remove  by id
             </summary>
@@ -1573,7 +1498,7 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenanceController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Soft Remove  by id
             </summary>
@@ -1586,7 +1511,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.#ctor(SonoTracker.Application.Services.Tracker.Organization.IOrganizationService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController.#ctor(SonoTracker.Application.Services.Tracker.Organizations.IOrganizationService)">
             <summary>
             Constructor
             </summary>
@@ -1727,6 +1652,82 @@
             <param name="id">PK</param>
             <returns></returns>
         </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplication.ITouristMarinaLicenseApplicationService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TouristMarinaLicenseApplication.Parameters.TouristMarinaLicenseApplicationFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.AddAsync(SonoTracker.Common.DTO.Tracker.TouristMarinaLicenseApplication.AddTouristMarinaLicenseApplicationDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TouristMarinaLicenseApplication.AddTouristMarinaLicenseApplicationDto,System.Threading.CancellationToken)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaLicenseApplicationsController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinaOrganizationsController">
             <summary>
             Constructor
@@ -1813,7 +1814,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinasController.#ctor(SonoTracker.Application.Services.Tracker.TouristMarina.ITouristMarinaService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.TouristMarina.TouristMarinasController.#ctor(SonoTracker.Application.Services.Tracker.Marinas.ITouristMarinaService)">
             <summary>
             Constructor
             </summary>
@@ -1959,7 +1960,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.#ctor(SonoTracker.Application.Services.Tracker.TripInformation.ITripInformationService,SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.#ctor(SonoTracker.Application.Services.Tracker.TripInformation.ITripInformationService,SonoTracker.Application.Services.Tracker.FloatingUnits.IFloatingUnitService)">
             <summary>
             Constructor
             </summary>
@@ -2257,7 +2258,7 @@
             Represents a SignalR hub for managing geolocation-related communication.  
             </summary> 
         </member>
-        <member name="M:SonoTracker.Api.Hubs.GeoHub.#ctor(Microsoft.AspNetCore.Identity.UserManager{SonoTracker.Domain.Entities.Identity.User},SonoTracker.Application.Services.Tracker.TripGeo.ITripGeoService,SonoTracker.Application.Services.Tracker.FloatingUnit.IFloatingUnitService)">
+        <member name="M:SonoTracker.Api.Hubs.GeoHub.#ctor(Microsoft.AspNetCore.Identity.UserManager{SonoTracker.Domain.Entities.Identity.User},SonoTracker.Application.Services.Tracker.TripGeo.ITripGeoService,SonoTracker.Application.Services.Tracker.FloatingUnits.IFloatingUnitService)">
             <summary>  
             Represents a SignalR hub for managing geolocation-related communication.  
             </summary> 

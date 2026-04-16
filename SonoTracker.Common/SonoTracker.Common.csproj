@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.14" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.4" />
+    <PackageReference Include="NETCore.MailKit" Version="2.1.0" />
     <PackageReference Include="PrivateSetterContractResolver" Version="2.1.0" />
     <PackageReference Include="ReportViewerCore.NETCore" Version="15.1.19" />
     <PackageReference Include="RestSharp" Version="112.1.0" />

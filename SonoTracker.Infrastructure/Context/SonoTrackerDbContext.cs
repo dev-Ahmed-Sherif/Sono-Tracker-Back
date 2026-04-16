@@ -43,13 +43,15 @@ namespace SonoTracker.Infrastructure.Context
 
         public virtual DbSet<TouristMarina> TouristMarinas { get; set; }
         public virtual DbSet<TouristMarinaOrganization> TouristMarinaOrganizations { get; set; }
-        public virtual DbSet<LicenseApplication> LicenseApplications { get; set; }
+        public virtual DbSet<TouristMarinaLicenseApplication> TouristMarinaLicenseApplications { get; set; }
 
         #endregion
 
         #region Inspection, Maintenance & Accident
 
         public virtual DbSet<Inspection> Inspections { get; set; }
+        public virtual DbSet<InspectionClause> InspectionClauses { get; set; }
+        public virtual DbSet<InspectionFloatingUnitClause> InspectionFloatingUnitClauses { get; set; }
         public virtual DbSet<Maintenance> Maintenances { get; set; }
         public virtual DbSet<Accident> Accidents { get; set; }
 
@@ -293,6 +295,10 @@ namespace SonoTracker.Infrastructure.Context
                 .WithMany()
                 .HasForeignKey(tg => tg.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Inspection no longer holds a TripInformationId FK; ignore the stale collection.
+            modelBuilder.Entity<TripInformation>()
+                .Ignore(t => t.Inspections);
         }
 
         private static void ConfigureMarinaRelations(ModelBuilder modelBuilder)
@@ -344,19 +350,22 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(mo => mo.TouristMarinaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<LicenseApplication>()
+            modelBuilder.Entity<TouristMarinaLicenseApplication>()
+                .ToTable("TouristMarinaLicenseApplications");
+
+            modelBuilder.Entity<TouristMarinaLicenseApplication>()
                 .HasOne(la => la.FromOrganization)
-                .WithMany(o => o.LicenseApplications)
+                .WithMany(o => o.TouristMarinaLicenseApplication)
                 .HasForeignKey(la => la.FromOrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<LicenseApplication>()
+            modelBuilder.Entity<TouristMarinaLicenseApplication>()
                 .HasOne(la => la.ToOrganization)
                 .WithMany()
                 .HasForeignKey(la => la.ToOrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<LicenseApplication>()
+            modelBuilder.Entity<TouristMarinaLicenseApplication>()
                 .HasOne(la => la.Governorate)
                 .WithMany()
                 .HasForeignKey(la => la.GovernorateId)
@@ -366,10 +375,8 @@ namespace SonoTracker.Infrastructure.Context
         private static void ConfigureInspectionMaintenanceAccidentRelations(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Inspection>()
-                .HasOne(i => i.TripInformation)
-                .WithMany(t => t.Inspections)
-                .HasForeignKey(i => i.TripInformationId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .Property(i => i.InspectionDate)
+                .HasColumnType("date");
 
             modelBuilder.Entity<Inspection>()
                 .HasOne(i => i.FloatingUnit)
@@ -389,6 +396,44 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(i => i.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<InspectionClause>()
+                .HasOne(c => c.InspectionType)
+                .WithMany()
+                .HasForeignKey(c => c.InspectionTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionClause>()
+                .HasOne(c => c.Parent)
+                .WithMany()
+                .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionFloatingUnitClause>()
+                .HasOne(ic => ic.Inspection)
+                .WithMany(i => i.InspectionFloatingUnitClauses)
+                .HasForeignKey(ic => ic.InspectionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionFloatingUnitClause>()
+                .HasOne(ic => ic.InspectionClause)
+                .WithMany(c => c.InspectionFloatingUnitClauses)
+                .HasForeignKey(ic => ic.InspectionClauseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Maintenance>()
+                .Property(m => m.MaintenanceDate)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<Maintenance>()
+                .Property(m => m.NextMaintenanceDate)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<Maintenance>()
+                .HasOne(m => m.MaintenanceType)
+                .WithMany(mt => mt.Maintenances)
+                .HasForeignKey(m => m.MaintenanceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Maintenance>()
                 .HasOne(m => m.FloatingUnit)
                 .WithMany(f => f.Maintenances)
@@ -400,6 +445,14 @@ namespace SonoTracker.Infrastructure.Context
                 .WithMany()
                 .HasForeignKey(m => m.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Accident>()
+                .Property(a => a.AccidentDate)
+                .HasColumnType("date");
+
+            modelBuilder.Entity<Accident>()
+                .Property(a => a.ResponseDate)
+                .HasColumnType("date");
 
             modelBuilder.Entity<Accident>()
                 .HasOne(a => a.FloatingUnit)

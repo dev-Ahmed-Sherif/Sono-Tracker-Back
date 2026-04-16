@@ -9,7 +9,7 @@ using SonoTracker.Domain.Entities.Lookups;
 namespace SonoTracker.Domain.Entities.TrackerNotification
 {
     [ExcludeFromCodeCoverage]
-    public class Notification : BaseEntity<string>
+    public class Notification : BaseAudit<string>
     {
         public Notification()
         {

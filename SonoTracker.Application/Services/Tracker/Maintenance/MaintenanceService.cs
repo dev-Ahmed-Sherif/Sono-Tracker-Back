@@ -18,7 +18,7 @@ using SonoTracker.Common.Helpers.MediaUploader;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using SonoTracker.Common.DTO.Tracker.FloatingUnit;
-using SonoTracker.Application.Services.Tracker.FloatingUnit;
+using SonoTracker.Application.Services.Tracker.FloatingUnits;
 
 namespace SonoTracker.Application.Services.Tracker.Maintenance
 {
@@ -166,11 +166,11 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
 
-        public override async Task<IFinalResult> AddAsync([FromForm] AddMaintenanceDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> AddAsync(AddMaintenanceDto dto, CancellationToken cancellationToken = default)
         {
-            var mapped = Mapper.Map<Domain.Entities.Tracker.Maintenance>(dto);
+            var mapped = Mapper.Map<Entities.Tracker.Maintenance>(dto);
 
-            var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId);
+            var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
 
             string floatingUnitCode;
 
@@ -212,7 +212,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
             if (dto.MaintenanceReport != null)
             {
-                string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report");
+                string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report", cancellationToken);
 
                 if (res != null)
                 {
@@ -224,7 +224,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             }
             if (dto.Other != null)
             {
-                string res = await _uploaderConfiguration.UploadFile(dto.Other, "Maintenance/Other");
+                string res = await _uploaderConfiguration.UploadFile(dto.Other, "Maintenance/Other", cancellationToken);
 
                 if (res != null)
                 {
@@ -235,8 +235,13 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                 mapped.MaintenanceReport = res;
             }
             mapped.IsDeleted = false;
+
+            SetEntityCreatedBaseProperties(mapped);
+            
             UnitOfWork.Repository.Add(mapped);
-            var rows = await UnitOfWork.SaveChangesAsync();
+            
+            int rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+            
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
         }
 
@@ -247,7 +252,13 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             {
                 var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
 
+                string currentMaintenanceReport = entityToUpdate.MaintenanceReport;
+                
+                string currentOtherAttach = entityToUpdate.OtherAttach;
+
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                
+                SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
                 {
@@ -256,31 +267,29 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                 }
 
                 if (entityToUpdate != null)
-                {  
+                {
                     if (dto.MaintenanceReport != null)
                     {
-                        _uploaderConfiguration.DeleteFile(entityToUpdate.MaintenanceReport);
-                        string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report");
+                        string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report", cancellationToken);
 
                         if (res != null)
                         {
                             if (UploadResponse(res) != null)
                                 return UploadResponse(res);
                         }
+
+                        _uploaderConfiguration.DeleteFile(entityToUpdate.MaintenanceReport);
 
                         newEntity.MaintenanceReport = res;
                     }
                     else
                     {
-                        var entity = await GetByIdForEditAsync(dto.Id);
-                        var entityRes = (EditMaintenanceDto)entity.Data;
-                        newEntity.MaintenanceReport = entityRes.MaintenanceReport;
+                        newEntity.MaintenanceReport = currentMaintenanceReport;
                     }
 
                     if (dto.Other != null)
                     {
-                        _uploaderConfiguration.DeleteFile(entityToUpdate.Other);
-                        string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Other");
+                        string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Other", cancellationToken);
 
                         if (res != null)
                         {
@@ -288,31 +297,33 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                                 return UploadResponse(res);
                         }
 
-                        newEntity.Other = res;
+                        _uploaderConfiguration.DeleteFile(entityToUpdate.OtherAttach);
+
+                        newEntity.OtherAttach = res;
                     }
                     else
                     {
-                        var entity = await GetByIdForEditAsync(dto.Id);
-                        var entityRes = (EditMaintenanceDto)entity.Data;
-                        newEntity.Other = entityRes.Other;
+                        newEntity.OtherAttach = currentOtherAttach;
                     }
                 }
-                //SetEntityModifiedBaseProperties(newEntity);
-                UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
-                if (affectedRows > 0)
-                {
-                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
-                        message: MessagesConstants.UpdateSuccess);
-                }
 
-                return Result;
+                UnitOfWork.Repository.Update(entityToUpdate, newEntity);
+                
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: newEntity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.UpdateSuccess);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
                 //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.UpdateError);
             }
 
         }
@@ -325,10 +336,10 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
                 // Reomve Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.MaintenanceReport);
-                _uploaderConfiguration.DeleteFile(entityToDelete.Other);
+                _uploaderConfiguration.DeleteFile(entityToDelete.OtherAttach);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,

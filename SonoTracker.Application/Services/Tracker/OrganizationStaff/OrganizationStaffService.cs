@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using FuzzySharp;
 using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.Tracker.Organization;
 using SonoTracker.Application.Services.Tracker.OrganizationStaffStaff;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -20,6 +19,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoTracker.Application.Services.Tracker.Organizations;
 
 namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
 {

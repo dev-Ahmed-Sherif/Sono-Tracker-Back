@@ -119,6 +119,8 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
 
             var entity = Mapper.Map<Entities.Lookups.InspectionType>(model);
 
+            SetEntityCreatedBaseProperties(entity);
+
             IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
             if (lastEntity.Data != null)
@@ -168,6 +170,8 @@ namespace SonoTracker.Application.Services.LookUp.InspectionType
             Domain.Entities.Lookups.InspectionType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
             var entity = Mapper.Map(model, entityToUpdate);
+
+            SetEntityModifiedBaseProperties(entity);
 
             if (IsSuperAdmin())
             {

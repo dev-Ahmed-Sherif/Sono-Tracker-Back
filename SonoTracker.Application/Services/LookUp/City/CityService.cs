@@ -1,7 +1,7 @@
 using FuzzySharp;
 using LinqKit;
 using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.Tracker.Governorate;
+using SonoTracker.Application.Services.Tracker.Governorates;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Lookup.City;
