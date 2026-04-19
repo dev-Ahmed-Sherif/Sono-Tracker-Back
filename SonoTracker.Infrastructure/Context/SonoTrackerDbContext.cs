@@ -296,9 +296,6 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(tg => tg.TripInformationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Inspection no longer holds a TripInformationId FK; ignore the stale collection.
-            modelBuilder.Entity<TripInformation>()
-                .Ignore(t => t.Inspections);
         }
 
         private static void ConfigureMarinaRelations(ModelBuilder modelBuilder)

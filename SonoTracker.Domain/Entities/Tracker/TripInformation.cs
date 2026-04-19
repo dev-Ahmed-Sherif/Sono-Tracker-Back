@@ -45,7 +45,6 @@ namespace SonoTracker.Domain.Entities.Tracker
 
         public virtual HashSet<TripNationality> NationalityTrips { get; set; } = [];
         public virtual HashSet<TripMarina> TripMarinas { get; set; } = [];
-        public virtual HashSet<Inspection> Inspections { get; set; } = [];
         public virtual HashSet<TripPassengerAttachment> TripPassengerAttachments { get; set; } = [];
     }
 }

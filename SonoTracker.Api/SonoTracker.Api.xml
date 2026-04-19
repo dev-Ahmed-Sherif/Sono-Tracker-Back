@@ -1354,6 +1354,116 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.#ctor(SonoTracker.Application.Services.Tracker.InspectionClause.IInspectionClauseService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.InspectionClause.Parameters.InspectionClauseFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.AddAsync(SonoTracker.Common.DTO.Tracker.InspectionClause.AddInspectionClauseDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.UpdateAsync(SonoTracker.Common.DTO.Tracker.InspectionClause.AddInspectionClauseDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Delete by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionClause.InspectionClausesController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Delete Range by ids
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.#ctor(SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause.IInspectionFloatingUnitClauseService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.InspectionFloatingUnitClause.Parameters.InspectionFloatingUnitClauseFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.AddAsync(SonoTracker.Common.DTO.Tracker.InspectionFloatingUnitClause.AddInspectionFloatingUnitClauseDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.UpdateAsync(SonoTracker.Common.DTO.Tracker.InspectionFloatingUnitClause.AddInspectionFloatingUnitClauseDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Delete by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Delete by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause.InspectionFloatingUnitClausesController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Delete Range by ids
+            </summary>
+        </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController">
             <summary>
             Constructor

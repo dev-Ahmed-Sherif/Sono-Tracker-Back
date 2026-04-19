@@ -32,6 +32,8 @@ namespace SonoTracker.Application.Mapping
             MapMaintenance();
             MapAccident();
             MapUser();
+            MapInspectionClause();
+            MapInspectionFloatingUnitClause();
         }
     }
 }

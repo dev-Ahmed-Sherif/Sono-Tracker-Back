@@ -15,7 +15,6 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
 
         public DateTime InspectionDate { get; set; }
 
-        public Guid? TripInformationId { get; set; }
         public Guid? FloatingUnitId { get; set; }
 
         public Guid OrganizationId { get; set; }
