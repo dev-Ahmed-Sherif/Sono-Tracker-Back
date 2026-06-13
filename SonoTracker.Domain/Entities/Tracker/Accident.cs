@@ -2,6 +2,7 @@ using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Enum;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -36,20 +37,21 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? GeoPointId { get; set; }
         public virtual GeoPoint? GeoPoint { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(AccidentType))]
-        public string? AccidentTypeId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(AccidentType))]
+        public required string AccidentTypeId { get; set; }
         public virtual AccidentType? AccidentType { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public string? FloatingUnitId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(FloatingUnit))]
+        public required string FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Organization))]
-        public string? OrganizationId { get; set; }
-        public virtual Organization? Organization { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
-   }
+
+        public virtual HashSet<AccidentOrganization> AccidentOrganizations { get; set; } = [];
+        public virtual HashSet<AccidentAttachment> AccidentAttachments { get; set; } = [];
+    }
 }

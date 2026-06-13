@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters
+namespace SonoTracker.Common.DTO.Tracker.TripMarina.Parameters
 {
     [ExcludeFromCodeCoverage]
-    public  class MarinaTripFilter 
+    public  class TripMarinaFilter 
     {
         public string? TouristMarinaId { get; set; }
         public string? TripInformationId { get; set; }

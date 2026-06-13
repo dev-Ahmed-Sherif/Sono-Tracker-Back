@@ -60,7 +60,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaOrganization
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.Organization)
-               .Include(x => x.TouristMarina));
+               .Include(x => x.TouristMarina), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Entities.Tracker.TouristMarinaOrganization, TouristMarinaOrganizationDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);

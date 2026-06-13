@@ -1,41 +1,46 @@
 using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.Tracker.FloatingUnits;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Lookup.Attach;
+using SonoTracker.Common.DTO.Tracker.Accident;
+using SonoTracker.Common.DTO.Tracker.Accident.Parameters;
+using SonoTracker.Common.DTO.Tracker.FloatingUnit;
+using SonoTracker.Common.Helpers.MediaUploader;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Common.Helpers.MediaUploader;
-using SonoTracker.Common.DTO.Tracker.Accident;
-using SonoTracker.Common.DTO.Tracker.Accident.Parameters;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using SonoTracker.Common.DTO.Tracker.FloatingUnit;
-using SonoTracker.Application.Services.Tracker.FloatingUnits;
 
 namespace SonoTracker.Application.Services.Tracker.Accident
 {
-    public class AccidentService : BaseService<Domain.Entities.Tracker.Accident, AddAccidentDto, EditAccidentDto, AccidentDto, string, string>, IAccidentService
+    public class AccidentService : BaseService<Entities.Tracker.Accident, AddAccidentDto, EditAccidentDto, AccidentDto, string, string>, IAccidentService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
         private readonly IFloatingUnitService _floatingUnitService;
+        private readonly IAttachService _attachService;
+
         public AccidentService(IServiceBaseParameter<Entities.Tracker.Accident> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request,
-            IFloatingUnitService floatingUnitService) : base(businessBaseParameter)
+            IFloatingUnitService floatingUnitService, IAttachService attachService) : base(businessBaseParameter)
         {
             _hostingEnvironment = hostingEnvironment;
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
             _floatingUnitService = floatingUnitService;
+            _attachService = attachService;
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -43,8 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                 include: src => src
                 .Include(t => t.FloatingUnit)
                .Include(x => x.AccidentType)
-               .Include(x => x.Organization)
-                );
+               .Include(x => x.AccidentOrganizations).ThenInclude(ao => ao.Organization), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.Accident, EditAccidentDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -54,8 +58,10 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                                include: src => src
                                .Include(t => t.FloatingUnit)
                                .Include(x => x.AccidentType)
-                               .Include(x => x.Organization)
-                               .Include(a => a.City));
+                               .Include(a => a.City) 
+                               .Include(x => x.AccidentOrganizations)
+                               .ThenInclude(ao => ao.Organization),
+                               cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<Domain.Entities.Tracker.Accident, AccidentDto>(entity);
 
@@ -66,8 +72,8 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                                          .Include(t => t.FloatingUnit)
                                          .Include(x => x.AccidentType)
-                                         .Include(x => x.Organization)
-                                         .Include(a => a.City));
+                                         .Include(x => x.AccidentOrganizations).ThenInclude(ao => ao.Organization)
+                                         .Include(a => a.City), cancellationToken: cancellationToken);
 
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
@@ -100,7 +106,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                     include: src => src
                       .Include(t => t.FloatingUnit)
                       .Include(x => x.AccidentType)
-                      .Include(x => x.Organization)
+                      .Include(x => x.AccidentOrganizations).ThenInclude(ao => ao.Organization)
                       .Include(a => a.City),
                     cancellationToken: cancellationToken);
 
@@ -129,9 +135,9 @@ namespace SonoTracker.Application.Services.Tracker.Accident
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.Accident>(x => x.IsDeleted == filter.IsDeleted);
 
-            if (!string.IsNullOrEmpty(filter.TownId))
+            if (!string.IsNullOrEmpty(filter.CityId))
             {
-                predicate = predicate.And(x => x.CityId == filter.TownId);
+                predicate = predicate.And(x => x.CityId == filter.CityId);
             }
             if (filter.AccidentDate.HasValue)
             {
@@ -139,8 +145,7 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             }
             if (!string.IsNullOrEmpty(filter.OrganizationId))
             {
-                predicate = predicate.And(x => x.OrganizationId == filter.OrganizationId);
-
+                predicate = predicate.And(x => x.AccidentOrganizations.Any(ao => ao.OrganizationId == filter.OrganizationId));
             }
             if (!string.IsNullOrEmpty(filter.AccidentTypeId))
             {
@@ -150,11 +155,11 @@ namespace SonoTracker.Application.Services.Tracker.Accident
             {
                 predicate = predicate.And(x => x.FloatingUnitId == filter.FloatingUnitId);
             }
-            if (filter.CaseId.HasValue)
+            if (filter.Case.HasValue)
             {
-                predicate = predicate.And(x => x.Case == filter.CaseId.Value);
+                predicate = predicate.And(x => x.Case == filter.Case.Value);
             }
-            
+
             if (!string.IsNullOrWhiteSpace(governorateId))
             {
                 predicate = predicate.And(x => x.GovernorateId == governorateId);
@@ -183,14 +188,15 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
-        public override async Task<IFinalResult> AddAsync([FromForm] AddAccidentDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> AddAsync(AddAccidentDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
                 var mapped = Mapper.Map<Entities.Tracker.Accident>(dto);
+                mapped.GovernorateId = GetGovernorateIdFromClaims();
                 SetEntityCreatedBaseProperties(mapped);
 
-                var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId);
+                var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
 
                 string floatingUnitCode;
 
@@ -209,7 +215,9 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                     // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
                     var existDataCollection = exist.Data as ICollection<AccidentDto>;
 
-                    if (existDataCollection?.Count > 0)
+                    if (existDataCollection?.Count > 0 && 
+                        DateTime.UtcNow.Day != 1 && 
+                        DateTime.UtcNow.Month != 1)
                     {
                         // Handle existing trip information logic here (if needed)
                         var lastTrip = existDataCollection.LastOrDefault();
@@ -220,52 +228,61 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                             if (int.TryParse(numericPart, out int number))
                             {
                                 number++;
-                                mapped.Code = floatingUnitCode + number.ToString("D3"); // Ensure 4 digits
+                                mapped.Code = floatingUnitCode + number.ToString("D2"); // Ensure 4 digits
                             }
                         }
                     }
                     else
                     {
-                        mapped.Code = floatingUnitCode + "001";
+                        mapped.Code = floatingUnitCode + "01";
                     }
                 }
 
                 if (dto.Attach != null)
                 {
-                    string res = await _uploaderConfiguration.UploadFile(dto.Attach, "Accident");
-
-                    if (res != null)
+                    foreach (var formFile in dto.Attach)
                     {
-                        if (UploadResponse(res) != null)
-                            return UploadResponse(res);
-                    }
+                        Guid guid = Guid.NewGuid();
+                        var AddDto = new AddAttachDto
+                        {
+                            Id = guid.ToString(),
+                            Path = formFile,
+                            AttachType = "Accident",
+                        };
 
-                    mapped.Attach = res;
+                        IFinalResult Attach = await _attachService.AddAsync(AddDto, cancellationToken);
+
+                        mapped.AccidentAttachments.Add(new Entities.Tracker.AccidentAttachment
+                        {
+                            AttachmentId = (string)Attach.Data,
+                            AccidentId = mapped.Id
+                        });
+                    }
                 }
 
                 mapped.IsDeleted = false;
 
                 UnitOfWork.Repository.Add(mapped);
 
-                await UnitOfWork.SaveChangesAsync();
+                await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.AddError}-{nameof(AddAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
             }
-            
+
         }
-        public override async Task<IFinalResult> UpdateAsync([FromForm] AddAccidentDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> UpdateAsync(AddAccidentDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
+                var entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                newEntity.GovernorateId = GetGovernorateIdFromClaims();
                 SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
@@ -278,34 +295,30 @@ namespace SonoTracker.Application.Services.Tracker.Accident
                 {
                     if (dto.Attach != null)
                     {
-                        string res = await _uploaderConfiguration.UploadFile(dto.Attach, "Accident");
-
-                        if (res != null)
+                        foreach (var formFile in dto.Attach)
                         {
-                            if (UploadResponse(res) != null)
-                                return UploadResponse(res);
+                            Guid guid = Guid.NewGuid();
+                            var AddDto = new AddAttachDto
+                            {
+                                Id = guid.ToString(),
+                                Path = formFile,
+                                AttachType = "Accident",
+                            };
+
+                            IFinalResult Attach = await _attachService.AddAsync(AddDto, cancellationToken);
+
+                            newEntity.AccidentAttachments.Add(new Entities.Tracker.AccidentAttachment
+                            {
+                                AttachmentId = (string)Attach.Data,
+                                AccidentId = newEntity.Id
+                            });
                         }
-
-                        newEntity.Attach = res;
-
-                        _uploaderConfiguration.DeleteFile(entityToUpdate.Attach);
                     }
-                    if (dto.Attach == null)
-                    {
-                        var entity = await GetByIdForEditAsync(dto.Id);
-                        var entityRes = (EditAccidentDto)entity.Data;
-                        newEntity.Attach = entityRes.Attach;
-                    }
-                }
-                else
-                {
-                    return ResponseResult.PostResult(null, status: HttpStatusCode.NotFound,
-                                          message: MessagesConstants.NotFound);
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows > 0)
                 {
@@ -315,11 +328,10 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
             }
 
         }
@@ -327,13 +339,13 @@ namespace SonoTracker.Application.Services.Tracker.Accident
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Reomve Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.Attach);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
@@ -342,11 +354,10 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.DeleteError + ex.Message);
             }
 
         }
@@ -358,23 +369,6 @@ namespace SonoTracker.Application.Services.Tracker.Accident
 
             return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
-        }
-        private IFinalResult UploadResponse(string res)
-        {
-            if (res == "Size")
-            {
-                var message = "File Size Larger than 5 Mega Bytes";
-                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
-            }
-            else if (res == "Type")
-            {
-                var message = "File type not allowed.";
-                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

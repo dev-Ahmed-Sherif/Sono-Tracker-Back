@@ -48,7 +48,7 @@ namespace SonoTracker.Application.Services.Lookup.City
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
         }
-       
+
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<CityFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
@@ -76,7 +76,7 @@ namespace SonoTracker.Application.Services.Lookup.City
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-       
+
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
@@ -100,7 +100,7 @@ namespace SonoTracker.Application.Services.Lookup.City
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
-       
+
         static Expression<Func<Entities.Lookups.City, bool>> PredicateBuilderFunction(CityFilter filter, bool includeDeleted, string governorateScope = null)
         {
             var predicate = includeDeleted
@@ -122,7 +122,7 @@ namespace SonoTracker.Application.Services.Lookup.City
 
             return predicate;
         }
-      
+
         static Expression<Func<Entities.Lookups.City, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.City>(true);
@@ -130,7 +130,7 @@ namespace SonoTracker.Application.Services.Lookup.City
             {
                 predicate = predicate.And(b => b.NameAr.Contains(filter.SearchCriteria));
                 predicate = predicate.Or(b => b.NameEn.Contains(filter.SearchCriteria));
-                
+
             }
             return predicate;
         }
@@ -173,6 +173,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                         message: MessagesConstants.Existed);
 
                 var entity = Mapper.Map<AddCityDto, Entities.Lookups.City>(model);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 IFinalResult governorateResult = await _governorateService.GetByIdAsync(model.GovernateId, cancellationToken);
                 if (governorateResult?.Data is not GovernorateDto governorateDto || string.IsNullOrWhiteSpace(governorateDto.Code))
@@ -227,6 +228,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                 Entities.Lookups.City entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 if (IsSuperAdmin())
                 {

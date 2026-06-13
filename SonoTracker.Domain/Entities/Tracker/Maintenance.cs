@@ -4,6 +4,8 @@ using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace SonoTracker.Domain.Entities.Tracker
 {
@@ -18,12 +20,11 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
-        public string Number { get; set; } = string.Empty;
+        public required string Number { get; set; }
         public required DateOnly MaintenanceDate { get; set; }
         public DateOnly? NextMaintenanceDate { get; set; }
-        public string MaintenanceReport { get; set; } = string.Empty;
-        public string? OtherAttach { get; set; }
-        public string? Notes { get; set; }
+        public required string MaintenanceReport { get; set; }
+        public string Notes { get; set; }
 
         [Required, MaxLength(50)]
         [ForeignKey(nameof(MaintenanceType))]
@@ -39,5 +40,7 @@ namespace SonoTracker.Domain.Entities.Tracker
         [ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
+
+        public HashSet<MaintenanceAttachment> MaintenanceAttachments { get; set; } = [];
     }
 }

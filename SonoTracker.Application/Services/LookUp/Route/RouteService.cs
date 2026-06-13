@@ -62,7 +62,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-  
+
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             var limit = filter.PageSize;
@@ -96,7 +96,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
             return predicate;
         }
- 
+
         static Expression<Func<Entities.Lookups.Route, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Lookups.Route>(true);
@@ -126,6 +126,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
                                                 message: MessagesConstants.Existed);
 
                 var entity = Mapper.Map<Entities.Lookups.Route>(model);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
@@ -145,6 +146,7 @@ namespace SonoTracker.Application.Services.Lookup.Route
                     entity.Code = "01";
                 }
 
+                SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -163,40 +165,48 @@ namespace SonoTracker.Application.Services.Lookup.Route
 
         public override async Task<IFinalResult> UpdateAsync(AddRouteDto model, CancellationToken cancellationToken = default)
         {
-            var isSuperAdmin = IsSuperAdmin();
-            var govId = GetGovernorateIdFromClaims();
-            var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
-                ? await UnitOfWork.Repository.FindAsync(
-                    predicate: x => x.Id != model.Id,
-                    disableTracking: true,
-                    cancellationToken: cancellationToken)
-                : await UnitOfWork.Repository.FindAsync(
-                    predicate: x => x.GovernorateId == govId && x.Id != model.Id,
-                    disableTracking: true,
-                    cancellationToken: cancellationToken);
-
-            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-
-            Domain.Entities.Lookups.Route entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var isSuperAdmin = IsSuperAdmin();
+                var govId = GetGovernorateIdFromClaims();
+                var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.Id != model.Id,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.Id != model.Id,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+
+                Domain.Entities.Lookups.Route entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
+                SetEntityModifiedBaseProperties(entity);
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
     }
 

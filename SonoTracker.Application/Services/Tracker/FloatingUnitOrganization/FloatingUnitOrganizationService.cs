@@ -24,7 +24,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-                .Include(t => t.Organization));
+                .Include(t => t.Organization), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnitOrganization, EditFloatingUnitOrganizationDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -35,7 +35,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitOrganization
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-                .Include(t => t.Organization));
+                .Include(t => t.Organization), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.FloatingUnitOrganization, FloatingUnitOrganizationDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);

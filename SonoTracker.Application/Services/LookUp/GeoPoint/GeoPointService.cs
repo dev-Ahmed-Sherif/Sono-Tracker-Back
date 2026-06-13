@@ -133,61 +133,81 @@ namespace SonoTracker.Application.Services.LookUp.GeoPoint
 
         public override async Task<IFinalResult> AddAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            var existingForDup = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.IsDeleted != true && x.NameAr == model.NameAr,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
+            try
+            {
+                var existingForDup = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.IsDeleted != true && x.NameAr == model.NameAr,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
 
-            var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
-            if (duplicateId is not null)
-                return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
-                                                 message: MessagesConstants.Existed);
+                var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
+                if (duplicateId is not null)
+                    return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
 
-            var entity = Mapper.Map<Entities.Lookups.GeoPoint>(model);
+                var entity = Mapper.Map<Entities.Lookups.GeoPoint>(model);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
-            var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+                SetEntityCreatedBaseProperties(entity);
+                var result = await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-            if (affectedRows <= 0) 
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
-                                                 message:  MessagesConstants.AddError);
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                     message: MessagesConstants.AddError);
 
-            return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
-                                             message: MessagesConstants.AddSuccess);
+                return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
         public override async Task<IFinalResult> UpdateAsync(AddGeoPointDto model, CancellationToken cancellationToken = default)
         {
-            var existingForDup = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.Id != model.Id && x.IsDeleted != true && x.NameAr == model.NameAr,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
-
-            var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
-            if (duplicateId is not null)
-                return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
-                                                 message: MessagesConstants.Existed);
-
-            Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var existingForDup = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.Id != model.Id && x.IsDeleted != true && x.NameAr == model.NameAr,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+                var duplicateId = FindFuzzyNorthEastDuplicate(existingForDup, model.North, model.East);
+                if (duplicateId is not null)
+                    return ResponseResult.PostResult(result: duplicateId, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
+
+                Entities.Lookups.GeoPoint entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
+                SetEntityModifiedBaseProperties(entity);
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0)
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
-                    message: MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
-                message: MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
     }
 }

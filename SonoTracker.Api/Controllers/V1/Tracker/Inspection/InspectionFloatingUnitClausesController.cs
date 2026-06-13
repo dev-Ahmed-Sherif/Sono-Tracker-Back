@@ -12,7 +12,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause
+namespace SonoTracker.Api.Controllers.V1.Tracker.Inspection
 {
     /// <summary>
     /// Constructor
@@ -41,11 +41,13 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.InspectionFloatingUnitClause
         /// <summary>
         /// Get All
         /// </summary>
+        /// <param name="inspectionId">Optional. Filter by inspection ID.</param>
+        /// <param name="cancellationToken"></param>
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync([FromQuery] string inspectionId, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await inspectionFloatingUnitClauseService.GetAllAsync(cancellationToken: cancellationToken);
+            IFinalResult res = await inspectionFloatingUnitClauseService.GetAllAsync(inspectionId, cancellationToken);
             return Ok(res);
         }
 

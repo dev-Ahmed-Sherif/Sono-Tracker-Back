@@ -1,7 +1,18 @@
 using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.Tracker.FloatingUnits;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
+using SonoTracker.Common.DTO.Lookup.Attach;
+using SonoTracker.Common.DTO.Tracker.FloatingUnit;
+using SonoTracker.Common.DTO.Tracker.Maintenance;
+using SonoTracker.Common.DTO.Tracker.Maintenance.Parameters;
+using SonoTracker.Common.Helpers.MediaUploader;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -10,15 +21,6 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SonoTracker.Common.DTO.Tracker.Maintenance;
-using SonoTracker.Common.DTO.Tracker.Maintenance.Parameters;
-using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Common.Helpers.MediaUploader;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using SonoTracker.Common.DTO.Tracker.FloatingUnit;
-using SonoTracker.Application.Services.Tracker.FloatingUnits;
 
 namespace SonoTracker.Application.Services.Tracker.Maintenance
 {
@@ -29,14 +31,17 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
         private readonly IFloatingUnitService _floatingUnitService;
+        private readonly IAttachService _attachService;
+
         public MaintenanceService(IServiceBaseParameter<Entities.Tracker.Maintenance> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request,
-            IFloatingUnitService floatingUnitService) : base(businessBaseParameter)
+            IFloatingUnitService floatingUnitService, IAttachService attachService) : base(businessBaseParameter)
         {
             _hostingEnvironment = hostingEnvironment;
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
             _floatingUnitService = floatingUnitService;
+            _attachService = attachService;
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -44,8 +49,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-               .Include(x => x.MaintenanceType)
-                );
+               .Include(x => x.MaintenanceType), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.Maintenance, EditMaintenanceDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -56,7 +60,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-               .Include(x => x.MaintenanceType));
+               .Include(x => x.MaintenanceType), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.Maintenance, MaintenanceDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -65,7 +69,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
              .Include(t => t.FloatingUnit)
-               .Include(x => x.MaintenanceType));
+               .Include(x => x.MaintenanceType), cancellationToken: cancellationToken);
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
                 ? entity
@@ -168,96 +172,120 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
         public override async Task<IFinalResult> AddAsync(AddMaintenanceDto dto, CancellationToken cancellationToken = default)
         {
-            var mapped = Mapper.Map<Entities.Tracker.Maintenance>(dto);
-
-            var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
-
-            string floatingUnitCode;
-
-            if (floatingUnit.Data is FloatingUnitDto floatingUnitDto)
+            try
             {
-                floatingUnitCode = floatingUnitDto.Code;
+                var mapped = Mapper.Map<Entities.Tracker.Maintenance>(dto);
 
-                MaintenanceFilter filter = new()
+                mapped.GovernorateId = GetGovernorateIdFromClaims();
+
+                var floatingUnit = await _floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
+
+                string floatingUnitCode;
+
+                if (floatingUnit.Data is FloatingUnitDto floatingUnitDto)
                 {
-                    FloatingUnitId = dto.FloatingUnitId,
-                    IsDeleted = false
-                };
+                    floatingUnitCode = floatingUnitDto.Code;
 
-                // Check if the trip information already exists for the given floating unit id
-                var exist = await GetAllFilterAsync(filter, cancellationToken);
-                // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
-                var existDataCollection = exist.Data as ICollection<MaintenanceDto>;
-
-                if (existDataCollection?.Count > 0)
-                {
-                    // Handle existing trip information logic here (if needed)
-                    var lastTrip = existDataCollection.LastOrDefault();
-                    if (lastTrip != null && lastTrip.Number.StartsWith(floatingUnitCode))
+                    MaintenanceFilter filter = new()
                     {
-                        // Extract the numeric part and increment it
-                        var numericPart = lastTrip.Number[floatingUnitCode.Length..];
-                        if (int.TryParse(numericPart, out int number))
+                        FloatingUnitId = dto.FloatingUnitId,
+                        IsDeleted = false
+                    };
+
+                    // Check if the trip information already exists for the given floating unit id
+                    var exist = await GetAllFilterAsync(filter, cancellationToken);
+                    // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
+                    var existDataCollection = exist.Data as ICollection<MaintenanceDto>;
+
+                    if (existDataCollection?.Count > 0 &&
+                        DateTime.UtcNow.Month != 1 &&
+                        DateTime.UtcNow.Day != 1)
+                    {
+                        // Handle existing trip information logic here (if needed)
+                        var lastTrip = existDataCollection.LastOrDefault();
+                        
+                        if (lastTrip != null && lastTrip.Number.StartsWith(floatingUnitCode))
                         {
-                            number++;
-                            mapped.Number = floatingUnitCode + number.ToString("D3"); // Ensure 4 digits
+                            // Extract the numeric part and increment it
+                            var numericPart = lastTrip.Number[floatingUnitCode.Length..];
+                            if (int.TryParse(numericPart, out int number))
+                            {
+                                number++;
+                                mapped.Number = floatingUnitCode + number.ToString("D2"); // Ensure 4 digits
+                            }
                         }
                     }
+                    else
+                    {
+                        mapped.Number = floatingUnitCode + "01";
+                    }
                 }
-                else
-                {
-                    mapped.Number = floatingUnitCode + "001";
-                }
-            }
 
-            if (dto.MaintenanceReport != null)
+                if (dto.MaintenanceReport != null)
+                {
+                    string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    mapped.MaintenanceReport = res;
+                }
+
+                if (dto.Other != null)
+                {
+                    foreach (var formFile in dto.Other)
+                    {
+                        Guid guid = Guid.NewGuid();
+                        var AddDto = new AddAttachDto
+                        {
+                            Id = guid.ToString(),
+                            Path = formFile,
+                            AttachType = "Maintenance/Other",
+                        };
+
+                        IFinalResult Attach = await _attachService.AddAsync(AddDto, cancellationToken);
+
+                        mapped.MaintenanceAttachments.Add(new Entities.Tracker.MaintenanceAttachment
+                        {
+                            AttachmentId = (string)Attach.Data,
+                            MaintenanceId = mapped.Id
+                        });
+                    }
+                }
+                
+                mapped.IsDeleted = false;
+
+                SetEntityCreatedBaseProperties(mapped);
+
+                UnitOfWork.Repository.Add(mapped);
+
+                int rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
+            }
+            catch (Exception ex)
             {
-                string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Report", cancellationToken);
-
-                if (res != null)
-                {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
-                }
-
-                mapped.MaintenanceReport = res;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                                                 message: MessagesConstants.AddError + ex.Message);
             }
-            if (dto.Other != null)
-            {
-                string res = await _uploaderConfiguration.UploadFile(dto.Other, "Maintenance/Other", cancellationToken);
-
-                if (res != null)
-                {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
-                }
-
-                mapped.MaintenanceReport = res;
-            }
-            mapped.IsDeleted = false;
-
-            SetEntityCreatedBaseProperties(mapped);
-            
-            UnitOfWork.Repository.Add(mapped);
-            
-            int rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-            
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
         }
 
 
-        public override async Task<IFinalResult> UpdateAsync([FromForm] AddMaintenanceDto dto, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> UpdateAsync(AddMaintenanceDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
+                Entities.Tracker.Maintenance entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
 
                 string currentMaintenanceReport = entityToUpdate.MaintenanceReport;
-                
-                string currentOtherAttach = entityToUpdate.OtherAttach;
 
-                var newEntity = Mapper.Map(dto, entityToUpdate);
+                Entities.Tracker.Maintenance newEntity = Mapper.Map(dto, entityToUpdate);
                 
+                newEntity.GovernorateId = GetGovernorateIdFromClaims();
+
                 SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
@@ -289,28 +317,31 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
                     if (dto.Other != null)
                     {
-                        string res = await _uploaderConfiguration.UploadFile(dto.MaintenanceReport, "Maintenance/Other", cancellationToken);
-
-                        if (res != null)
+                        foreach (var formFile in dto.Other)
                         {
-                            if (UploadResponse(res) != null)
-                                return UploadResponse(res);
+                            Guid guid = Guid.NewGuid();
+                            var AddDto = new AddAttachDto
+                            {
+                                Id = guid.ToString(),
+                                Path = formFile,
+                                AttachType = "Maintenance/Other",
+                            };
+
+                            IFinalResult Attach = await _attachService.AddAsync(AddDto, cancellationToken);
+
+                            newEntity.MaintenanceAttachments.Add(new Entities.Tracker.MaintenanceAttachment
+                            {
+                                AttachmentId = (string)Attach.Data,
+                                MaintenanceId = entityToUpdate.Id
+                            });
                         }
-
-                        _uploaderConfiguration.DeleteFile(entityToUpdate.OtherAttach);
-
-                        newEntity.OtherAttach = res;
-                    }
-                    else
-                    {
-                        newEntity.OtherAttach = currentOtherAttach;
                     }
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                
+
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-                
+
                 if (affectedRows < 0)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.UpdateError);
@@ -332,11 +363,11 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Reomve Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.MaintenanceReport);
-                _uploaderConfiguration.DeleteFile(entityToDelete.OtherAttach);
+                //_uploaderConfiguration.DeleteFile(entityToDelete.OtherAttach);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -348,11 +379,10 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.DeleteError + ex.Message);
             }
 
         }

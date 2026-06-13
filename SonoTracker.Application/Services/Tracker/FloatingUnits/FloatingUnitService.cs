@@ -198,7 +198,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnits
 
                     entity.ImageUrl = res;
                 }
-
+                entity.GovernorateId = govId;
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -243,6 +243,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnits
                 string currentImageUrl = entityToUpdate.ImageUrl;
 
                 var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
                 SetEntityModifiedBaseProperties(entity);
 
                 if (IsSuperAdmin())
@@ -292,7 +293,7 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnits
         {
             try
             {
-                Entities.Tracker.FloatingUnit entityToDelete = await UnitOfWork.Repository
+                FloatingUnit entityToDelete = await UnitOfWork.Repository
                                 .FirstOrDefaultAsync(x => x.Id == id.ToString(),cancellationToken: cancellationToken);
 
                 _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);

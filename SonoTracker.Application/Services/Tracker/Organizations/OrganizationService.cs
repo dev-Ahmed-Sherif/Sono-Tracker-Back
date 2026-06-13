@@ -48,7 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             _request = request;
             _uploaderConfiguration = new UploaderConfiguration(_hostingEnvironment, _request);
         }
-        
+
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), include: src => src
@@ -59,16 +59,16 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
-        
+
         public override Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.Organization, bool>> predicate = null, CancellationToken cancellationToken = default)
-            => GetAllAsync(organizationTypeId: null, organizationCategoryId:"", cancellationToken: cancellationToken);
-        
-        public async Task<IFinalResult> GetAllAsync(OrganizationType? organizationTypeId,string organizationCategoryId, CancellationToken cancellationToken = default)
+            => GetAllAsync(organizationTypeId: null, organizationCategoryId: "", cancellationToken: cancellationToken);
+
+        public async Task<IFinalResult> GetAllAsync(OrganizationType? organizationTypeId, string organizationCategoryId, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
             var governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
-            var filter = new OrganizationFilter 
-            { 
+            var filter = new OrganizationFilter
+            {
                 OrganizationType = organizationTypeId,
                 OrganizationCategoryId = organizationCategoryId,
                 IsDeleted = false
@@ -84,7 +84,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             var mapped = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<EditOrganizationDto>>(entity);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK, message: HttpStatusCode.OK.ToString());
         }
-        
+
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<OrganizationFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
@@ -109,9 +109,9 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query.Result);
 
-            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data,status:HttpStatusCode.OK, MessagesConstants.Success);
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        
+
         public async Task<IFinalResult> GetFilterAsync(OrganizationFilter filter, CancellationToken cancellationToken = default)
         {
             // Used for internal code generation; always exclude deleted
@@ -124,10 +124,10 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrganizationDto>>(query);
 
-            return  ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
+            return ResponseResult.PostResult(result: data, status: HttpStatusCode.OK, exception: null,
                                               message: MessagesConstants.Success);
         }
-        
+
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
@@ -144,7 +144,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
 
         }
-        
+
         public async Task<IFinalResult> GetAllReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
         {
             var query = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderReportFunction(filter),
@@ -153,11 +153,11 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                  cancellationToken: cancellationToken);
 
             var data = Mapper.Map<IEnumerable<Entities.Tracker.Organization>, IEnumerable<OrgReportDTO>>(query);
-            
+
             return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        
+
         public override async Task<IFinalResult> AddAsync(AddOrganizationDto model, CancellationToken cancellationToken = default)
         {
             try
@@ -165,7 +165,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
                 string govIdForDup = GetGovernorateIdFromClaims();
 
-                var existingForDup = model.OrganizationCategoryId != null ? 
+                var existingForDup = model.OrganizationCategoryId != null ?
                     await UnitOfWork.Repository.FindAsync(
                     predicate: x =>
                         x.OrganizationCategoryId == model.OrganizationCategoryId &&
@@ -173,7 +173,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                         x.GovernorateId == govIdForDup &&
                         x.IsDeleted != true,
                     disableTracking: true,
-                    cancellationToken: cancellationToken) 
+                    cancellationToken: cancellationToken)
                     :
                     await UnitOfWork.Repository.FindAsync(
                     predicate: x =>
@@ -186,16 +186,17 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                 if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, o => o.NameAr, o => o.NameEn, model.NameAr, model.NameEn))
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                      message: MessagesConstants.Existed);
-                
+
                 if (LookupDuplicateGuard.HasFuzzyCodeDuplicate(existingForDup, o => o.CommercialRegistrationNumber, model.CommercialRegistrationNumber))
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                      message: MessagesConstants.Existed);
 
                 Entities.Tracker.Organization entity = Mapper.Map<Entities.Tracker.Organization>(model);
+                entity.GovernorateId = govIdForDup;
 
                 var data = await GetFilterAsync(new OrganizationFilter
                 {
-                   OrganizationType = model.OrganizationType
+                    OrganizationType = model.OrganizationType
                 }, cancellationToken);
 
                 ICollection<OrganizationDto> dataCollection = data.Data as ICollection<OrganizationDto>;
@@ -257,8 +258,8 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows <= 0) 
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.AddError);
 
                 return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
@@ -301,11 +302,12 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                      message: MessagesConstants.Existed);
 
-                Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+                Organization entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 string currentCommercialRegistrationAttachment = entityToUpdate.CommercialRegistrationAttachment;
 
                 var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 if (IsSuperAdmin())
                 {
@@ -316,7 +318,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                 if (model.CommercialRegistrationAttachment != null)
                 {
                     string res = await _uploaderConfiguration
-                                       .UploadFile(model.CommercialRegistrationAttachment, $"Organization/{model.OrganizationType}" , cancellationToken);
+                                       .UploadFile(model.CommercialRegistrationAttachment, $"Organization/{model.OrganizationType}", cancellationToken);
 
                     if (res != null)
                     {
@@ -339,14 +341,14 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows < 0) 
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.UpdateError);
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                                                  message: MessagesConstants.UpdateSuccess);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
                                                  message: MessagesConstants.UpdateError + ex.Message);
@@ -377,8 +379,8 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-                if (affectedRows < 0) 
-                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null, 
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.DeleteError);
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
@@ -394,7 +396,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             }
 
         }
-        
+
         public async Task<byte[]> GenerateReportAsync(FilterOrgReportDTO filter, CancellationToken cancellationToken = default)
         {
             // get report file
@@ -416,7 +418,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             // prepare data for report
             IFinalResult Org = null; // Initialize Org to avoid CS0165 error
 
-            if (filter.ReportName == "BeneficiaryOrgReport" && filter.OrganizationTypeId== OrganizationType.GovernmentCompany)
+            if (filter.ReportName == "BeneficiaryOrgReport" && filter.OrganizationTypeId == OrganizationType.GovernmentCompany)
             {
                 Org = await GetAllReportAsync(filter, cancellationToken);
                 IEnumerable<OrgReportDTO> orgData = Org.Data as IEnumerable<OrgReportDTO> ?? throw new InvalidOperationException("No data found for the report.");
@@ -432,7 +434,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             {
                 Org = await GetAllReportAsync(filter, cancellationToken);
 
-                var orgData = Org.Data as IEnumerable<OrgReportDTO> ?? 
+                var orgData = Org.Data as IEnumerable<OrgReportDTO> ??
                     throw new InvalidOperationException("No data found for the report.");
 
                 for (int i = 0; i < orgData.Count(); i++)
@@ -470,14 +472,14 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
                 //Add data source to the report
                 report.DataSources.Add(new ReportDataSource() { Name = "BenificaryOrg", Value = orgData });
             }
-          
+
 
 
             if (Org == null || Org.Data == null)
             {
                 throw new InvalidOperationException("Failed to retrieve report data.");
             }
-            
+
             byte[] renderedBytes = [];
             try
             {
@@ -532,7 +534,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
 
             return predicate;
         }
-        
+
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             var idsList = ids.ToList();
@@ -579,7 +581,7 @@ namespace SonoTracker.Application.Services.Tracker.Organizations
             {
                 predicate = predicate.And(x => x.OrganizationType == filter.OrganizationTypeId.Value);
             }
-            
+
 
             return predicate;
         }

@@ -34,7 +34,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
         private readonly IOrganizationService _organizationService;
-        public TouristMarinaLicenseApplicationService(IServiceBaseParameter<Entities.Tracker.TouristMarinaLicenseApplication> businessBaseParameter, 
+        public TouristMarinaLicenseApplicationService(IServiceBaseParameter<Entities.Tracker.TouristMarinaLicenseApplication> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request, IOrganizationService organizationService) : base(businessBaseParameter)
         {
             _hostingEnvironment = hostingEnvironment;
@@ -44,7 +44,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
         }
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), 
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(),
                                include: src => src
                               .Include(t => t.FromOrganization)
                               .Include(t => t.ToOrganization), cancellationToken: cancellationToken);
@@ -56,7 +56,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
 
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), 
+            var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(),
                                include: src => src
                               .Include(t => t.FromOrganization)
                               .Include(t => t.ToOrganization), cancellationToken: cancellationToken);
@@ -64,7 +64,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
             var mapped = Mapper.Map<Entities.Tracker.TouristMarinaLicenseApplication, TouristMarinaLicenseApplicationDto>(entity);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
-                                             message:HttpStatusCode.OK.ToString());
+                                             message: HttpStatusCode.OK.ToString());
         }
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Tracker.TouristMarinaLicenseApplication, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
@@ -148,8 +148,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
             {
                 predicate = predicate.And(x => x.Status == filter.Status);
             }
-            
-            
+
+
             if (!string.IsNullOrWhiteSpace(governorateId))
             {
                 predicate = predicate.And(x => x.GovernorateId == governorateId);
@@ -193,7 +193,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
             try
             {
                 var mapped = Mapper.Map<Entities.Tracker.TouristMarinaLicenseApplication>(dto);
-             
+                mapped.GovernorateId = GetGovernorateIdFromClaims();
+
                 SetEntityCreatedBaseProperties(mapped);
 
                 IFinalResult orgnaization = await _organizationService.GetByIdAsync(dto.FromOrganizationId, cancellationToken);
@@ -226,13 +227,13 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                             if (int.TryParse(numericPart, out int number))
                             {
                                 number++;
-                                mapped.LicenseNumber = organizationCode + number.ToString("D3"); // Ensure 3 digits
+                                mapped.LicenseNumber = organizationCode + number.ToString("D2"); // Ensure 2 digits
                             }
                         }
                     }
                     else
                     {
-                        mapped.LicenseNumber = organizationCode + "001";
+                        mapped.LicenseNumber = organizationCode + "01";
                     }
                 }
 
@@ -315,7 +316,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                     mapped.StateProperty = res;
                 }
                 if (dto.Other != null)
-                { 
+                {
                     string res = await _uploaderConfiguration
                                        .UploadFile(dto.Other, "LicenseApplication/Other", cancellationToken);
 
@@ -327,7 +328,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
 
                     mapped.OtherAttach = res;
                 }
-            
+
                 mapped.IsDeleted = false;
 
                 UnitOfWork.Repository.Add(mapped);
@@ -339,7 +340,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
             }
             catch (Exception ex)
             {
-                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest,exception: ex,
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
                                       message: HttpStatusCode.BadRequest.ToString());
             }
         }
@@ -348,7 +349,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
         {
             try
             {
-                Entities.Tracker.TouristMarinaLicenseApplication entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
+                Entities.Tracker.TouristMarinaLicenseApplication entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
 
                 string currentInsurance = entityToUpdate.Insurance;
                 string currentCommercialRegister = entityToUpdate.CommercialRegister;
@@ -359,7 +360,8 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                 string currentOtherAttach = entityToUpdate.OtherAttach;
 
                 Entities.Tracker.TouristMarinaLicenseApplication newEntity = Mapper.Map(dto, entityToUpdate);
-                
+                newEntity.GovernorateId = GetGovernorateIdFromClaims();
+
                 SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
@@ -387,7 +389,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                 {
                     newEntity.Insurance = currentInsurance;
                 }
-                
+
                 if (dto.CommercialRegister != null)
                 {
                     string res = await _uploaderConfiguration
@@ -511,7 +513,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-                
+
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
@@ -535,7 +537,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Remove Uploaded Files
                 _uploaderConfiguration.DeleteFile(entityToDelete.Insurance);
@@ -549,7 +551,7 @@ namespace SonoTracker.Application.Services.Tracker.TouristMarinaLicenseApplicati
                 UnitOfWork.Repository.Remove(entityToDelete);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-                
+
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,

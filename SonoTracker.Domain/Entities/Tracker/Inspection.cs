@@ -20,11 +20,17 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
+        public string Number { get; set; }
         public DateOnly InspectionDate { get; set; }
         public bool SaftyPetroleumWaste { get; set; }
         public bool RightWasteDisposal { get; set; }
         public string? Note { get; set; }
         public string? InspectionAttachment { get; set; }
+
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(InspectionType))]
+        public required string InspectionTypeId { get; set; }
+        public virtual InspectionType? InspectionType { get; set; }
 
         [Required, MaxLength(50)]
         [ForeignKey(nameof(FloatingUnit))]
@@ -41,5 +47,6 @@ namespace SonoTracker.Domain.Entities.Tracker
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<InspectionFloatingUnitClause> InspectionFloatingUnitClauses { get; set; } = [];
+        public virtual HashSet<InspectionAttachment> InspectionAttachments { get; set; } = [];
     }
 }

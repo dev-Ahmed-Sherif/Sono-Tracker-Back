@@ -10,7 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Domain.Entities.Tracker
 {
     [ExcludeFromCodeCoverage]
-    public class InspectionClause : BaseEntity<string>
+    public class InspectionClause : BaseAudit<string>
     {
         public InspectionClause()
         {
@@ -33,6 +33,10 @@ namespace SonoTracker.Domain.Entities.Tracker
         public required string InspectionTypeId { get; set; }
         public virtual InspectionType? InspectionType { get; set; }
 
+        [MaxLength(50), ForeignKey(nameof(Governorate))]
+        public string? GovernorateId { get; set; }
+        public virtual Governorate? Governorate { get; set; }
+        
         public virtual HashSet<InspectionFloatingUnitClause> InspectionFloatingUnitClauses { get; set; } = [];
     }
 }

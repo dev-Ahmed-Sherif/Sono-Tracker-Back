@@ -111,7 +111,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
 
                 var entity = Mapper.Map<AddNationalityDto, Entities.Lookups.Nationality>(model);
 
-                var data = await GetAllAsync();
+                var data = await GetAllAsync(cancellationToken: cancellationToken);
 
                 var dataCollection = data.Data as ICollection<NationalityDto>;
 
@@ -130,7 +130,7 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
                     entity.Code = "0001";
                 }
 
-                //SetEntityCreatedBaseProperties(entity);
+                SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -138,45 +138,49 @@ namespace SonoTracker.Application.Services.Lookup.Nationality
 
                 return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.AddError}-{nameof(AddAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
             }
 
         }
 
         public override async Task<IFinalResult> UpdateAsync(AddNationalityDto model, CancellationToken cancellationToken = default)
         {
-
-            var existingForDup = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.Id != model.Id,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
-
-            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
-
-            Entities.Lookups.Nationality entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var existingForDup = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, message: MessagesConstants.Existed);
+
+                Entities.Lookups.Nationality entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+                SetEntityModifiedBaseProperties(entity);
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
 
     }

@@ -25,7 +25,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
-        public TripInformationService(IServiceBaseParameter<Entities.Tracker.TripInformation> businessBaseParameter, 
+        public TripInformationService(IServiceBaseParameter<Entities.Tracker.TripInformation> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request) : base(businessBaseParameter)
         {
             _hostingEnvironment = hostingEnvironment;
@@ -38,8 +38,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-               .Include(x => x.Route)
-                );
+               .Include(x => x.Route), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.TripInformation, EditTripInformationDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -49,7 +48,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.FloatingUnit)
-               .Include(x => x.Route));
+               .Include(x => x.Route), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.TripInformation, TripInformationDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -58,7 +57,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                                                     .Include(t => t.FloatingUnit)
-                                                    .Include(x => x.Route));
+                                                    .Include(x => x.Route), cancellationToken: cancellationToken);
 
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filteredEntities = IsSuperAdmin()
@@ -178,39 +177,49 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         }
         public override async Task<IFinalResult> AddAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
         {
-            var mapped = Mapper.Map<Domain.Entities.Tracker.TripInformation>(dto);
-            SetEntityCreatedBaseProperties(mapped);
-
-            if (dto.PassengerAttachment != null)
+            try
             {
-                string res = await _uploaderConfiguration.UploadFile(dto.PassengerAttachment, "TripInformation");
+                var mapped = Mapper.Map<Domain.Entities.Tracker.TripInformation>(dto);
+                mapped.GovernorateId = GetGovernorateIdFromClaims();
+                SetEntityCreatedBaseProperties(mapped);
 
-                if (res != null)
+                if (dto.PassengerAttachment != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    string res = await _uploaderConfiguration.UploadFile(dto.PassengerAttachment, "TripInformation");
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    //mapped.PassengerAttachment = res;
                 }
 
-                //mapped.PassengerAttachment = res;
+                mapped.IsDeleted = false;
+
+                UnitOfWork.Repository.Add(mapped);
+
+                var rows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
             }
-
-            mapped.IsDeleted = false;
-
-            UnitOfWork.Repository.Add(mapped);
-
-            var rows = await UnitOfWork.SaveChangesAsync();
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
         public override async Task<IFinalResult> UpdateAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
         {
 
             try
             {
-                
-                var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
+
+                var entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
 
                 var newEntity = Mapper.Map(dto, entityToUpdate);
+                newEntity.GovernorateId = GetGovernorateIdFromClaims();
                 SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
@@ -219,7 +228,7 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
                         newEntity.IsDeleted = false;
                 }
 
-                if (entityToUpdate != null) 
+                if (entityToUpdate != null)
                 {
                     if (dto.PassengerAttachment != null)
                     {
@@ -239,14 +248,14 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
 
                 if (dto.PassengerAttachment == null)
                 {
-                    var entity = await GetByIdForEditAsync(dto.Id);
+                    var entity = await GetByIdForEditAsync(dto.Id, cancellationToken);
                     var entityRes = (EditTripInformationDto)entity.Data;
                     //newEntity.PassengerAttachment = entityRes.PassengerAttachment;
                 }
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
 
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows > 0)
                 {
@@ -256,11 +265,10 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
             }
 
         }
@@ -268,13 +276,13 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Reomve Uploaded File
                 //_uploaderConfiguration.DeleteFile(entityToDelete.PassengerAttachment);
 
                 UnitOfWork.Repository.Remove(entityToDelete);
-                var affectedRows = await UnitOfWork.SaveChangesAsync();
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
                 if (affectedRows > 0)
                 {
                     Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted,
@@ -283,11 +291,10 @@ namespace SonoTracker.Application.Services.Tracker.TripInformation
 
                 return Result;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.DeleteError + ex.Message);
             }
         }
         private IFinalResult UploadResponse(string res)

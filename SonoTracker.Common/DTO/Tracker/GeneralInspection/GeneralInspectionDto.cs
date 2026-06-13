@@ -12,21 +12,21 @@ namespace SonoTracker.Common.DTO.Tracker.Inspection
     {
         public string? Id { get; set; }
 
-        public DateTime InspectionDate { get; set; }
+        public DateOnly InspectionDate { get; set; }
 
-        public Guid FloatingUnitId { get; set; }
+        public string FloatingUnitId { get; set; }
 
         public string FloatingUnitNameAr { get; set; }
 
         public string FloatingUnitNameEn { get; set; }
 
-        public Guid OrganizationId { get; set; }
+        public string OrganizationId { get; set; }
 
         public string OrganizationNameEn { get; set; }
 
         public string OrganizationNameAr { get; set; }
 
-        public EnumResult InspectionTypeName { get; set; }
+        public string InspectionTypeName { get; set; }
 
         public bool IsInspected { get; set; }
 

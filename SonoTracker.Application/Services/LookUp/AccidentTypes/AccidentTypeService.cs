@@ -25,7 +25,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<AccidentType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             string governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
-            
+
             IEnumerable<AccidentType> entities = predicate != null
                 ? await UnitOfWork.Repository.FindAsync(predicate, cancellationToken: cancellationToken)
                 : await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
@@ -42,19 +42,19 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<AccidentTypeFilter> filter, CancellationToken cancellationToken = default)
         {
             bool isSuperAdmin = IsSuperAdmin();
-            
+
             string governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
-            
+
             int limit = filter.PageSize;
 
             int offset = --filter.PageNumber * filter.PageSize;
-            
+
             AccidentTypeFilter accidentFilter = filter?.Filter ?? new AccidentTypeFilter();
 
             if (!isSuperAdmin)
                 accidentFilter.IsDeleted = false;
 
-            (int Count, IEnumerable<AccidentType> Result) = 
+            (int Count, IEnumerable<AccidentType> Result) =
                  await UnitOfWork.Repository.FindPagedAsync(
                  predicate: PredicateBuilderFunction(accidentFilter, governorateId),
                  pageNumber: offset,
@@ -65,7 +65,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
             IEnumerable<AccidentType> filteredResult = isSuperAdmin ? (Result ?? []) : (Result?.Where(x => !x.IsDeleted) ?? []);
 
             IEnumerable<AccidentTypeDto> data = Mapper.Map<IEnumerable<AccidentType>, IEnumerable<AccidentTypeDto>>(filteredResult);
-            
+
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
@@ -76,7 +76,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
 
             Expression<Func<AccidentType, bool>> predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            (int Count, IEnumerable<AccidentType> Result) query = 
+            (int Count, IEnumerable<AccidentType> Result) query =
                 await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
             IEnumerable<AccidentTypeDto> data = Mapper.Map<IEnumerable<AccidentType>, IEnumerable<AccidentTypeDto>>(query.Result.Where(x => x.IsDeleted != true));
@@ -86,7 +86,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
         static Expression<Func<AccidentType, bool>> PredicateBuilderFunction(AccidentTypeFilter filter, string governorateId)
         {
             var predicate = PredicateBuilder.New<AccidentType>(x => x.IsDeleted == filter.IsDeleted);
-            
+
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
             {
                 predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
@@ -132,7 +132,9 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
                         message: MessagesConstants.Existed);
 
                 AccidentType entity = Mapper.Map<AccidentType>(model);
-            
+
+                entity.GovernorateId = GetGovernorateIdFromClaims();
+
                 SetEntityCreatedBaseProperties(entity);
 
                 IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
@@ -195,6 +197,7 @@ namespace SonoTracker.Application.Services.LookUp.AccidentTypes
                 AccidentType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 AccidentType entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 if (IsSuperAdmin())
                 {

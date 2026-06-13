@@ -5,8 +5,8 @@ using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Tracker.TripMarina;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters;
+using SonoTracker.Common.DTO.Tracker.TripMarina;
+using SonoTracker.Common.DTO.Tracker.TripMarina.Parameters;
 using System.Net;
 using System.Threading;
 
@@ -62,7 +62,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <returns></returns>
         [HttpPost("getPaged")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<PagingResult>> GetPagedAsync([FromBody] BaseParam<TripMarinaFilter> filter, CancellationToken cancellationToken = default)
         {
             PagingResult res = await tripMarinaService.GetAllPagedAsync(filter, cancellationToken);
 
@@ -80,7 +80,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddMarinaTripDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddTripMarinaDto dto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripMarinaService.AddAsync(dto, cancellationToken);
 
@@ -102,7 +102,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddMarinaTripDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddTripMarinaDto model, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await tripMarinaService.UpdateAsync(model, cancellationToken);
 

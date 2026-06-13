@@ -8,24 +8,13 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapInspection()
         {
-            // Legacy GeneralInspection DTOs (kept for backward compatibility)
-            CreateMap<Inspection, GeneralInspectionDto>()
-                 .ForMember(des => des.OrganizationNameAr, opt => opt.MapFrom(src => src.Organization.NameAr))
-                 .ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
-                 .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
-                 .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
-                 .ReverseMap();
-            CreateMap<Inspection, EditGeneralInspectionDto>().ReverseMap();
-            CreateMap<AddGeneralInspectionDto, Inspection>()
-                .ForMember(des => des.Id, opt => opt.Ignore())
-                .ReverseMap();
 
             // Properly-named Inspection DTOs
             CreateMap<Inspection, InspectionDto>()
-                .ForMember(des => des.OrganizationNameAr, opt => opt.MapFrom(src => src.Organization.NameAr))
-                .ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
-                .ForMember(des => des.FloatingUnitNameAr, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
-                .ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
+                .ForMember(des => des.Organization, opt => opt.MapFrom(src => src.Organization.NameAr))
+                //.ForMember(des => des.OrganizationNameEn, opt => opt.MapFrom(src => src.Organization.NameEn))
+                .ForMember(des => des.FloatingUnit, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
+                //.ForMember(des => des.FloatingUnitNameEn, opt => opt.MapFrom(src => src.FloatingUnit.NameEn))
                 .ReverseMap();
             CreateMap<Inspection, EditInspectionDto>()
                 .ForMember(des => des.OrganizationNameAr, opt => opt.MapFrom(src => src.Organization.NameAr))
@@ -35,7 +24,7 @@ namespace SonoTracker.Application.Mapping
                 .ReverseMap();
             CreateMap<AddInspectionDto, Inspection>()
                 .ForMember(des => des.Id, opt => opt.Ignore())
-                .ForMember(des => des.InspectionAttachment, opt => opt.Ignore())
+                .ForMember(des => des.InspectionFloatingUnitClauses, opt => opt.Ignore())
                 .ReverseMap();
         }
     }

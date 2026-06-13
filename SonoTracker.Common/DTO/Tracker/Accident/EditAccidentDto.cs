@@ -9,8 +9,8 @@ namespace SonoTracker.Common.DTO.Tracker.Accident
     public class EditAccidentDto : IEntityDto<string>
     {
         public string? Id { get; set; }
-        public string Number { get; set; }
-        public string Town { get; set; }
+        public string Code { get; set; }
+        public string City { get; set; }
         public string GeoPointId { get; set; }
         public DateTime AccidentDate { get; set; }
         public DateTime ResponseDate { get; set; }
@@ -18,8 +18,7 @@ namespace SonoTracker.Common.DTO.Tracker.Accident
         public string AccidentTypeId { get; set; }
         public string FloatingUnit { get; set; }
         public string FloatingUnitId { get; set; }
-        public Case CaseId { get; set; }
-        public EnumResult Case { get; set; }
+        public Case Case { get; set; }
         public string Organization { get; set; }
         public string OrganizationId { get; set; }
         public string Notes { get; set; }

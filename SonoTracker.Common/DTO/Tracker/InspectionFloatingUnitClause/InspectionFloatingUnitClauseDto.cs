@@ -15,5 +15,6 @@ namespace SonoTracker.Common.DTO.Tracker.InspectionFloatingUnitClause
         public DateOnly? InspectionDate { get; set; }
         public string? InspectionClauseId { get; set; }
         public string? InspectionClauseName { get; set; }
+        public string InspectionClauseCode { get; set; }
     }
 }

@@ -2,11 +2,15 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
+using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.Tracker.MaintenanceAttach;
 using SonoTracker.Application.Services.Tracker.Maintenance;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.Maintenance;
 using SonoTracker.Common.DTO.Tracker.Maintenance.Parameters;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -18,7 +22,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Maintenance
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class MaintenancesController(IMaintenanceService maintenanceService) : BaseController
+    public class MaintenancesController(IMaintenanceService maintenanceService,
+                                        IMaintenanceAttachService maintenanceAttachService,
+                                        IAttachService attachService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -164,6 +170,34 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Maintenance
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             return Accepted(res);
+        }
+
+        /// <summary>
+        /// Deletes a range of attachments by their IDs.
+        /// </summary>
+        /// <param name="ids">A collection of attachment IDs to delete.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>An <see cref="IFinalResult"/> indicating the result of the operation.</returns>
+        [HttpDelete("deleteRange/attachments")]
+        public async Task<ActionResult<IFinalResult>> DeleteRangeAttachmentsAsync([FromBody] IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            if (ids == null || !ids.Any())
+            {
+                return new FinalResult
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "No IDs provided for deletion."
+                };
+            }
+
+            IFinalResult resultMaintenanceAttach = await maintenanceAttachService.DeleteRangeWithAttachIdRangeAsync(ids, cancellationToken);
+            IFinalResult resultAttach = await attachService.DeleteRangeAsync(ids, cancellationToken);
+            if (resultAttach.Status == HttpStatusCode.BadRequest && resultMaintenanceAttach.Status == HttpStatusCode.BadRequest)
+            {
+                return BadRequest(resultAttach);
+            }
+
+            return Ok(resultAttach);
         }
     }
 }

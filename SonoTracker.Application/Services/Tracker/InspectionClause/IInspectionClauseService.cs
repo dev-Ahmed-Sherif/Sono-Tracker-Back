@@ -11,6 +11,8 @@ namespace SonoTracker.Application.Services.Tracker.InspectionClause
 {
     public interface IInspectionClauseService : IBaseService<Domain.Entities.Tracker.InspectionClause, AddInspectionClauseDto, EditInspectionClauseDto, InspectionClauseDto, string, string>
     {
+        Task<IFinalResult> GetAllAsync(string inspectionTypeId, CancellationToken cancellationToken = default);
+
         Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionClauseFilter> filter, CancellationToken cancellationToken = default);
 
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);

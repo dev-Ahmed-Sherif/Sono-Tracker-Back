@@ -207,136 +207,152 @@ namespace SonoTracker.Application.Services.Tracker.FloatingUnitStaff
 
         public override async Task<IFinalResult> AddAsync(AddFloatingUnitStaffDto model, CancellationToken cancellationToken = default)
         {
-            var existingStaff = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.FloatingUnitId == model.FloatingUnitId,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
-
-            var normalizedName = NormalizeText(model.Name);
-            var normalizedIdentity = NormalizeIdentity(model.Identity);
-            const int nameThreshold = 90;
-            const int identityThreshold = 90;
-
-            var nameDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Name) &&
-                Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
-
-            var identityExactDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Identity) &&
-                string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
-
-            var identityFuzzyDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Identity) &&
-                Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
-
-            if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
-                                                 message: MessagesConstants.Existed);
-
-            var entity = Mapper.Map<Entities.Tracker.FloatingUnitStaff>(model);
-
-            if (model.DelegateAttachment != null)
+            try
             {
-                string res = await _uploaderConfiguration
-                                   .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
+                var existingStaff = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.FloatingUnitId == model.FloatingUnitId,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
 
-                if (res != null)
+                var normalizedName = NormalizeText(model.Name);
+                var normalizedIdentity = NormalizeIdentity(model.Identity);
+                const int nameThreshold = 90;
+                const int identityThreshold = 90;
+
+                var nameDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Name) &&
+                    Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+                var identityExactDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Identity) &&
+                    string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
+
+                var identityFuzzyDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Identity) &&
+                    Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
+
+                if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
+
+                var entity = Mapper.Map<Entities.Tracker.FloatingUnitStaff>(model);
+
+                if (model.DelegateAttachment != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    string res = await _uploaderConfiguration
+                                       .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    entity.DelegateAttachment = res;
+
+                    entity.IsDelegate = true;
                 }
 
-                entity.DelegateAttachment = res;
+                entity.IsDeleted = false;
 
-                entity.IsDelegate = true;
+                await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+
+                return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
             }
-
-            entity.IsDeleted = false;
-
-            await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
-
-            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
-
-            return ResponseResult.PostResult(result: entity.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
         public override async Task<IFinalResult> UpdateAsync(AddFloatingUnitStaffDto model, CancellationToken cancellationToken = default)
         {
-            Entities.Tracker.FloatingUnitStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
-
-            string currentAttachment = entityToUpdate.DelegateAttachment;
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
-            }
+                Entities.Tracker.FloatingUnitStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
-            var existingStaff = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.FloatingUnitId == model.FloatingUnitId && x.Id != model.Id,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
+                string currentAttachment = entityToUpdate.DelegateAttachment;
 
-            var normalizedName = NormalizeText(model.Name);
-            var normalizedIdentity = NormalizeIdentity(model.Identity);
-            const int nameThreshold = 90;
-            const int identityThreshold = 90;
+                var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
-            var nameDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Name) &&
-                Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
-
-            var identityExactDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Identity) &&
-                string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
-
-            var identityFuzzyDuplicate = existingStaff.Any(x =>
-                !string.IsNullOrWhiteSpace(x.Identity) &&
-                Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
-
-            if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
-                                                 message: MessagesConstants.Existed);
-
-            if (model.DelegateAttachment != null)
-            {
-                string res = await _uploaderConfiguration
-                               .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
-
-                if (res != null)
+                if (IsSuperAdmin())
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
                 }
 
-                _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
-                
-                entity.DelegateAttachment = res;
+                var existingStaff = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.FloatingUnitId == model.FloatingUnitId && x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
 
-                entity.IsDelegate = true;
+                var normalizedName = NormalizeText(model.Name);
+                var normalizedIdentity = NormalizeIdentity(model.Identity);
+                const int nameThreshold = 90;
+                const int identityThreshold = 90;
 
+                var nameDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Name) &&
+                    Fuzz.TokenSetRatio(normalizedName, NormalizeText(x.Name)) >= nameThreshold);
+
+                var identityExactDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Identity) &&
+                    string.Equals(x.Identity, model.Identity, StringComparison.Ordinal));
+
+                var identityFuzzyDuplicate = existingStaff.Any(x =>
+                    !string.IsNullOrWhiteSpace(x.Identity) &&
+                    Fuzz.Ratio(normalizedIdentity, NormalizeIdentity(x.Identity)) >= identityThreshold);
+
+                if (nameDuplicate || identityExactDuplicate || identityFuzzyDuplicate)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                                                     message: MessagesConstants.Existed);
+
+                if (model.DelegateAttachment != null)
+                {
+                    string res = await _uploaderConfiguration
+                                   .UploadFile(model.DelegateAttachment, "FloatingUnitStaff", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    _uploaderConfiguration.DeleteFile(entityToUpdate.DelegateAttachment);
+                    
+                    entity.DelegateAttachment = res;
+
+                    entity.IsDelegate = true;
+                }
+                else
+                {
+                    entity.DelegateAttachment = currentAttachment;
+                }
+
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
             }
-            else
+            catch (Exception ex)
             {
-                entity.DelegateAttachment = currentAttachment;
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows < 0) return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(true, HttpStatusCode.OK, null, MessagesConstants.UpdateSuccess);
         }
         public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Remove Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.DelegateAttachment);

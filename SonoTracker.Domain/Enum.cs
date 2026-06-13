@@ -220,15 +220,15 @@ namespace SonoTracker.Domain.Enum
         [Values("Approved", "مقبول", "APPROVED")]
         Approved = 1,
         [Values("NeedCompelete", "مطلوب الإستكمال", "NEEDCOMPELETE")]
-        NeedCompelete,
+        NeedCompelete = 2,
         [Values("Pending", "جارى المراجعة", "PENDING")]
-        Pending
+        Pending = 3
     }
     public enum Case
     {
-        [Values("InProgress", "جاري العمل", "InProgress")]
+        [Values("InProgress", "جاري الأصلاح", "InProgress")]
         InProgress = 1,
-        [Values("Implemented", "تم التنفيذ", "Implemented")]
+        [Values("Implemented", "تم الأصلاح", "Implemented")]
         Implemented = 2
     }
     public enum IDType

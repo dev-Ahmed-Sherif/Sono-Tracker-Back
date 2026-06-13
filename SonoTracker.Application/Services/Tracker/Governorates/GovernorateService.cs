@@ -136,45 +136,53 @@ namespace SonoTracker.Application.Services.Tracker.Governorates
 
         public override async Task<IFinalResult> AddAsync(AddGovernorateDto dto, CancellationToken cancellationToken = default)
         {
-            var data = await GetAllAsync(cancellationToken: cancellationToken);
-
-            var dataCollection = data.Data;
-
-            if (dataCollection != null)
-                return new ResponseResult().PostResult(result: false, 
-                           status: HttpStatusCode.BadRequest, 
-                           message: "?? ???? ????? ???? ?? ???? ????");
-
-            var mapped = Mapper.Map<Governorate>(dto);
-            SetEntityCreatedBaseProperties(mapped);
-
-            if (dto.ImageUrl != null)
+            try
             {
-                string res = await _uploaderConfiguration.UploadFile(dto.ImageUrl, "Governorate", cancellationToken);
+                var data = await GetAllAsync(cancellationToken: cancellationToken);
 
-                if (res != null)
+                var dataCollection = data.Data;
+
+                if (dataCollection != null)
+                    return new ResponseResult().PostResult(result: false, 
+                               status: HttpStatusCode.BadRequest, 
+                               message: "?? ???? ????? ???? ?? ???? ????");
+
+                var mapped = Mapper.Map<Governorate>(dto);
+                SetEntityCreatedBaseProperties(mapped);
+
+                if (dto.ImageUrl != null)
                 {
-                    if (UploadResponse(res) != null)
-                        return UploadResponse(res);
+                    string res = await _uploaderConfiguration.UploadFile(dto.ImageUrl, "Governorate", cancellationToken);
+
+                    if (res != null)
+                    {
+                        if (UploadResponse(res) != null)
+                            return UploadResponse(res);
+                    }
+
+                    mapped.ImageUrl = res;
                 }
 
-                mapped.ImageUrl = res;
+                mapped.IsDeleted = false;
+
+                UnitOfWork.Repository.Add(mapped);
+
+                await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
             }
-
-            mapped.IsDeleted = false;
-
-            UnitOfWork.Repository.Add(mapped);
-
-            await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
 
         public override async Task<IFinalResult> UpdateAsync([FromForm] AddGovernorateDto dto, CancellationToken cancellationToken = default)
         {
             try
             {
-                var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
+                var entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
 
                 var currentImageUrl = entityToUpdate.ImageUrl;
 
@@ -220,11 +228,8 @@ namespace SonoTracker.Application.Services.Tracker.Governorates
             }
             catch (Exception ex)
             {
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,exception: ex,
-                                                 message: MessagesConstants.UpdateError + ex.Message);
-                //_logger.LogError($"{MessagesConstants.UpdateError}-{nameof(UpdateAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
             }
         }
 
@@ -232,7 +237,7 @@ namespace SonoTracker.Application.Services.Tracker.Governorates
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Reomve Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.ImageUrl);
@@ -257,11 +262,8 @@ namespace SonoTracker.Application.Services.Tracker.Governorates
             }
             catch (Exception ex)
             {
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest,exception:ex,
-                                                 message: MessagesConstants.DeleteError);
-                //_logger.LogError($"{MessagesConstants.DeleteError}-{nameof(DeleteAsync)}");
-                //_logger.LogError(JsonConvert.SerializeObject(e, _serializerSettings));
-                throw;
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.DeleteError + ex.Message);
             }
 
         }

@@ -9,14 +9,14 @@ using LinqKit;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip.Parameters;
-using SonoTracker.Common.DTO.Tracker.MarinaTrip;
 using SonoTracker.Domain;
 using Microsoft.EntityFrameworkCore;
+using SonoTracker.Common.DTO.Tracker.TripMarina.Parameters;
+using SonoTracker.Common.DTO.Tracker.TripMarina;
 
 namespace SonoTracker.Application.Services.Tracker.TripMarina
 {
-    public class TripMarinaService : BaseService<Entities.Tracker.TripMarina, AddMarinaTripDto, EditMarinaTripDto, MarinaTripDto, string, string>, ITripMarinaService
+    public class TripMarinaService : BaseService<Entities.Tracker.TripMarina, AddTripMarinaDto, EditTripMarinaDto, TripMarinaDto, string, string>, ITripMarinaService
     {
 
         public TripMarinaService(IServiceBaseParameter<Entities.Tracker.TripMarina> businessBaseParameter) : base(businessBaseParameter)
@@ -30,9 +30,8 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                 .Include(t => t.TouristMarina)
-               .Include(x => x.TripInformation)
-                );
-            var mapped = Mapper.Map<Entities.Tracker.TripMarina, EditMarinaTripDto>(entity);
+               .Include(x => x.TripInformation), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.TripMarina, EditTripMarinaDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
@@ -43,8 +42,8 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
                 include: src => src
                .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
-              .ThenInclude(x => x.FloatingUnit));
-            var mapped = Mapper.Map<Entities.Tracker.TripMarina, MarinaTripDto>(entity);
+              .ThenInclude(x => x.FloatingUnit), cancellationToken: cancellationToken);
+            var mapped = Mapper.Map<Entities.Tracker.TripMarina, TripMarinaDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -53,18 +52,18 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
             var entity = await UnitOfWork.Repository.GetAllAsync(include: src => src
                .Include(t => t.TouristMarina)
               .Include(x => x.TripInformation)
-              .ThenInclude(x => x.FloatingUnit));
+              .ThenInclude(x => x.FloatingUnit), cancellationToken: cancellationToken);
             var filteredEntities = IsSuperAdmin()
                 ? entity
                 : entity.Where(e => !e.IsDeleted);
-            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<MarinaTripDto>>(filteredEntities);
+            var mapped = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<TripMarinaDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
         }
-        public async Task<PagingResult> GetAllPagedAsync(BaseParam<MarinaTripFilter> filter, CancellationToken cancellationToken = default)
+        public async Task<PagingResult> GetAllPagedAsync(BaseParam<TripMarinaFilter> filter, CancellationToken cancellationToken = default)
         {
             var isSuperAdmin = IsSuperAdmin();
-            var marinaTripFilter = filter?.Filter ?? new MarinaTripFilter();
+            var marinaTripFilter = filter?.Filter ?? new TripMarinaFilter();
             if (!isSuperAdmin)
                 marinaTripFilter.IsDeleted = false;
 
@@ -81,13 +80,13 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
                 cancellationToken: cancellationToken);
 
             var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<MarinaTripDto>>(items);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<TripMarinaDto>>(items);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
 
-        static Expression<Func<Entities.Tracker.TripMarina, bool>> PredicateBuilderFunction(MarinaTripFilter filter)
+        static Expression<Func<Entities.Tracker.TripMarina, bool>> PredicateBuilderFunction(TripMarinaFilter filter)
         {
             var predicate = PredicateBuilder.New<Entities.Tracker.TripMarina>(x => x.IsDeleted == filter.IsDeleted);
 

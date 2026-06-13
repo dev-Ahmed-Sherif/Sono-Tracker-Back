@@ -10,7 +10,7 @@ using SonoTracker.Domain.Entities.TrackerNotification;
 namespace SonoTracker.Infrastructure.Context
 {
     public partial class SonoTrackerDbContext(
-            DbContextOptions<SonoTrackerDbContext> options) 
+            DbContextOptions<SonoTrackerDbContext> options)
         : IdentityDbContext<User, Role, string>(options)
     {
 
@@ -52,8 +52,12 @@ namespace SonoTracker.Infrastructure.Context
         public virtual DbSet<Inspection> Inspections { get; set; }
         public virtual DbSet<InspectionClause> InspectionClauses { get; set; }
         public virtual DbSet<InspectionFloatingUnitClause> InspectionFloatingUnitClauses { get; set; }
+        public virtual DbSet<InspectionAttachment> InspectionAttachments { get; set; }
         public virtual DbSet<Maintenance> Maintenances { get; set; }
+        public virtual DbSet<MaintenanceAttachment> MaintenanceAttachments { get; set; }
         public virtual DbSet<Accident> Accidents { get; set; }
+        public virtual DbSet<AccidentOrganization> AccidentOrganizations { get; set; }
+        public virtual DbSet<AccidentAttachment> AccidentAttachments { get; set; }
 
         #endregion
 
@@ -214,6 +218,10 @@ namespace SonoTracker.Infrastructure.Context
                 .WithMany(o => o.OrganizationStaffs)
                 .HasForeignKey(s => s.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Accident.OrganizationId was removed; Accident→Organization is now via AccidentOrganization junction.
+            modelBuilder.Entity<Organization>()
+                .Ignore(o => o.Accidents);
 
             modelBuilder.Entity<OrganizationStaff>()
                 .Property(s => s.NationalId)
@@ -376,6 +384,12 @@ namespace SonoTracker.Infrastructure.Context
                 .HasColumnType("date");
 
             modelBuilder.Entity<Inspection>()
+                .HasOne(i => i.InspectionType)
+                .WithMany(t => t.Inspections)
+                .HasForeignKey(i => i.InspectionTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Inspection>()
                 .HasOne(i => i.FloatingUnit)
                 .WithMany(f => f.Inspections)
                 .HasForeignKey(i => i.FloatingUnitId)
@@ -403,6 +417,12 @@ namespace SonoTracker.Infrastructure.Context
                 .HasOne(c => c.Parent)
                 .WithMany()
                 .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionClause>()
+                .HasOne(c => c.Governorate)
+                .WithMany()
+                .HasForeignKey(c => c.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<InspectionFloatingUnitClause>()
@@ -452,21 +472,69 @@ namespace SonoTracker.Infrastructure.Context
                 .HasColumnType("date");
 
             modelBuilder.Entity<Accident>()
+                .HasOne(a => a.AccidentType)
+                .WithMany(t => t.Accidents)
+                .HasForeignKey(a => a.AccidentTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Accident>()
                 .HasOne(a => a.FloatingUnit)
                 .WithMany(f => f.Accidents)
                 .HasForeignKey(a => a.FloatingUnitId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Accident>()
-                .HasOne(a => a.Organization)
-                .WithMany(o => o.Accidents)
-                .HasForeignKey(a => a.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Accident>()
                 .HasOne(a => a.Governorate)
                 .WithMany()
                 .HasForeignKey(a => a.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AccidentOrganization>()
+                .HasOne(ao => ao.Accident)
+                .WithMany(a => a.AccidentOrganizations)
+                .HasForeignKey(ao => ao.AccidentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AccidentOrganization>()
+                .HasOne(ao => ao.Organization)
+                .WithMany()
+                .HasForeignKey(ao => ao.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AccidentAttachment>()
+                .HasOne(aa => aa.Accident)
+                .WithMany(a => a.AccidentAttachments)
+                .HasForeignKey(aa => aa.AccidentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AccidentAttachment>()
+                .HasOne(aa => aa.Attachment)
+                .WithMany()
+                .HasForeignKey(aa => aa.AttachmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionAttachment>()
+                .HasOne(ia => ia.Inspection)
+                .WithMany(i => i.InspectionAttachments)
+                .HasForeignKey(ia => ia.InspectionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InspectionAttachment>()
+                .HasOne(ia => ia.Attachment)
+                .WithMany()
+                .HasForeignKey(ia => ia.AttachmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MaintenanceAttachment>()
+                .HasOne(ma => ma.Maintenance)
+                .WithMany(m => m.MaintenanceAttachments)
+                .HasForeignKey(ma => ma.MaintenanceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MaintenanceAttachment>()
+                .HasOne(ma => ma.Attachment)
+                .WithMany()
+                .HasForeignKey(ma => ma.AttachmentId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
@@ -483,6 +551,12 @@ namespace SonoTracker.Infrastructure.Context
                 .HasOne(t => t.City)
                 .WithMany(c => c.Towns)
                 .HasForeignKey(t => t.CityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GeoPoint>()
+                .HasOne(g => g.Governorate)
+                .WithMany()
+                .HasForeignKey(g => g.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AccidentType>()
@@ -522,6 +596,7 @@ namespace SonoTracker.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Nationality relationships (Organization configured in ConfigureOrganizationRelations)
+
             modelBuilder.Entity<Nationality>()
                 .HasMany(n => n.FloatingUnitStaffs)
                 .WithOne(s => s.Nationality)

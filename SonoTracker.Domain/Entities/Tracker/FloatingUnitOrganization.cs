@@ -17,13 +17,15 @@ namespace SonoTracker.Domain.Entities.Tracker
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-
-        [MaxLength(50), ForeignKey(nameof(Organization))]
-        public string? OrganizationId { get; set; }
+        
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Organization))]
+        public required string OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public string? FloatingUnitId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(FloatingUnit))]
+        public required string FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
     }
 }

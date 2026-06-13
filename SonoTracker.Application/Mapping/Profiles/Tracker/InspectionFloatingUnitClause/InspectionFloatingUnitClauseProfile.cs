@@ -9,6 +9,7 @@ namespace SonoTracker.Application.Mapping
         {
             CreateMap<InspectionFloatingUnitClause, InspectionFloatingUnitClauseDto>()
                 .ForMember(des => des.InspectionClauseName, opt => opt.MapFrom(src => src.InspectionClause.Name))
+                .ForMember(des => des.InspectionClauseCode, opt => opt.MapFrom(src => src.InspectionClause.Code))
                 .ForMember(des => des.InspectionDate, opt => opt.MapFrom(src => src.Inspection.InspectionDate))
                 .ReverseMap();
             CreateMap<InspectionFloatingUnitClause, EditInspectionFloatingUnitClauseDto>()

@@ -2,7 +2,9 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
+using SonoTracker.Application.Services.LookUp.Attach;
 using SonoTracker.Application.Services.Tracker.Accident;
+using SonoTracker.Application.Services.Tracker.AccidentAttach;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Tracker.Accident;
@@ -18,7 +20,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Accident
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class AccidentController(IAccidentService accidentService) : BaseController
+    public class AccidentController(IAccidentService accidentService, 
+                                    IAccidentAttachService accidentAttachService,
+                                    IAttachService attachService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -164,6 +168,35 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Accident
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             return Accepted(res);
+        }
+
+        /// <summary>
+        /// Deletes a range of attachments by their IDs.
+        /// </summary>
+        /// <param name="ids">A collection of attachment IDs to delete.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>An <see cref="IFinalResult"/> indicating the result of the operation.</returns>
+        [HttpDelete("deleteRange/attachments")]
+        public async Task<ActionResult<IFinalResult>> DeleteRangeAsync([FromBody] IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            if (ids == null || !ids.Any())
+            {
+                return new FinalResult
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "No IDs provided for deletion."
+                };
+            }
+
+            // Call the service to delete the attachments
+            // and return the result
+            IFinalResult resultAccidentAttach = await accidentAttachService.DeleteRangeWithAttachIdRangeAsync(ids, cancellationToken);
+            IFinalResult resultAttach = await attachService.DeleteRangeAsync(ids, cancellationToken);
+            if (resultAttach.Status == HttpStatusCode.BadRequest && resultAccidentAttach.Status == HttpStatusCode.BadRequest)
+            {
+                return BadRequest(resultAttach);
+            }
+            return Ok(resultAttach);
         }
     }
 }

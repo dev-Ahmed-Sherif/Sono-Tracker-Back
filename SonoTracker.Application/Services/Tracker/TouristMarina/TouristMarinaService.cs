@@ -57,7 +57,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                                              cancellationToken: cancellationToken);
 
             EditTouristMarinaDto mapped = Mapper.Map<TouristMarina, EditTouristMarinaDto>(entity);
-            
+
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
         }
@@ -67,7 +67,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
             TouristMarina entity = await UnitOfWork.Repository
                                     .FirstOrDefaultAsync(x => x.Id.Equals(id.ToString()), include: src => src
                                     .Include(t => t.City)
-                                    .Include(x => x.GeoPoint), 
+                                    .Include(x => x.GeoPoint),
                                     cancellationToken: cancellationToken);
 
             TouristMarinaDto mapped = Mapper.Map<TouristMarina, TouristMarinaDto>(entity);
@@ -81,9 +81,9 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
             IEnumerable<TouristMarina> entity = await UnitOfWork.Repository
                                          .GetAllAsync(include: src => src
                                          .Include(t => t.City)
-                                         .Include(x => x.GeoPoint), 
+                                         .Include(x => x.GeoPoint),
                                           cancellationToken: cancellationToken);
-            
+
             string governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
 
             IEnumerable<TouristMarina> filteredEntities = IsSuperAdmin()
@@ -91,7 +91,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                 : entity.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId));
 
             IEnumerable<TouristMarinaDto> mapped = Mapper.Map<IEnumerable<TouristMarina>, IEnumerable<TouristMarinaDto>>(filteredEntities);
-            
+
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
         }
@@ -110,9 +110,9 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
             bool isSuperAdmin = IsSuperAdmin();
 
             TouristMarinaFilter touristMarinaFilter = filter?.Filter ?? new TouristMarinaFilter();
-            
+
             string governorateId = isSuperAdmin ? null : GetGovernorateIdFromClaims();
-            
+
             if (!isSuperAdmin)
                 touristMarinaFilter.IsDeleted = false;
 
@@ -122,7 +122,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
 
             (int Count, IEnumerable<TouristMarina> Result) query = await UnitOfWork.Repository
                 .FindPagedAsync(
-                    predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId), 
+                    predicate: PredicateBuilderFunction(touristMarinaFilter, governorateId),
                     pageNumber: offset,
                     pageSize: limit, filter.OrderByValue,
                     include: src => src
@@ -134,7 +134,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
 
             IEnumerable<TouristMarinaDto> data = Mapper.Map<IEnumerable<TouristMarina>, IEnumerable<TouristMarinaDto>>(items);
 
-            return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: query.Count, result: data, 
+            return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: query.Count, result: data,
                                     status: HttpStatusCode.OK, message: MessagesConstants.Success);
         }
         public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
@@ -207,7 +207,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
 
-      
+
         public override async Task<IFinalResult> AddAsync(AddTouristMarinaDto model, CancellationToken cancellationToken = default)
         {
             try
@@ -215,7 +215,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                 await AssignMarinaCodeFromCityAsync(model, cancellationToken);
 
                 bool isSuperAdmin = IsSuperAdmin();
-                
+
                 string govId = GetGovernorateIdFromClaims();
 
                 IEnumerable<TouristMarina> existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
@@ -233,6 +233,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                                                      message: MessagesConstants.Existed);
 
                 TouristMarina entity = Mapper.Map<TouristMarina>(model);
+                entity.GovernorateId = govId;
                 SetEntityCreatedBaseProperties(entity);
 
                 if (model.ImageUrl != null)
@@ -268,11 +269,11 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                 }
 
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
-                
+
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows < 0)
-                    return ResponseResult.PostResult(result :false, status: HttpStatusCode.BadRequest, exception: null, 
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.AddError);
 
                 return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
@@ -312,6 +313,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                 string currentImageUrl = entityToUpdate.ImageUrl;
 
                 TouristMarina newEntity = Mapper.Map(dto, entityToUpdate);
+                newEntity.GovernorateId = GetGovernorateIdFromClaims();
                 SetEntityModifiedBaseProperties(newEntity);
 
                 if (IsSuperAdmin())
@@ -351,7 +353,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
                 }, cancellationToken);
 
                 UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-                
+
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows < 0)
@@ -371,7 +373,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
         private async Task AssignMarinaCodeFromCityAsync(AddTouristMarinaDto model, CancellationToken cancellationToken)
         {
             IFinalResult city = await _cityService.GetByIdAsync(model.CityId, cancellationToken);
-            
+
             if (city.Data is not CityDto cityDto)
                 return;
 
@@ -388,7 +390,7 @@ namespace SonoTracker.Application.Services.Tracker.Marinas
             ICollection<TouristMarinaDto> existDataCollection = exist.Data as ICollection<TouristMarinaDto>;
 
             int nextSeq = 1;
-            
+
             if (existDataCollection is { Count: > 0 })
             {
                 TouristMarinaDto lastItem = existDataCollection

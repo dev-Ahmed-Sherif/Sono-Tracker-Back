@@ -119,6 +119,7 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
                         message: MessagesConstants.Existed);
 
                 var entity = Mapper.Map<Entities.Lookups.MaintenanceType>(model);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
@@ -138,6 +139,7 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
                     entity.Code = "01";
                 }
 
+                SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -154,45 +156,55 @@ namespace SonoTracker.Application.Services.Lookup.MaintenanceType
                     message: MessagesConstants.AddError + e.Message);
             }
         }
-        
+
         public override async Task<IFinalResult> UpdateAsync(AddMaintenanceTypeDto model, CancellationToken cancellationToken = default)
         {
-            var isSuperAdmin = IsSuperAdmin();
-            var govId = GetGovernorateIdFromClaims();
-            var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
-                ? await UnitOfWork.Repository.FindAsync(
-                    predicate: x => x.Id != model.Id,
-                    disableTracking: true,
-                    cancellationToken: cancellationToken)
-                : await UnitOfWork.Repository.FindAsync(
-                    predicate: x => x.GovernorateId == govId && x.Id != model.Id,
-                    disableTracking: true,
-                    cancellationToken: cancellationToken);
-
-            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
-                    message: MessagesConstants.Existed);
-
-            Domain.Entities.Lookups.MaintenanceType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var isSuperAdmin = IsSuperAdmin();
+                var govId = GetGovernorateIdFromClaims();
+                var existingForDup = isSuperAdmin || string.IsNullOrWhiteSpace(govId)
+                    ? await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.Id != model.Id,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken)
+                    : await UnitOfWork.Repository.FindAsync(
+                        predicate: x => x.GovernorateId == govId && x.Id != model.Id,
+                        disableTracking: true,
+                        cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                Domain.Entities.Lookups.MaintenanceType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+                entity.GovernorateId = GetGovernorateIdFromClaims();
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
+                SetEntityModifiedBaseProperties(entity);
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0)
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
-                    message: MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
-                message: MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                     .Include(c => c.InspectionClause)
-                    .Include(c => c.Inspection));
+                    .Include(c => c.Inspection), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.InspectionFloatingUnitClause, InspectionFloatingUnitClauseDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -40,17 +40,28 @@ namespace SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src
                     .Include(c => c.InspectionClause)
-                    .Include(c => c.Inspection));
+                    .Include(c => c.Inspection), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Tracker.InspectionFloatingUnitClause, EditInspectionFloatingUnitClauseDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
         public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Tracker.InspectionFloatingUnitClause, bool>> predicate = null, CancellationToken cancellationToken = default)
+            => await GetAllAsync(inspectionId: null, cancellationToken);
+
+        public async Task<IFinalResult> GetAllAsync(string? inspectionId, CancellationToken cancellationToken = default)
         {
-            var entities = await UnitOfWork.Repository.GetAllAsync(
+            var isSuperAdmin = IsSuperAdmin();
+            var filter = new InspectionFloatingUnitClauseFilter
+            {
+                InspectionId = inspectionId
+            };
+
+            var entities = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(filter, includeDeleted: isSuperAdmin),
                 include: src => src
                     .Include(c => c.InspectionClause)
-                    .Include(c => c.Inspection));
+                    .Include(c => c.Inspection),
+                cancellationToken: cancellationToken);
             var mapped = Mapper.Map<IEnumerable<Domain.Entities.Tracker.InspectionFloatingUnitClause>, IEnumerable<InspectionFloatingUnitClauseDto>>(entities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK, message: HttpStatusCode.OK.ToString());
         }
@@ -77,31 +88,59 @@ namespace SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause
 
         public override async Task<IFinalResult> AddAsync(AddInspectionFloatingUnitClauseDto dto, CancellationToken cancellationToken = default)
         {
-            var mapped = Mapper.Map<Domain.Entities.Tracker.InspectionFloatingUnitClause>(dto);
-            UnitOfWork.Repository.Add(mapped);
-            await UnitOfWork.SaveChangesAsync(cancellationToken);
-            return ResponseResult.PostResult(mapped, status: HttpStatusCode.Created, message: HttpStatusCode.Created.ToString());
+            try
+            {
+                var mapped = Mapper.Map<Domain.Entities.Tracker.InspectionFloatingUnitClause>(dto);
+                UnitOfWork.Repository.Add(mapped);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                if (affectedRows <= 0)
+                    return ResponseResult.PostResult(false, HttpStatusCode.BadRequest, null, MessagesConstants.AddError);
+                return ResponseResult.PostResult(result: mapped.Id, HttpStatusCode.Created, null, MessagesConstants.AddSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.AddError + ex.Message);
+            }
         }
 
         public override async Task<IFinalResult> UpdateAsync(AddInspectionFloatingUnitClauseDto dto, CancellationToken cancellationToken = default)
         {
-            var entityToUpdate = await UnitOfWork.Repository.GetAsync(dto.Id);
-            var newEntity = Mapper.Map(dto, entityToUpdate);
-            UnitOfWork.Repository.Update(entityToUpdate, newEntity);
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-            if (affectedRows > 0)
-                Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, message: MessagesConstants.UpdateSuccess);
-            return Result;
+            try
+            {
+                var entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, dto.Id);
+                var newEntity = Mapper.Map(dto, entityToUpdate);
+                UnitOfWork.Repository.Update(entityToUpdate, newEntity);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: MessagesConstants.UpdateError);
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
+                    message: MessagesConstants.UpdateSuccess);
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
 
         public override async Task<IFinalResult> DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
-            var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
-            UnitOfWork.Repository.Remove(entityToDelete);
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-            if (affectedRows > 0)
-                Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, message: MessagesConstants.DeleteSuccess);
-            return Result;
+            try
+            {
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
+                UnitOfWork.Repository.Remove(entityToDelete);
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+                if (affectedRows > 0)
+                    Result = ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, message: MessagesConstants.DeleteSuccess);
+                return Result;
+            }
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.DeleteError + ex.Message);
+            }
         }
 
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
@@ -113,9 +152,11 @@ namespace SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause
             return ResponseResult.PostResult(result: rows, status: HttpStatusCode.NoContent, message: MessagesConstants.DeleteSuccess);
         }
 
-        static Expression<Func<Domain.Entities.Tracker.InspectionFloatingUnitClause, bool>> PredicateBuilderFunction(InspectionFloatingUnitClauseFilter filter)
+        static Expression<Func<Domain.Entities.Tracker.InspectionFloatingUnitClause, bool>> PredicateBuilderFunction(InspectionFloatingUnitClauseFilter filter, bool includeDeleted = false)
         {
-            var predicate = PredicateBuilder.New<Domain.Entities.Tracker.InspectionFloatingUnitClause>(true);
+            var predicate = includeDeleted
+                ? PredicateBuilder.New<Domain.Entities.Tracker.InspectionFloatingUnitClause>(true)
+                : PredicateBuilder.New<Domain.Entities.Tracker.InspectionFloatingUnitClause>(x => x.IsDeleted != true);
 
             if (!string.IsNullOrEmpty(filter.InspectionId))
                 predicate = predicate.And(x => x.InspectionId == filter.InspectionId);

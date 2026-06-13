@@ -54,7 +54,7 @@ namespace SonoTracker.Common.Helpers
 
             return list.Any(x =>
                 !string.IsNullOrWhiteSpace(codeSelector(x)) &&
-                Fuzz.TokenSetRatio(normalizedCode, NormalizeText(codeSelector(x))) >= threshold);
+                Fuzz.Ratio(normalizedCode, NormalizeText(codeSelector(x))) >= threshold);
         }
     }
 }

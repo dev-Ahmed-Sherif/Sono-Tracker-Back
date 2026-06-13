@@ -11,6 +11,8 @@ namespace SonoTracker.Application.Services.Tracker.InspectionFloatingUnitClause
 {
     public interface IInspectionFloatingUnitClauseService : IBaseService<Domain.Entities.Tracker.InspectionFloatingUnitClause, AddInspectionFloatingUnitClauseDto, EditInspectionFloatingUnitClauseDto, InspectionFloatingUnitClauseDto, string, string>
     {
+        Task<IFinalResult> GetAllAsync(string? inspectionId, CancellationToken cancellationToken = default);
+
         Task<PagingResult> GetAllPagedAsync(BaseParam<InspectionFloatingUnitClauseFilter> filter, CancellationToken cancellationToken = default);
 
         Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);

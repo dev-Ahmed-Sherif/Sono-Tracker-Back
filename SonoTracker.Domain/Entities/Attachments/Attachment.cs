@@ -15,18 +15,19 @@ namespace SonoTracker.Domain.Entities.Attachments
                 Id = Guid.CreateVersion7().ToString();
             }
         }
+        
         [Required, MaxLength(250)]
         public required string FileName { get; set; }
-        [Required, MaxLength(50)]
+        
+        [MaxLength(50)]
         public required string Extension { get; set; }
-        [Required, MaxLength(50)]   
+        
+        [MaxLength(50)]   
         public required string Size { get; set; }
-
-        public bool IsPublic { get; set; }
-
-        // public required string AttachmentDisplaySize { get; set; }
 
         [Required, MaxLength(250)]
         public required string Url { get; set; }
+
+        public bool IsPublic { get; set; }
     }
 }

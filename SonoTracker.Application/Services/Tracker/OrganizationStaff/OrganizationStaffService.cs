@@ -268,7 +268,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         {
             try
             {
-                Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(model.Id);
+                Entities.Tracker.OrganizationStaff entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 string currentDelegateAttachment = entityToUpdate.DelegateAttachment;
 
@@ -359,7 +359,7 @@ namespace SonoTracker.Application.Services.Tracker.OrganizationStaff
         {
             try
             {
-                var entityToDelete = await UnitOfWork.Repository.GetAsync(id);
+                var entityToDelete = await UnitOfWork.Repository.GetAsync(cancellationToken, id);
 
                 // Remove Uploaded File
                 _uploaderConfiguration.DeleteFile(entityToDelete.DelegateAttachment);

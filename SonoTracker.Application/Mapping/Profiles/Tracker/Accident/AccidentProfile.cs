@@ -9,32 +9,21 @@ namespace SonoTracker.Application.Mapping
         public void MapAccident()
         {
             CreateMap<Accident, AccidentDto>()
-                .ForMember(des => des.Number, opt => opt.MapFrom(src => src.Code))
                 .ForMember(des => des.AccidentDate, opt => opt.MapFrom(src => src.AccidentDate.ToDateTime(TimeOnly.MinValue)))
                 .ForMember(des => des.ResponseDate, opt => opt.MapFrom(src => src.ResponseDate.HasValue ? src.ResponseDate.Value.ToDateTime(TimeOnly.MinValue) : default))
                 .ForMember(des => des.AccidentType, opt => opt.MapFrom(src => src.AccidentType.NameAr))
                 .ForMember(des => des.FloatingUnit, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
-                .ForMember(des => des.Organization, opt => opt.MapFrom(src => src.Organization.NameAr))
-                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.City.NameAr))
-                .ForMember(des => des.CaseId, opt => opt.MapFrom(src => src.Case))
-                .ForMember(des => des.Case, opt => opt.MapFrom(src => src.Case.GetName()));
+                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.City.NameAr));
 
             CreateMap<Accident, EditAccidentDto>()
-                .ForMember(des => des.Number, opt => opt.MapFrom(src => src.Code))
                 .ForMember(des => des.AccidentDate, opt => opt.MapFrom(src => src.AccidentDate.ToDateTime(TimeOnly.MinValue)))
                 .ForMember(des => des.ResponseDate, opt => opt.MapFrom(src => src.ResponseDate.HasValue ? src.ResponseDate.Value.ToDateTime(TimeOnly.MinValue) : default))
                 .ForMember(des => des.AccidentType, opt => opt.MapFrom(src => src.AccidentType.NameAr))
                 .ForMember(des => des.FloatingUnit, opt => opt.MapFrom(src => src.FloatingUnit.NameAr))
-                .ForMember(des => des.Organization, opt => opt.MapFrom(src => src.Organization.NameAr))
-                .ForMember(des => des.Town, opt => opt.MapFrom(src => src.City.NameAr))
-                .ForMember(des => des.CaseId, opt => opt.MapFrom(src => src.Case))
-                .ForMember(des => des.Case, opt => opt.MapFrom(src => src.Case.GetName()));
+                .ForMember(des => des.City, opt => opt.MapFrom(src => src.City.NameAr));
 
             CreateMap<AddAccidentDto, Accident>()
                 .ForMember(des => des.Id, opt => opt.Ignore())
-                .ForMember(des => des.Code, opt => opt.MapFrom(src => src.Number))
-                .ForMember(des => des.AccidentDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(src.AccidentDate)))
-                .ForMember(des => des.ResponseDate, opt => opt.MapFrom(src => src.ResponseDate.HasValue ? DateOnly.FromDateTime(src.ResponseDate.Value) : (DateOnly?)null))
                 .ForMember(des => des.Attach, opt => opt.Ignore())
                 .ReverseMap();
         }

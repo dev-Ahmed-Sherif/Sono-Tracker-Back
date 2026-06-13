@@ -25,9 +25,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// </summary>
         /// <returns></returns>
         [HttpGet("get/{id}")]
-        public async Task<ActionResult<IFinalResult>> GetAsync(string id)
+        public async Task<ActionResult<IFinalResult>> GetAsync(string id, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await organizationStaffService.GetByIdAsync(id);
+            IFinalResult res = await organizationStaffService.GetByIdAsync(id, cancellationToken);
             
             return Ok(res);
         }  
@@ -94,9 +94,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddOrganizationStaffDto dto)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddOrganizationStaffDto dto, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await organizationStaffService.AddAsync(dto);
+            IFinalResult res = await organizationStaffService.AddAsync(dto, cancellationToken);
 
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -109,14 +109,15 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// Update  
         /// </summary>
         /// <param name="model">Object content</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("update")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddOrganizationStaffDto model)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddOrganizationStaffDto model, CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await organizationStaffService.UpdateAsync(model);
+            IFinalResult res = await organizationStaffService.UpdateAsync(model, cancellationToken);
             
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
@@ -129,16 +130,18 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         /// Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(string id) => await organizationStaffService.DeleteAsync(id);
+        public async Task<IFinalResult> DeleteAsync(string id, CancellationToken cancellationToken = default) => await organizationStaffService.DeleteAsync(id, cancellationToken);
 
         /// <summary>
         /// Soft Remove  by id
         /// </summary>
         /// <param name="id">PK</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(string id) => await organizationStaffService.DeleteSoftAsync(id);
+        public async Task<IFinalResult> DeleteSoftAsync(string id, CancellationToken cancellationToken = default) => await organizationStaffService.DeleteSoftAsync(id, cancellationToken);
     }
 }

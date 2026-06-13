@@ -23,8 +23,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src.Include(t => t.GeoPoint)
-                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit)
-                );
+                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Entities.Tracker.TripGeo, EditTripGeoDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -34,7 +33,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             var idStr = id?.ToString();
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == idStr,
                 include: src => src.Include(t => t.GeoPoint)
-                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit));
+                .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit), cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<Entities.Tracker.TripGeo, EditTripGeoDto>(entity);
 

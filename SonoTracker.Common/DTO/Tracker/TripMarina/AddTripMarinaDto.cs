@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.DTO.Tracker.MarinaTrip
+namespace SonoTracker.Common.DTO.Tracker.TripMarina
 {
-    public class AddMarinaTripDto : IEntityDto<string>
+    public class AddTripMarinaDto : IEntityDto<string>
     {
         public string? Id { get; set; }
 

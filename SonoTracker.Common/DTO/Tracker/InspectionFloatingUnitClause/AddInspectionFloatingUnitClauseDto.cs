@@ -10,7 +10,7 @@ namespace SonoTracker.Common.DTO.Tracker.InspectionFloatingUnitClause
         public required bool IsInspected { get; set; }
         public string? Number { get; set; }
         public string? Note { get; set; }
-        public required string InspectionId { get; set; }
+        public string InspectionId { get; set; }
         public required string InspectionClauseId { get; set; }
     }
 }

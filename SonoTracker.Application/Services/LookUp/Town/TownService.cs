@@ -25,7 +25,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
                 .Include(t => t.City)
-                .ThenInclude(x => x.Governorate));
+                .ThenInclude(x => x.Governorate), cancellationToken: cancellationToken);
 
             var mapped = Mapper.Map<Domain.Entities.Lookups.Town, EditTownDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -36,7 +36,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id.Equals(id),
                 include: src => src
                 .Include(t => t.City)
-                .ThenInclude(x => x.Governorate));
+                .ThenInclude(x => x.Governorate), cancellationToken: cancellationToken);
             var mapped = Mapper.Map<Domain.Entities.Lookups.Town, TownDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
@@ -175,6 +175,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                     entity.Code = "01";
                 }
 
+                SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -195,48 +196,44 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
         public override async Task<IFinalResult> UpdateAsync(AddTownDto model, CancellationToken cancellationToken = default)
         {
-            //var nameEnRegex = new Regex("^[a-zA-Z]+$");
-
-            //var nameArRegex = new Regex("^[\u0600-\u06FF\\s]+$");
-
-            //if (nameEnRegex.Match(model.NameEn) == Match.Empty ||
-            //    nameArRegex.Match(model.NameAr) == Match.Empty)
-            //{
-            //    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.BadRequest,
-            //                                message: "NameAr should Arabic and NameEn should be English and No Numbers allowed");
-            //}
-
-            var existingForDup = await UnitOfWork.Repository.FindAsync(
-                predicate: x => x.CityId == model.CityId && x.Id != model.Id,
-                disableTracking: true,
-                cancellationToken: cancellationToken);
-
-            if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
-                return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
-                    message: MessagesConstants.Existed);
-
-            Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
-
-            var entity = Mapper.Map(model, entityToUpdate);
-
-            if (IsSuperAdmin())
+            try
             {
-                if (entityToUpdate.IsDeleted)
-                    entity.IsDeleted = false;
+                var existingForDup = await UnitOfWork.Repository.FindAsync(
+                    predicate: x => x.CityId == model.CityId && x.Id != model.Id,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+
+                if (LookupDuplicateGuard.HasFuzzyNameDuplicate(existingForDup, x => x.NameAr, x => x.NameEn, model.NameAr, model.NameEn))
+                    return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+
+                var entity = Mapper.Map(model, entityToUpdate);
+
+                if (IsSuperAdmin())
+                {
+                    if (entityToUpdate.IsDeleted)
+                        entity.IsDeleted = false;
+                }
+
+                SetEntityModifiedBaseProperties(entity);
+                UnitOfWork.Repository.Update(entityToUpdate, entity);
+
+                var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (affectedRows < 0)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: MessagesConstants.UpdateError);
+
+                return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.UpdateSuccess);
             }
-
-            UnitOfWork.Repository.Update(entityToUpdate, entity);
-
-            //SetEntityModifiedBaseProperties(entity);
-
-            var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (affectedRows <= 0)
-                return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
-                    message: MessagesConstants.UpdateError);
-
-            return ResponseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
-                message: MessagesConstants.UpdateSuccess);
+            catch (Exception ex)
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: ex,
+                    message: MessagesConstants.UpdateError + ex.Message);
+            }
         }
     }
 }
