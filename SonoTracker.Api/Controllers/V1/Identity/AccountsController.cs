@@ -73,6 +73,27 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         }
 
         /// <summary>
+        /// Resets the password for an account identified by email or username and sends the new password by email.
+        /// </summary>
+        /// <param name="request">The identifier (email or username) of the account.</param>
+        /// <returns>A generic success message regardless of whether the account exists.</returns>
+        [HttpPost("forgotPassword")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IFinalResult>> ForgotPasswordAsync(
+            [FromBody] ForgotPasswordRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await accountService.ForgotPasswordAsync(request, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+            if (res.Status == HttpStatusCode.InternalServerError) return StatusCode(StatusCodes.Status500InternalServerError, res);
+
+            return Ok(res);
+        }
+
+        /// <summary>
         /// Logs out the user with the specified user ID.
         /// </summary>
         /// <returns>An IActionResult indicating the result of the logout operation.</returns>

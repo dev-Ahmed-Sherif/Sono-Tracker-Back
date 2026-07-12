@@ -681,6 +681,13 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(m => m.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<MessagingGroup>(entity =>
+            {
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasMaxLength(280);
+            });
+
             modelBuilder.Entity<MessagingGroup>()
                 .HasOne(g => g.Governorate)
                 .WithMany()

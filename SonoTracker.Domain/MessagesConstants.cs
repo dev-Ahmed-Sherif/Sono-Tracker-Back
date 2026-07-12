@@ -25,5 +25,8 @@
         public const string ErrorMigratingDatabase = "ERROR_RUNNING_DATABASE_MIGRATION";
         public const string Existed = "Duplicated";
 
+        public const string PasswordResetContactAdmin =
+            "يرجى التواصل مع ادارة الديوان لتغيير الباسورد";
+
     }
 }

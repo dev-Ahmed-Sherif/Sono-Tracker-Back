@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SonoTracker.Application.Services.Email;
+using SonoTracker.Application.Services.TrackerNotification.Chat;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -34,7 +36,9 @@ namespace SonoTracker.Application.Services.Identity.Account
                  UserDataDto auditUser,
                  IConfiguration configuration,
                  IUnitOfWork<User> UnitOfWork,
-                 IMapper Mapper) : IAccountService
+                 IMapper Mapper,
+                 IChatRealtimePublisher chatRealtimePublisher,
+                 IEmailService emailService) : IAccountService
     {
         public async Task<IFinalResult> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default)
         {
@@ -77,10 +81,10 @@ namespace SonoTracker.Application.Services.Identity.Account
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
-                    if (!result.Succeeded)
+                    if (!res.Succeeded)
                         return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                          message: MessagesConstants.AddError + "User : " +
-                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
+                                                         string.Join(", ", res.Errors.Select(e => e.Description)));
 
                     return responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception: null,
                                                      message: MessagesConstants.AddSuccess);
@@ -91,10 +95,10 @@ namespace SonoTracker.Application.Services.Identity.Account
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
-                    if (!result.Succeeded)
+                    if (!res.Succeeded)
                         return responseResult.PostResult(user, status: HttpStatusCode.BadRequest, exception: null,
                                                          message: MessagesConstants.AddError + "User : " +
-                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
+                                                         string.Join(", ", res.Errors.Select(e => e.Description)));
 
                     return  responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception:null,
                                                       message: MessagesConstants.AddSuccess); 
@@ -123,10 +127,96 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             await userManager.UpdateAsync(user);
 
+            await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: true, cancellationToken);
+
             response = await CreateTokenResponse(user, cancellationToken);
 
             return responseResult.PostResult(result: response, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
+        }
+        public async Task<IFinalResult> ForgotPasswordAsync(ForgotPasswordRequestDto request, CancellationToken cancellationToken = default)
+        {
+            ResponseResult responseResult = new();
+            const string successMessage = "إذا كان الحساب موجوداً، ستصلك كلمة المرور الجديدة على بريدك الإلكتروني.";
+
+            if (string.IsNullOrWhiteSpace(request.Identifier))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "يجب إدخال البريد الإلكتروني أو اسم المستخدم.");
+
+            string identifier = request.Identifier.Trim();
+
+            if (IsPasswordResetExcludedEmail(identifier))
+                return responseResult.PostResult(result: false, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.PasswordResetContactAdmin);
+
+            User? user = await userManager.FindByEmailAsync(identifier)
+                ?? await userManager.FindByNameAsync(identifier);
+
+            if (user is null)
+            {
+                user = await userManager.Users
+                    .FirstOrDefaultAsync(u => !u.IsDeleted && u.FullName == identifier, cancellationToken);
+            }
+
+            if (user is null || user.IsDeleted || string.IsNullOrWhiteSpace(user.Email))
+            {
+                return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                    message: successMessage);
+            }
+
+            if (IsPasswordResetExcludedEmail(user.Email))
+                return responseResult.PostResult(result: false, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.PasswordResetContactAdmin);
+
+            string newPassword = GenerateTemporaryPassword();
+
+            IdentityResult removeResult = await userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.UpdateError);
+
+            IdentityResult addResult = await userManager.AddPasswordAsync(user, newPassword);
+            if (!addResult.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: string.Join(", ", addResult.Errors.Select(e => e.Description)));
+
+            List<RefreshToken> oldTokens = await context.RefreshTokens
+                .Where(t => t.UserId == user.Id)
+                .ToListAsync(cancellationToken);
+
+            if (oldTokens.Count > 0)
+            {
+                context.RefreshTokens.RemoveRange(oldTokens);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            user.IsLogedIn = false;
+            user.ModifiedAt = DateTime.UtcNow;
+            await userManager.UpdateAsync(user);
+
+            await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: false, cancellationToken);
+
+            try
+            {
+                string subject = "إعادة تعيين كلمة المرور - نظام تتبع الوحدات النهرية";
+                string body = $"""
+                    <div dir="rtl" style="font-family: Arial, sans-serif;">
+                    <h2>مرحباً {user.FullName}</h2>
+                    <p>تم إعادة تعيين كلمة المرور الخاصة بحسابك في نظام تتبع الوحدات النهرية بمحافظة أسوان.</p>
+                    <p><strong>كلمة المرور الجديدة:</strong> {newPassword}</p>
+                    <p>يُرجى تسجيل الدخول وتغيير كلمة المرور في أقرب وقت ممكن.</p>
+                    </div>
+                    """;
+                await emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch
+            {
+                return responseResult.PostResult(result: null, status: HttpStatusCode.InternalServerError, exception: null,
+                    message: "تعذر إرسال البريد الإلكتروني. يُرجى المحاولة لاحقاً.");
+            }
+
+            return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                message: successMessage);
         }
         public async Task<IFinalResult> LogoutAsync(string id, CancellationToken cancellationToken = default)
         {
@@ -136,15 +226,22 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             if (user is not null)
             {
-                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync(cancellationToken);
+                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.UserId == user.Id).FirstOrDefaultAsync(cancellationToken);
                 if (refreshToken is not null)
                 {
                     await RemoveOldRefreshToken(id, refreshToken!.Token, cancellationToken);
-                    user.IsLogedIn = false;
-                    await userManager.UpdateAsync(user);
-                    return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
-                                                     message: MessagesConstants.Success);
                 }
+
+                user.IsLogedIn = false;
+                user.ModifiedBy = user.FullName;
+                user.ModifiedById = user.Id;
+                user.ModifiedAt = DateTime.UtcNow;
+                await userManager.UpdateAsync(user);
+
+                await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: false, cancellationToken);
+
+                return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                                                 message: MessagesConstants.Success);
             }
 
             return responseResult.PostResult(result: false, status: HttpStatusCode.Unauthorized, exception: null,
@@ -352,7 +449,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             var token = await context.RefreshTokens
                         .Where(x => x.Token == refreshToken &&
-                               x.User.Id == userId &&
+                               x.UserId == userId &&
                                x.ExpiryTime >= DateTime.Now)
                         .FirstOrDefaultAsync(cancellationToken);
 
@@ -369,7 +466,7 @@ namespace SonoTracker.Application.Services.Identity.Account
         private async Task<RefreshToken> RemoveOldRefreshToken(string userId, string refreshToken, CancellationToken cancellationToken = default)
         {
             var OldToken = await context.RefreshTokens
-                   .Where(x => x.Token == refreshToken && x.User.Id == userId)
+                   .Where(x => x.Token == refreshToken && x.UserId == userId)
                    .FirstOrDefaultAsync(cancellationToken);
 
             if (OldToken is not null)
@@ -412,6 +509,22 @@ namespace SonoTracker.Application.Services.Identity.Account
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+        private static string GenerateTemporaryPassword(int length = 8)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            byte[] randomBytes = new byte[length];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            char[] password = new char[length];
+            for (int i = 0; i < length; i++)
+                password[i] = chars[randomBytes[i] % chars.Length];
+            return new string(password);
+        }
+
+        private static bool IsPasswordResetExcludedEmail(string? email) =>
+            !string.IsNullOrWhiteSpace(email) &&
+            email.Trim().Contains(AccountEmails.InternalDomain, StringComparison.OrdinalIgnoreCase);
+
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
             IList<string> userRoles = await userManager.GetRolesAsync(user);
@@ -439,7 +552,7 @@ namespace SonoTracker.Application.Services.Identity.Account
             (
                 issuer: configuration.GetValue<string>("Jwt:Issuer"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(AuthConstants.AccessTokenLifeInHours),
+                expires: DateTime.UtcNow.AddDays(AuthConstants.AccessTokenLife),
                 signingCredentials: creds
             );
 

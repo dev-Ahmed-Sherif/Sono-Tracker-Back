@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoTracker.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoTracker.Infrastructure.Context;
 namespace SonoTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoTrackerDbContext))]
-    partial class SonoTrackerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623113016_AddNotificationTypeAndReferenceId")]
+    partial class AddNotificationTypeAndReferenceId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2573,8 +2576,8 @@ namespace SonoTracker.Infrastructure.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(280)
-                        .HasColumnType("nvarchar(280)");
+                        .HasMaxLength(35)
+                        .HasColumnType("nvarchar(35)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");

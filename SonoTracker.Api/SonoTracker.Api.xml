@@ -51,6 +51,13 @@
             or an unauthorized response if the login fails.
             </returns>
         </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.ForgotPasswordAsync(SonoTracker.Common.DTO.Identity.User.ForgotPasswordRequestDto,System.Threading.CancellationToken)">
+            <summary>
+            Resets the password for an account identified by email or username and sends the new password by email.
+            </summary>
+            <param name="request">The identifier (email or username) of the account.</param>
+            <returns>A generic success message regardless of whether the account exists.</returns>
+        </member>
         <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Logs out the user with the specified user ID.
@@ -1642,6 +1649,7 @@
             Deletes a range of attachments by their IDs.
             </summary>
             <param name="ids">A collection of attachment IDs to delete.</param>
+            <param name="cancellationToken"></param>
             <returns>An <see cref="T:SonoTracker.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
         </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Organization.OrganizationsController">
@@ -2271,6 +2279,13 @@
             <param name="configuration"></param>
             <returns></returns>
         </member>
+        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterHangfire(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Registers Hangfire services with SQL Server storage.
+            </summary>
+            <param name="services">The service collection to add Hangfire to.</param>
+            <param name="configuration"></param>
+        </member>
         <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterSignalR(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Registers SignalR services with custom options.
@@ -2394,6 +2409,36 @@
         <member name="M:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
             <inheritdoc/>
         </member>
+        <member name="T:SonoTracker.Api.Hubs.ChatHub">
+            <summary>
+            Realtime chat hub for conversation messaging and live updates.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.ChatHub.#ctor(SonoTracker.Application.Services.TrackerNotification.Chat.IChatService)">
+            <summary>
+            Realtime chat hub for conversation messaging and live updates.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.ChatHub.GetOnlineStatuses(System.String[])">
+            <summary>
+            Returns online status for the requested user ids (initial load).
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.ChatHub.JoinConversation(System.String)">
+            <summary>
+            Adds the connection to a conversation group after verifying membership.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.ChatHub.LeaveConversation(System.String)">
+            <summary>
+            Removes the connection from a conversation group.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.ChatHub.SendMessage(System.String,System.String)">
+            <summary>
+            Sends a message to a conversation and broadcasts it to group members.
+            </summary>
+        </member>
         <member name="T:SonoTracker.Api.Hubs.GeoHub">
             <summary>  
             Represents a SignalR hub for managing geolocation-related communication.  
@@ -2406,6 +2451,41 @@
         </member>
         <member name="M:SonoTracker.Api.Hubs.GeoHub.OnConnectedAsync">
             <inheritdoc/>
+        </member>
+        <member name="T:SonoTracker.Api.Hubs.NotificationHub">
+            <summary>
+            Realtime notification hub for user-targeted alerts.
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Hubs.SignalRUserIdProvider">
+            <summary>
+            Maps authenticated users to SignalR user identifiers for targeted messaging.
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Hubs.VideoChatHub">
+            <summary>
+            WebRTC signaling hub for 1:1 video calls (offer, answer, ICE, end).
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.VideoChatHub.SendOffer(System.String,System.String)">
+            <summary>
+            Sends a WebRTC session offer to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.VideoChatHub.SendAnswer(System.String,System.String)">
+            <summary>
+            Sends a WebRTC session answer to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.VideoChatHub.SendIceCandidate(System.String,System.String)">
+            <summary>
+            Forwards an ICE candidate to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Hubs.VideoChatHub.EndCall(System.String)">
+            <summary>
+            Notifies the remote participant that the call has ended.
+            </summary>
         </member>
         <member name="T:SonoTracker.Api.MiddleWares.ExceptionMiddleware">
             <summary>
@@ -2492,11 +2572,6 @@
             Start Point
             </summary>
         </member>
-        <member name="P:SonoTracker.Api.Program.Configuration">
-            <summary>
-            Configuration Properties
-            </summary>
-        </member>
         <member name="M:SonoTracker.Api.Program.Main(System.String[])">
             <summary>
             Kick Off
@@ -2538,35 +2613,15 @@
             Seed cities from Cities.json into the database on startup.
             </summary>
         </member>
-        <member name="T:SonoTracker.Api.Startup">
+        <member name="M:SonoTracker.Api.Seed.DatabaseSeed.SeedNotificationGroupsAsync(Microsoft.Extensions.Hosting.IHost)">
             <summary>
-            Start Up Class
+            Seed notification groups from NotificationGroups.json into the database on startup.
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="T:SonoTracker.Api.Services.TrackerNotification.InMemoryUserPresenceTracker">
             <summary>
-            Constructor
+            In-memory presence tracker keyed by user id with per-user connection counts.
             </summary>
-            <param name="configuration"></param>
-        </member>
-        <member name="P:SonoTracker.Api.Startup.Configuration">
-            <summary>
-            Public Configuration Property
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Configure Dependencies
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:SonoTracker.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
-            <summary>
-            Configure Pipeline
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-            <param name="provider"></param>
         </member>
     </members>
 </doc>

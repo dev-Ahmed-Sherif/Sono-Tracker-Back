@@ -33,10 +33,7 @@ namespace SonoTracker.Api.Extensions
 
         public static void ConfigureCors(this IApplicationBuilder app)
         {
-            app.UseCors(builder => builder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+            app.UseCors("policy");
         }
 
 

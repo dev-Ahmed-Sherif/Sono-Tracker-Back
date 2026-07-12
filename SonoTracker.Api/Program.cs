@@ -1,7 +1,11 @@
+using Asp.Versioning.ApiExplorer;
+using Hangfire;
 using Serilog;
-using Serilog.Events;
+using SonoTracker.Api.Extensions;
+using SonoTracker.Api.Hubs;
+using SonoTracker.Api.MiddleWares;
 using SonoTracker.Api.Seed;
-using SonoTracker.Common.Extensions;
+using SonoTracker.Application.DependencyExtension;
 
 namespace SonoTracker.Api
 {
@@ -11,28 +15,11 @@ namespace SonoTracker.Api
     public class Program
     {
         /// <summary>
-        /// Configuration Properties
-        /// </summary>
-        public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
-            .AddEnvironmentVariables()
-            .Build();
-        /// <summary>
         /// Kick Off
         /// </summary>
         /// <param name="args"></param>
         public static async Task Main(string[] args)
         {
-            //Log.Logger = BaseLoggerConfiguration
-            //    .CreateLoggerConfiguration(Configuration["ApplicationName"])
-            //    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Error)
-            //    .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-            //    .WriteToSql(Configuration["LoggingDbConnectionString"])
-            //    .WriteToSeq(Configuration["LoggingSeqUrl"])
-            //    .CreateLogger();
-
             try
             {
                 Log.Information("-----Starting web host at  Api------");
@@ -43,6 +30,7 @@ namespace SonoTracker.Api
                 await DatabaseSeed.SeedAccidentTypesAsync(host);
                 await DatabaseSeed.SeedGovernoratesAsync(host);
                 await DatabaseSeed.SeedCitiesAsync(host);
+                await DatabaseSeed.SeedNotificationGroupsAsync(host);
 
                 await host.RunAsync();
             }
@@ -55,6 +43,7 @@ namespace SonoTracker.Api
                 await Log.CloseAndFlushAsync();
             }
         }
+
         /// <summary>
         /// Web Host Builder
         /// </summary>
@@ -62,8 +51,41 @@ namespace SonoTracker.Api
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
-                        .UseStartup<Startup>();
-                }).UseSerilog();
+                    webBuilder.ConfigureServices((context, services) =>
+                    {
+                        services.RegisterServices(context.Configuration);
+                    });
+
+                    webBuilder.Configure((context, app) =>
+                    {
+                        var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                        var shell = (Shell)Activator.CreateInstance(typeof(Shell))!;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+                        shell.ConfigureHttp(app, context.HostingEnvironment);
+                        Shell.Start(shell);
+                        app.Configure(context.Configuration, provider);
+                        app.UseHangfireDashboard("/sono-tracker-Jobs");
+
+                        if (context.HostingEnvironment.IsDevelopment())
+                        {
+                            app.UseDeveloperExceptionPage();
+                        }
+
+                        app.ConfigureCustomMiddleware();
+                        app.UseStaticFiles();
+                        app.UseWebSockets();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapHub<ChatHub>("/api/v1/hubs/chat");
+                            endpoints.MapHub<NotificationHub>("/api/v1/hubs/notifications");
+                            endpoints.MapHub<VideoChatHub>("/api/v1/hubs/video");
+                            endpoints.MapHub<GeoHub>("/hubs/geo");
+                            endpoints.MapControllers();
+                        });
+                    });
+                })
+                .UseSerilog();
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SonoTracker.Domain.Entities.Identity;
+using SonoTracker.Domain.Entities.TrackerNotification;
 using SonoTracker.Infrastructure.Context;
 using SonoTracker.Infrastructure.DataInitializer;
 
@@ -227,6 +228,42 @@ namespace SonoTracker.Api.Seed
             catch (Exception ex)
             {
                 Log.Warning(ex, "Cities seed skipped or failed");
+            }
+        }
+
+        /// <summary>
+        /// Seed notification groups from NotificationGroups.json into the database on startup.
+        /// </summary>
+        public static async Task SeedNotificationGroupsAsync(IHost host)
+        {
+            try
+            {
+                await using var scope = host.Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<SonoTrackerDbContext>();
+                var initializer = scope.ServiceProvider.GetRequiredService<IDataInitializer>();
+
+                var groups = initializer.SeedNotificationGroupsAsync().ToList();
+                if (groups.Count == 0) return;
+
+                var existingCodes = await db.Set<NotificationGroup>()
+                    .Where(g => !g.IsDeleted)
+                    .Select(g => g.Code)
+                    .ToListAsync();
+
+                var toAdd = groups
+                    .Where(g => !string.IsNullOrWhiteSpace(g.Code))
+                    .Where(g => !existingCodes.Contains(g.Code))
+                    .ToList();
+
+                if (toAdd.Count == 0) return;
+
+                await db.Set<NotificationGroup>().AddRangeAsync(toAdd);
+                await db.SaveChangesAsync();
+                Log.Information("Seeded {Count} notification groups from NotificationGroups.json", toAdd.Count);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Notification groups seed skipped or failed");
             }
         }
     }

@@ -5,6 +5,7 @@ using AccidentType = SonoTracker.Domain.Entities.Lookups.AccidentType;
 using City = SonoTracker.Domain.Entities.Lookups.City;
 using Governorate = SonoTracker.Domain.Entities.Lookups.Governorate;
 using Nationality = SonoTracker.Domain.Entities.Lookups.Nationality;
+using NotificationGroup = SonoTracker.Domain.Entities.TrackerNotification.NotificationGroup;
 
 namespace SonoTracker.Infrastructure.DataInitializer
 {
@@ -40,6 +41,19 @@ namespace SonoTracker.Infrastructure.DataInitializer
             var dataText = File.ReadAllText(path);
             var cities = Seeder<List<City>>.SeedIt(dataText);
             return cities ?? [];
+        }
+
+        public IEnumerable<NotificationGroup> SeedNotificationGroupsAsync()
+        {
+            var path = Path.Combine(contentRootPath, "Seed", "NotificationGroups.json");
+            if (!File.Exists(path))
+            {
+                return [];
+            }
+
+            var dataText = File.ReadAllText(path);
+            var groups = Seeder<List<NotificationGroup>>.SeedIt(dataText);
+            return groups ?? [];
         }
 
         //public IEnumerable<Status> SeedStatusesAsync()

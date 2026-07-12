@@ -1,3 +1,4 @@
+using Hangfire;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,10 @@ using NetCore.AutoRegisterDi;
 using Newtonsoft.Json.Converters;
 using SonoTracker.Api.Extensions.Swagger.Headers;
 using SonoTracker.Api.Extensions.Swagger.Options;
+using SonoTracker.Api.Hubs;
+using SonoTracker.Api.Services.TrackerNotification;
+using SonoTracker.Application.Services.TrackerNotification.Chat;
+using SonoTracker.Application.Services.TrackerNotification.Notification;
 using SonoTracker.Application.Helper;
 using SonoTracker.Application.Mapping;
 using SonoTracker.Application.Services.Base;
@@ -30,6 +35,7 @@ using SonoTracker.Infrastructure.UnitOfWork;
 using SonoTracker.Integration.CacheRepository;
 using SonoTracker.Integration.FileRepository;
 using SonoTracker.Integration.UserRepository;
+using Microsoft.AspNetCore.SignalR;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Security.Claims;
@@ -72,6 +78,9 @@ namespace SonoTracker.Api.Extensions
             services.RegisterSwaggerConfig();
             services.RegisterLowerCaseUrls();
             services.RegisterSignalR();
+            services.AddScoped<IChatRealtimePublisher, ChatRealtimePublisher>();
+            services.AddScoped<INotificationRealtimePublisher, NotificationRealtimePublisher>();
+            services.RegisterHangfire(configuration);
             services.AddScoped<IAccountService, AccountService>();
             services.AddIdentityCore<User>(options =>
             {
@@ -110,12 +119,22 @@ namespace SonoTracker.Api.Extensions
             .AddApiEndpoints()
             .AddDefaultTokenProviders();
             services.AddHttpContextAccessor();
-            // Read User Data from HttpContext
+            // Read User Data from HttpContext (empty user outside HTTP requests, e.g. Hangfire jobs)
             services.AddTransient(provider =>
             {
-                HttpContext context =
-                provider.GetService<IHttpContextAccessor>()?.HttpContext ??
-                throw new NullReferenceException(nameof(HttpContext));
+                HttpContext? context = provider.GetService<IHttpContextAccessor>()?.HttpContext;
+                if (context == null)
+                {
+                    return new UserDataDto(
+                        string.Empty,
+                        string.Empty,
+                        string.Empty,
+                        [],
+                        string.Empty,
+                        string.Empty,
+                        string.Empty);
+                }
+
                 ClaimsPrincipal user = context.User;
 
                 string Id =
@@ -163,16 +182,34 @@ namespace SonoTracker.Api.Extensions
             });
             services.AddCors(option =>
             {
-                option
-                .AddPolicy("policy",i =>
+                option.AddPolicy("policy", builder =>
                 {
-                    i
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowAnyOrigin()
-                    //.WithOrigins("http://localhost:4200", "http://sonotracker.aswan.gov.eg")
-                    //.AllowCredentials()
-                    ;
+                    builder
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .SetIsOriginAllowed(origin =>
+                        {
+                            if (string.IsNullOrWhiteSpace(origin))
+                            {
+                                return false;
+                            }
+
+                            if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                            {
+                                return false;
+                            }
+
+                            if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+
+                            return uri.Host.EndsWith(".sono.net", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.Equals("sonotracker.aswan.gov.eg", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.EndsWith(".aswan.gov.eg", StringComparison.OrdinalIgnoreCase);
+                        })
+                        .AllowCredentials();
                 });
             });
 
@@ -184,15 +221,37 @@ namespace SonoTracker.Api.Extensions
         }
 
         /// <summary>
+        /// Registers Hangfire services with SQL Server storage.
+        /// </summary>
+        /// <param name="services">The service collection to add Hangfire to.</param>
+        /// <param name="configuration"></param>
+        public static void RegisterHangfire(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHangfire(x =>
+            {
+                x.UseSqlServerStorage(configuration.GetConnectionString(ConnectionStringName));
+            });
+            services.AddHangfireServer();
+        }
+
+        /// <summary>
         /// Registers SignalR services with custom options.
         /// </summary>
         /// <param name="services">The service collection to add SignalR to.</param>
         public static void RegisterSignalR(this IServiceCollection services)
         {
+            services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
             services.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
                 options.MaximumReceiveMessageSize = 102400000; // 100MB
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+                options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+            })
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
         }
 
