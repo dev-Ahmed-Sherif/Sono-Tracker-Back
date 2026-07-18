@@ -13,12 +13,11 @@ namespace SonoTracker.Domain.Entities.Identity
             {
                 Id = Guid.CreateVersion7().ToString();
             }
-            AuthModule = null!;
         }
 
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         [ForeignKey(nameof(AuthModule))]
-        public string? AuthModuleId { get; set; }
+        public required string AuthModuleId { get; set; }
         public virtual AuthModule? AuthModule { get; set; }
     }
 }

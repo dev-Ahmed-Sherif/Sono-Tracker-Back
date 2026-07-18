@@ -23,9 +23,9 @@ namespace SonoTracker.Domain.Entities.Lookups
         [Required, MaxLength(50)]
         public required string East { get; set; }
 
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         [ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<Accident> Accidents { get; set; } = [];

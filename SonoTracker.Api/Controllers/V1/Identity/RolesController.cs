@@ -109,7 +109,8 @@ namespace SonoTracker.Api.Controllers.V1.Identity
 
             if (roleDto == null || 
                 string.IsNullOrWhiteSpace(roleDto.NameAr) || 
-                string.IsNullOrWhiteSpace(roleDto.NameEn))
+                string.IsNullOrWhiteSpace(roleDto.NameEn) ||
+                string.IsNullOrWhiteSpace(roleDto.GovernorateId))
             {
                 return BadRequest(responseResult.PostResult(null, HttpStatusCode.BadRequest,
                                   message: "Invalid Role Data."));
@@ -121,6 +122,7 @@ namespace SonoTracker.Api.Controllers.V1.Identity
                 Name = roleDto.NameEn,
                 NormalizedName = roleDto.NameEn.ToUpperInvariant(),
                 NameAr = roleDto.NameAr,
+                GovernorateId = roleDto.GovernorateId,
                 CreatedAt = now,
                 ModifiedAt = now,
                 CreatedById = "System",

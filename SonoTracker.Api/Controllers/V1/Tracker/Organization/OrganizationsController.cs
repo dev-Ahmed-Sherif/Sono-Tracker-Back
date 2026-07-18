@@ -157,7 +157,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Organization
         {
             IFinalResult res = await organizationService.DeleteAsync(id, cancellationToken);
 
-            if (res.Status == HttpStatusCode.NotFound) return BadRequest("هذا البيان غير موجود");
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             return Accepted(res);
         }

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using SonoTracker.Domain.Entities.Tracker;
 using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Entities.Identity;
-using SonoTracker.Domain.Entities.Attachments;
 using SonoTracker.Domain.Entities.TrackerNotification;
 
 namespace SonoTracker.Infrastructure.Context
@@ -35,7 +34,9 @@ namespace SonoTracker.Infrastructure.Context
         public virtual DbSet<TripGeo> TripGeos { get; set; }
         public virtual DbSet<TripMarina> TripMarinas { get; set; }
         public virtual DbSet<TripNationality> TripNationalities { get; set; }
-        public virtual DbSet<TripPassengerAttachment> TripPassengerAttachments { get; set; }
+        public virtual DbSet<TripAttachment> TripAttachments { get; set; }
+        public virtual DbSet<TripPassenger> TripPassengers { get; set; }
+        public virtual DbSet<TripStaff> TripStaffs { get; set; }
 
         #endregion
 
@@ -100,12 +101,22 @@ namespace SonoTracker.Infrastructure.Context
 
         #region Model & Relations
 
+        // Schema names follow Booking's ToTable(name, schema) pattern.
+        private const string LookupsSchema = "lookups";
+        private const string UnitsSchema = "units";
+        private const string OrganizationSchema = "organization";
+        private const string TripSchema = "trip";
+        private const string MarinaSchema = "marina";
+        private const string OperationsSchema = "operations";
+        private const string NotificationSchema = "notification";
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+            ConfigureTableSchemas(modelBuilder);
             ConfigureFloatingUnitRelations(modelBuilder);
             ConfigureOrganizationRelations(modelBuilder);
             ConfigureTripRelations(modelBuilder);
@@ -113,6 +124,69 @@ namespace SonoTracker.Infrastructure.Context
             ConfigureInspectionMaintenanceAccidentRelations(modelBuilder);
             ConfigureIdentityAndNotificationRelations(modelBuilder);
             ConfigureLookupRelations(modelBuilder);
+        }
+
+        /// <summary>
+        /// Maps entity groups to SQL schemas (same approach as SonoBookingDbContext:
+        /// <c>ToTable("TableName", "schema")</c>). Identity / AspNet* stay on dbo.
+        /// </summary>
+        private static void ConfigureTableSchemas(ModelBuilder modelBuilder)
+        {
+            // lookups
+            modelBuilder.Entity<Attachment>().ToTable("Attachments", LookupsSchema);
+            modelBuilder.Entity<AccidentType>().ToTable("AccidentTypes", LookupsSchema);
+            modelBuilder.Entity<InspectionType>().ToTable("InspectionTypes", LookupsSchema);
+            modelBuilder.Entity<MaintenanceType>().ToTable("MaintenanceTypes", LookupsSchema);
+            modelBuilder.Entity<Nationality>().ToTable("Nationalities", LookupsSchema);
+            modelBuilder.Entity<OrganizationCategory>().ToTable("OrganizationCategories", LookupsSchema);
+            modelBuilder.Entity<Route>().ToTable("Routes", LookupsSchema);
+            modelBuilder.Entity<UnitType>().ToTable("UnitTypes", LookupsSchema);
+            modelBuilder.Entity<Governorate>().ToTable("Governorates", LookupsSchema);
+            modelBuilder.Entity<City>().ToTable("Cities", LookupsSchema);
+            modelBuilder.Entity<Town>().ToTable("Towns", LookupsSchema);
+            modelBuilder.Entity<GeoPoint>().ToTable("GeoPoints", LookupsSchema);
+
+            // units (floating units — analogous to Booking "units")
+            modelBuilder.Entity<FloatingUnit>().ToTable("FloatingUnits", UnitsSchema);
+            modelBuilder.Entity<FloatingUnitOrganization>().ToTable("FloatingUnitOrganizations", UnitsSchema);
+            modelBuilder.Entity<FloatingUnitStaff>().ToTable("FloatingUnitStaffs", UnitsSchema);
+
+            // organization
+            modelBuilder.Entity<Organization>().ToTable("Organizations", OrganizationSchema);
+            modelBuilder.Entity<OrganizationStaff>().ToTable("OrganizationStaffs", OrganizationSchema);
+
+            // trip
+            modelBuilder.Entity<TripInformation>().ToTable("TripInformations", TripSchema);
+            modelBuilder.Entity<TripGeo>().ToTable("TripGeos", TripSchema);
+            modelBuilder.Entity<TripMarina>().ToTable("TripMarinas", TripSchema);
+            modelBuilder.Entity<TripNationality>().ToTable("TripNationalities", TripSchema);
+            modelBuilder.Entity<TripAttachment>().ToTable("TripAttachments", TripSchema);
+            modelBuilder.Entity<TripPassenger>().ToTable("TripPassengers", TripSchema);
+            modelBuilder.Entity<TripStaff>().ToTable("TripStaffs", TripSchema);
+
+            // marina
+            modelBuilder.Entity<TouristMarina>().ToTable("TouristMarinas", MarinaSchema);
+            modelBuilder.Entity<TouristMarinaOrganization>().ToTable("TouristMarinaOrganizations", MarinaSchema);
+            modelBuilder.Entity<TouristMarinaLicenseApplication>().ToTable("TouristMarinaLicenseApplications", MarinaSchema);
+
+            // operations (inspection / maintenance / accident)
+            modelBuilder.Entity<Inspection>().ToTable("Inspections", OperationsSchema);
+            modelBuilder.Entity<InspectionClause>().ToTable("InspectionClauses", OperationsSchema);
+            modelBuilder.Entity<InspectionFloatingUnitClause>().ToTable("InspectionFloatingUnitClauses", OperationsSchema);
+            modelBuilder.Entity<InspectionAttachment>().ToTable("InspectionAttachments", OperationsSchema);
+            modelBuilder.Entity<Maintenance>().ToTable("Maintenances", OperationsSchema);
+            modelBuilder.Entity<MaintenanceAttachment>().ToTable("MaintenanceAttachments", OperationsSchema);
+            modelBuilder.Entity<Accident>().ToTable("Accidents", OperationsSchema);
+            modelBuilder.Entity<AccidentOrganization>().ToTable("AccidentOrganizations", OperationsSchema);
+            modelBuilder.Entity<AccidentAttachment>().ToTable("AccidentAttachments", OperationsSchema);
+
+            // notification (messaging & notifications)
+            modelBuilder.Entity<Message>().ToTable("Messages", NotificationSchema);
+            modelBuilder.Entity<Notification>().ToTable("Notifications", NotificationSchema);
+            modelBuilder.Entity<MessagingGroup>().ToTable("MessagingGroups", NotificationSchema);
+            modelBuilder.Entity<NotificationGroup>().ToTable("NotificationGroups", NotificationSchema);
+
+            // identity stays on dbo (AspNet* + RefreshTokens) — no schema override
         }
 
         private static void ConfigureFloatingUnitRelations(ModelBuilder modelBuilder)
@@ -237,16 +311,9 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureTripRelations(ModelBuilder modelBuilder)
         {
-            // Keep DB table names consistent with the entity/type names.
-            // This avoids drift when earlier migrations mapped different table names.
-            modelBuilder.Entity<Attachment>()
-                .ToTable("Attachments");
-
-            modelBuilder.Entity<TripNationality>()
-                .ToTable("TripNationalities");
-
-            modelBuilder.Entity<TripMarina>()
-                .ToTable("TripMarinas");
+            modelBuilder.Entity<TripInformation>()
+                .Property(t => t.IsAccepted)
+                .IsRequired();
 
             modelBuilder.Entity<TripInformation>()
                 .HasOne(t => t.FloatingUnit)
@@ -268,7 +335,7 @@ namespace SonoTracker.Infrastructure.Context
 
             modelBuilder.Entity<TripGeo>()
                 .HasOne(tg => tg.GeoPoint)
-                .WithMany()
+                .WithMany(g => g.TripGeos)
                 .HasForeignKey(tg => tg.GeoPointId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -286,16 +353,44 @@ namespace SonoTracker.Infrastructure.Context
 
             modelBuilder.Entity<TripMarina>()
                 .HasOne(mt => mt.TouristMarina)
-                .WithMany()
+                .WithMany(tm => tm.TripMarinas)
                 .HasForeignKey(mt => mt.TouristMarinaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Ensure DB table matches entity name.
-            modelBuilder.Entity<TripPassengerAttachment>()
-                .ToTable("TripPassengerAttachments")
+            modelBuilder.Entity<TripAttachment>()
                 .HasOne(a => a.TripInformation)
-                .WithMany(t => t.TripPassengerAttachments)
+                .WithMany(t => t.TripAttachments)
                 .HasForeignKey(a => a.TripInformationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TripAttachment>()
+                .HasOne(a => a.Attachment)
+                .WithMany()
+                .HasForeignKey(a => a.AttachmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TripPassenger>()
+                .HasOne(tp => tp.TripInformation)
+                .WithMany(t => t.TripPassengers)
+                .HasForeignKey(tp => tp.TripInformationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TripPassenger>()
+                .HasOne(tp => tp.Governorate)
+                .WithMany()
+                .HasForeignKey(tp => tp.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TripStaff>()
+                .HasOne(ts => ts.TripInformation)
+                .WithMany(t => t.TripStaffs)
+                .HasForeignKey(ts => ts.TripInformationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TripStaff>()
+                .HasOne(ts => ts.Governorate)
+                .WithMany()
+                .HasForeignKey(ts => ts.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TripGeo>()
@@ -308,9 +403,6 @@ namespace SonoTracker.Infrastructure.Context
 
         private static void ConfigureMarinaRelations(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TouristMarinaOrganization>()
-                .ToTable("TouristMarinaOrganizations");
-
             modelBuilder.Entity<TouristMarina>()
                 .Property(tm => tm.MarinaAddress)
                 .HasMaxLength(250);
@@ -354,9 +446,6 @@ namespace SonoTracker.Infrastructure.Context
                 .WithMany(tm => tm.TouristMarinaOwners)
                 .HasForeignKey(mo => mo.TouristMarinaId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<TouristMarinaLicenseApplication>()
-                .ToTable("TouristMarinaLicenseApplications");
 
             modelBuilder.Entity<TouristMarinaLicenseApplication>()
                 .HasOne(la => la.FromOrganization)
@@ -608,12 +697,30 @@ namespace SonoTracker.Infrastructure.Context
                 .WithOne(nt => nt.Nationality)
                 .HasForeignKey(nt => nt.NationalityId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Nationality>()
+                .HasMany(n => n.TripPassengers)
+                .WithOne(tp => tp.Nationality)
+                .HasForeignKey(tp => tp.NationalityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Nationality>()
+                .HasMany(n => n.TripStaffs)
+                .WithOne(ts => ts.Nationality)
+                .HasForeignKey(ts => ts.NationalityId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         private static void ConfigureIdentityAndNotificationRelations(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Role>()
                         .Ignore(r => r.ConcurrencyStamp);
+
+            modelBuilder.Entity<Role>()
+                .HasOne(r => r.Governorate)
+                .WithMany()
+                .HasForeignKey(r => r.GovernorateId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>()
                         .Ignore(r => r.ConcurrencyStamp);

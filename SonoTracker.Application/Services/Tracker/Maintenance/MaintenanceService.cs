@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.LookUp.Attachments;
 using SonoTracker.Application.Services.Tracker.FloatingUnits;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
@@ -31,11 +31,11 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
         private readonly IFloatingUnitService _floatingUnitService;
-        private readonly IAttachService _attachService;
+        private readonly IAttachmentService _attachService;
 
         public MaintenanceService(IServiceBaseParameter<Entities.Tracker.Maintenance> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment, IHttpContextAccessor request,
-            IFloatingUnitService floatingUnitService, IAttachService attachService) : base(businessBaseParameter)
+            IFloatingUnitService floatingUnitService, IAttachmentService attachService) : base(businessBaseParameter)
         {
             _hostingEnvironment = hostingEnvironment;
             _request = request;
@@ -239,7 +239,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                     foreach (var formFile in dto.Other)
                     {
                         Guid guid = Guid.NewGuid();
-                        var AddDto = new AddAttachDto
+                        var AddDto = new AddAttachmentDto
                         {
                             Id = guid.ToString(),
                             Path = formFile,
@@ -320,7 +320,7 @@ namespace SonoTracker.Application.Services.Tracker.Maintenance
                         foreach (var formFile in dto.Other)
                         {
                             Guid guid = Guid.NewGuid();
-                            var AddDto = new AddAttachDto
+                            var AddDto = new AddAttachmentDto
                             {
                                 Id = guid.ToString(),
                                 Path = formFile,

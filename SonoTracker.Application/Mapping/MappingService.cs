@@ -21,6 +21,7 @@ namespace SonoTracker.Application.Mapping
             MapOrganizationStaff();
             MapFloatingUnit();
             MapFloatingUnitStaff();
+            MapTripAttachment();
             MapTripInformation();
             MapFloatingUnitOrganization();
             MapInspection();
@@ -29,6 +30,9 @@ namespace SonoTracker.Application.Mapping
             MapLicenseApplication();
             MapTripGeo();
             MapMarinaTrip();
+            MapTripNationality();
+            MapTripStaff();
+            MapTripPassenger();
             MapMaintenance();
             MapAccident();
             MapUser();

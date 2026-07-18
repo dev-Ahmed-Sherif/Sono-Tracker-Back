@@ -29,8 +29,19 @@ namespace SonoTracker.Api.Seed
                 await using var scope = host.Services.CreateAsyncScope();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var db = scope.ServiceProvider.GetRequiredService<SonoTrackerDbContext>();
 
                 var now = DateTime.UtcNow;
+                var defaultGovernorateId = await db.Governorates
+                    .AsNoTracking()
+                    .Select(g => g.Id)
+                    .FirstOrDefaultAsync();
+
+                if (string.IsNullOrEmpty(defaultGovernorateId))
+                {
+                    Log.Warning("Identity seed skipped: no governorates found to assign Role.GovernorateId");
+                    return;
+                }
 
                 // Ensure SuperAdmin role exists
                 Role? role = await roleManager.FindByNameAsync(SuperAdminRoleName);
@@ -41,6 +52,7 @@ namespace SonoTracker.Api.Seed
                         Name = SuperAdminRoleName,
                         NormalizedName = SuperAdminRoleName.ToUpperInvariant(),
                         NameAr = "مدير النظام",
+                        GovernorateId = defaultGovernorateId,
                         CreatedAt = now,
                         ModifiedAt = now,
                         CreatedById = SystemActor,
@@ -65,6 +77,7 @@ namespace SonoTracker.Api.Seed
                         Name = UserRoleName,
                         NormalizedName = UserRoleName.ToUpperInvariant(),
                         NameAr = "مستخدم",
+                        GovernorateId = defaultGovernorateId,
                         CreatedAt = now,
                         ModifiedAt = now,
                         CreatedById = SystemActor,

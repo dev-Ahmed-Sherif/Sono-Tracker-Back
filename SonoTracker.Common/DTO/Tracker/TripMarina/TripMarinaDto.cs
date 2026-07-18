@@ -1,19 +1,15 @@
 using SonoTracker.Common.Core;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Common.DTO.Tracker.TripMarina
 {
+    [ExcludeFromCodeCoverage]
     public class TripMarinaDto : IEntityDto<string>
     {
         public string Id { get; set; }
         public string TouristMarinaId { get; set; }
-        public string TouristMarinaName{ get; set; }
-
+        public string TouristMarinaName { get; set; }
         public string TouristMarinaCode { get; set; }
         public string TripInformationId { get; set; }
         public string TripInformationCode { get; set; }

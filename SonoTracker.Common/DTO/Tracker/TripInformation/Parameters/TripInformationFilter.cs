@@ -1,16 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Common.DTO.Tracker.TripInformation.Parameters
 {
+    [ExcludeFromCodeCoverage]
     public class TripInformationFilter
     {
-        public DateTime? SartDate { get; set; }
+        public DateOnly? StartDate { get; set; }
 
-        public DateTime? EndDate { get; set; }
+        public DateOnly? EndDate { get; set; }
 
         public string Code { get; set; }
 
@@ -18,7 +16,8 @@ namespace SonoTracker.Common.DTO.Tracker.TripInformation.Parameters
 
         public string? RouteId { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
+        public string? GovernorateId { get; set; }
 
+        public bool IsDeleted { get; set; } = false;
     }
 }

@@ -17,14 +17,16 @@ namespace SonoTracker.Domain.Entities.Tracker
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-        public int NationalityNumber { get; set; }
+        // public int NationalityNumber { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Nationality))]
-        public string? NationalityId { get; set; }
+        [Required, MaxLength(50)] 
+        [ForeignKey(nameof(Nationality))]
+        public required string NationalityId { get; set; }
         public virtual Nationality? Nationality { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(TripInformation))]
-        public string? TripInformationId { get; set; }
+        [Required, MaxLength(50)] 
+        [ForeignKey(nameof(TripInformation))]
+        public required string TripInformationId { get; set; }
         public virtual TripInformation? TripInformation { get; set; }
     }
 }

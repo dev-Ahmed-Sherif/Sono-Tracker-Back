@@ -2,7 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.LookUp.Attachments;
 using SonoTracker.Application.Services.Tracker.Accident;
 using SonoTracker.Application.Services.Tracker.AccidentAttach;
 using SonoTracker.Common.Core;
@@ -22,7 +22,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Accident
     [Authorize]
     public class AccidentController(IAccidentService accidentService, 
                                     IAccidentAttachService accidentAttachService,
-                                    IAttachService attachService) : BaseController
+                                    IAttachmentService attachService) : BaseController
     {
         /// <summary>
         /// Get By Id 

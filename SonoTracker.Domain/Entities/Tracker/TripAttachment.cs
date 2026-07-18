@@ -1,14 +1,17 @@
+
+using SonoTracker.Domain.Entities.Base;
+using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Tracker;
+using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Domain.Entities.Attachments
+namespace SonoTracker.Domain.Entities.Tracker
 {
-    public class TripPassengerAttachment : BaseEntity<string>
+    [ExcludeFromCodeCoverage]
+    public class TripAttachment : BaseEntity<string>
     {
-        public TripPassengerAttachment()
+        public TripAttachment()
         {
             if (string.IsNullOrEmpty(Id))
             {
@@ -20,7 +23,7 @@ namespace SonoTracker.Domain.Entities.Attachments
         [ForeignKey(nameof(Attachment))]
         public required string AttachmentId { get; set; }
         public virtual Attachment? Attachment { get; set; }
-        
+
         [Required, MaxLength(50)]
         [ForeignKey(nameof(TripInformation))]
         public required string TripInformationId { get; set; }

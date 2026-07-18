@@ -85,6 +85,50 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
+        public async Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default)
+        {
+            var isSuperAdmin = IsSuperAdmin();
+            var limit = filter.PageSize;
+            var offset = --filter.PageNumber * filter.PageSize;
+
+            var predicate = DropDownPredicateBuilderFunction(filter.Filter);
+
+            var query = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: predicate,
+                pageNumber: offset,
+                pageSize: limit,
+                include: src => src
+                    .Include(t => t.TouristMarina)
+                    .Include(x => x.TripInformation)
+                    .ThenInclude(x => x.FloatingUnit),
+                cancellationToken: cancellationToken);
+
+            var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<TripMarinaDto>>(items);
+
+            return new PagingResult(filter.PageNumber, filter.PageSize, query.Item1, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+        }
+
+        public async Task<IFinalResult> GetAllFilterAsync(TripMarinaFilter filter, CancellationToken cancellationToken = default)
+        {
+            var isSuperAdmin = IsSuperAdmin();
+            var marinaTripFilter = filter ?? new TripMarinaFilter();
+            if (!isSuperAdmin)
+                marinaTripFilter.IsDeleted = false;
+
+            var entities = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(marinaTripFilter),
+                include: src => src
+                    .Include(t => t.TouristMarina)
+                    .Include(x => x.TripInformation)
+                    .ThenInclude(x => x.FloatingUnit),
+                cancellationToken: cancellationToken);
+
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripMarina>, IEnumerable<TripMarinaDto>>(entities);
+
+            return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
+                message: HttpStatusCode.OK.ToString());
+        }
 
         static Expression<Func<Entities.Tracker.TripMarina, bool>> PredicateBuilderFunction(TripMarinaFilter filter)
         {
@@ -107,6 +151,17 @@ namespace SonoTracker.Application.Services.Tracker.TripMarina
             return predicate;
         }
 
+        static Expression<Func<Entities.Tracker.TripMarina, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
+        {
+            var predicate = PredicateBuilder.New<Entities.Tracker.TripMarina>(x => !x.IsDeleted);
+            if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
+            {
+                predicate = predicate.And(b => b.TouristMarina.NameAr.Contains(filter.SearchCriteria)
+                    || b.TouristMarina.Code.Contains(filter.SearchCriteria)
+                    || b.TripInformation.Code.Contains(filter.SearchCriteria));
+            }
+            return predicate;
+        }
 
         public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {

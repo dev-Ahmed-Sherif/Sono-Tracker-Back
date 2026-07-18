@@ -13,17 +13,18 @@ using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Lookup.Attach;
 using SonoTracker.Common.Helpers.MediaUploader;
 using SonoTracker.Domain;
+using SonoTracker.Domain.Entities.Lookups;
 
-namespace SonoTracker.Application.Services.LookUp.Attach
+namespace SonoTracker.Application.Services.LookUp.Attachments
 {
-    public class AttachService : BaseService<Entities.Attachments.Attachment, AddAttachDto, EditAttachDto, AttachDto, string, string>, IAttachService
+    public class AttachmentService : BaseService<Attachment, AddAttachmentDto, EditAttachmentDto, AttachmentDto, string, string>, IAttachmentService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _request;
         private readonly UploaderConfiguration _uploaderConfiguration;
 
-        public AttachService(
-            IServiceBaseParameter<Entities.Attachments.Attachment> businessBaseParameter,
+        public AttachmentService(
+            IServiceBaseParameter<Attachment> businessBaseParameter,
             IWebHostEnvironment hostingEnvironment,
             IHttpContextAccessor request)
             : base(businessBaseParameter)
@@ -36,28 +37,28 @@ namespace SonoTracker.Application.Services.LookUp.Attach
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), cancellationToken: cancellationToken);
-            var mapped = Mapper.Map<Entities.Attachments.Attachment, EditAttachDto>(entity);
+            var mapped = Mapper.Map<Attachment, EditAttachmentDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.FirstOrDefaultAsync(x => x.Id == id.ToString(), cancellationToken: cancellationToken);
-            var mapped = Mapper.Map<Entities.Attachments.Attachment, AttachDto>(entity);
+            var mapped = Mapper.Map<Attachment, AttachmentDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Attachments.Attachment, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Attachment, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entity = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
             var filteredEntities = entity.Where(e => !e.IsDeleted);
-            var mapped = Mapper.Map<IEnumerable<Entities.Attachments.Attachment>, IEnumerable<AttachDto>>(filteredEntities);
+            var mapped = Mapper.Map<IEnumerable<Attachment>, IEnumerable<AttachmentDto>>(filteredEntities);
             return ResponseResult.PostResult(mapped, status: HttpStatusCode.OK, message: HttpStatusCode.OK.ToString());
         }
 
-        public override async Task<IFinalResult> AddAsync(AddAttachDto model, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> AddAsync(AddAttachmentDto model, CancellationToken cancellationToken = default)
         {
-            var entity = Mapper.Map<Entities.Attachments.Attachment>(model);
+            var entity = Mapper.Map<Attachment>(model);
 
             if (model.Path != null)
             {

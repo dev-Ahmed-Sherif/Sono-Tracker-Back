@@ -35,7 +35,7 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
                 include: src => src.Include(t => t.GeoPoint)
                 .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit), cancellationToken: cancellationToken);
 
-            var mapped = Mapper.Map<Entities.Tracker.TripGeo, EditTripGeoDto>(entity);
+            var mapped = Mapper.Map<Entities.Tracker.TripGeo, TripGeoDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
@@ -101,7 +101,13 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
 
             var predicate = DropDownPredicateBuilderFunction(filter.Filter);
 
-            var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
+            var query = await UnitOfWork.Repository.FindPagedAsync(
+                predicate: predicate,
+                pageNumber: offset,
+                pageSize: limit,
+                include: src => src.Include(t => t.GeoPoint)
+                    .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit),
+                cancellationToken: cancellationToken);
 
             var items = isSuperAdmin ? query.Item2 : query.Item2.Where(x => x.IsDeleted != true);
             var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(items);
@@ -111,9 +117,18 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
         }
         public async Task<IFinalResult> GetAllFilterAsync(TripGeoFilter filter, CancellationToken cancellationToken = default)
         {
-            var entity = await UnitOfWork.Repository.FindAsync(predicate: PredicateBuilderFunction(filter), cancellationToken: cancellationToken);
+            var isSuperAdmin = IsSuperAdmin();
+            var tripGeoFilter = filter ?? new TripGeoFilter();
+            if (!isSuperAdmin)
+                tripGeoFilter.IsDeleted = false;
 
-            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(entity.Where(x => x.IsDeleted != true));
+            var entity = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderFunction(tripGeoFilter),
+                include: src => src.Include(t => t.GeoPoint)
+                    .Include(t => t.TripInformation).ThenInclude(t => t.FloatingUnit),
+                cancellationToken: cancellationToken);
+
+            var data = Mapper.Map<IEnumerable<Entities.Tracker.TripGeo>, IEnumerable<TripGeoDto>>(entity);
 
             return ResponseResult.PostResult(data, status: HttpStatusCode.OK,
                 message: HttpStatusCode.OK.ToString());
@@ -126,28 +141,17 @@ namespace SonoTracker.Application.Services.Tracker.TripGeo
             {
                 predicate = predicate.And(x => x.TripInformationId == filter.TripInformationId);
             }
-            //if (filter.SartDate.HasValue)
-            //{
-            //    predicate = predicate.And(x => x.SartDate.Date >= filter.SartDate.Value.Date);
-            //}
-            //if (filter.EndDate.HasValue)
-            //{
-            //    predicate = predicate.And(x => x.EndDate<= filter.EndDate.Value.Date);
-            //}
-            //if (!string.IsNullOrWhiteSpace(filter.Code))
-            //{
-            //    predicate = predicate.And(x => x.Code.Contains(filter.Code));
-            //}
 
             return predicate;
         }
         static Expression<Func<Entities.Tracker.TripGeo, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
         {
-            var predicate = PredicateBuilder.New<Entities.Tracker.TripGeo>(true);
+            var predicate = PredicateBuilder.New<Entities.Tracker.TripGeo>(x => !x.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
             {
-                //predicate = predicate.And(b => b.Code.Contains(filter.SearchCriteria));
-                //  predicate = predicate.Or(b => b.Name.Contains(filter.SearchCriteria));
+                predicate = predicate.And(b => b.TripInformation.Code.Contains(filter.SearchCriteria)
+                    || b.GeoPoint.North.Contains(filter.SearchCriteria)
+                    || b.GeoPoint.East.Contains(filter.SearchCriteria));
             }
             return predicate;
         }

@@ -41,9 +41,9 @@ namespace SonoTracker.Domain.Entities.Identity
 
         public bool IsDeleted { get; set; }
 
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         [ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
     }
 }

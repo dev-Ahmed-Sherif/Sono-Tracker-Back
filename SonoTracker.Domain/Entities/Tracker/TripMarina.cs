@@ -18,12 +18,14 @@ namespace SonoTracker.Domain.Entities.Tracker
             }
         }
 
-        [MaxLength(50), ForeignKey(nameof(TouristMarina))]
-        public string? TouristMarinaId { get; set; }
+        [Required, MaxLength(50)] 
+        [ForeignKey(nameof(TouristMarina))]
+        public required string TouristMarinaId { get; set; }
         public virtual TouristMarina? TouristMarina { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(TripInformation))]
-        public string? TripInformationId { get; set; }
+        [Required, MaxLength(50)] 
+        [ForeignKey(nameof(TripInformation))]
+        public required string TripInformationId { get; set; }
         public virtual TripInformation? TripInformation { get; set; }
     }
 }

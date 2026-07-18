@@ -2,7 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.LookUp.Attach;
+using SonoTracker.Application.Services.LookUp.Attachments;
 using SonoTracker.Application.Services.Tracker.MaintenanceAttach;
 using SonoTracker.Application.Services.Tracker.Maintenance;
 using SonoTracker.Common.Core;
@@ -24,7 +24,7 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Maintenance
     [Authorize]
     public class MaintenancesController(IMaintenanceService maintenanceService,
                                         IMaintenanceAttachService maintenanceAttachService,
-                                        IAttachService attachService) : BaseController
+                                        IAttachmentService attachService) : BaseController
     {
         /// <summary>
         /// Get By Id 

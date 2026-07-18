@@ -1010,7 +1010,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.#ctor(SonoTracker.Application.Services.Tracker.Accident.IAccidentService,SonoTracker.Application.Services.Tracker.AccidentAttach.IAccidentAttachService,SonoTracker.Application.Services.LookUp.Attach.IAttachService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Accident.AccidentController.#ctor(SonoTracker.Application.Services.Tracker.Accident.IAccidentService,SonoTracker.Application.Services.Tracker.AccidentAttach.IAccidentAttachService,SonoTracker.Application.Services.LookUp.Attachments.IAttachmentService)">
             <summary>
             Constructor
             </summary>
@@ -1488,7 +1488,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.#ctor(SonoTracker.Application.Services.Tracker.Inspection.IInspectionService,SonoTracker.Application.Services.Tracker.InspectionAttach.IInspectionAttachService,SonoTracker.Application.Services.LookUp.Attach.IAttachService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Inspection.InspectionsController.#ctor(SonoTracker.Application.Services.Tracker.Inspection.IInspectionService,SonoTracker.Application.Services.Tracker.InspectionAttach.IInspectionAttachService,SonoTracker.Application.Services.LookUp.Attachments.IAttachmentService)">
             <summary>
             Constructor
             </summary>
@@ -1573,7 +1573,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.#ctor(SonoTracker.Application.Services.Tracker.Maintenance.IMaintenanceService,SonoTracker.Application.Services.Tracker.MaintenanceAttach.IMaintenanceAttachService,SonoTracker.Application.Services.LookUp.Attach.IAttachService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Maintenance.MaintenancesController.#ctor(SonoTracker.Application.Services.Tracker.Maintenance.IMaintenanceService,SonoTracker.Application.Services.Tracker.MaintenanceAttach.IMaintenanceAttachService,SonoTracker.Application.Services.LookUp.Attachments.IAttachmentService)">
             <summary>
             Constructor
             </summary>
@@ -2020,6 +2020,71 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController">
+            <summary>
+            Trip attachment endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.#ctor(SonoTracker.Application.Services.Tracker.TripAttachment.ITripAttachmentService)">
+            <summary>
+            Trip attachment endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripAttachment.Parameters.TripAttachmentFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.AddAsync(SonoTracker.Common.DTO.Tracker.TripAttachment.AddTripAttachmentDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripAttachment.AddTripAttachmentDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by TripAttachment Ids
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripAttachmentController.DeleteRangeByAttachAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by Attachment Ids
+            </summary>
+        </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripGeoController">
             <summary>
             Constructor
@@ -2109,7 +2174,7 @@
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.#ctor(SonoTracker.Application.Services.Tracker.TripInformation.ITripInformationService,SonoTracker.Application.Services.Tracker.FloatingUnits.IFloatingUnitService)">
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.#ctor(SonoTracker.Application.Services.Tracker.TripInformation.ITripInformationService,SonoTracker.Application.Services.Tracker.TripAttachment.ITripAttachmentService,SonoTracker.Application.Services.LookUp.Attachments.IAttachmentService)">
             <summary>
             Constructor
             </summary>
@@ -2187,6 +2252,14 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripInformationController.DeleteRangeAttachmentsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Deletes a range of attachments by their IDs.
+            </summary>
+            <param name="ids">A collection of attachment IDs to delete.</param>
+            <param name="cancellationToken"></param>
+            <returns>An <see cref="T:SonoTracker.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
+        </member>
         <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripMarinasController">
             <summary>
             Constructor
@@ -2262,6 +2335,186 @@
             <param name="ids">PK</param>
             <param name="cancellationToken"></param>
             <returns></returns>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController">
+            <summary>
+            Trip nationality endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.#ctor(SonoTracker.Application.Services.Tracker.TripNationality.ITripNationalityService)">
+            <summary>
+            Trip nationality endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripNationality.Parameters.TripNationalityFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.AddAsync(SonoTracker.Common.DTO.Tracker.TripNationality.AddTripNationalityDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripNationality.AddTripNationalityDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripNationalityController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by TripNationality Ids
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController">
+            <summary>
+            Trip passenger endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.#ctor(SonoTracker.Application.Services.Tracker.TripPassenger.ITripPassengerService)">
+            <summary>
+            Trip passenger endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.GetAllAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripPassenger.Parameters.TripPassengerFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.AddAsync(SonoTracker.Common.DTO.Tracker.TripPassenger.AddTripPassengerDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripPassenger.AddTripPassengerDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripPassengerController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by TripPassenger Ids
+            </summary>
+        </member>
+        <member name="T:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController">
+            <summary>
+            Trip staff endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.#ctor(SonoTracker.Application.Services.Tracker.TripStaff.ITripStaffService)">
+            <summary>
+            Trip staff endpoints
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.GetAllAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get All
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.GetPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Tracker.TripStaff.Parameters.TripStaffFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.GetDropDownAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.AddAsync(SonoTracker.Common.DTO.Tracker.TripStaff.AddTripStaffDto,System.Threading.CancellationToken)">
+            <summary>
+            Add
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.UpdateAsync(SonoTracker.Common.DTO.Tracker.TripStaff.AddTripStaffDto,System.Threading.CancellationToken)">
+            <summary>
+            Update
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove by id
+            </summary>
+        </member>
+        <member name="M:SonoTracker.Api.Controllers.V1.Tracker.Trip.TripStaffController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Remove Range by TripStaff Ids
+            </summary>
         </member>
         <member name="T:SonoTracker.Api.Controllers.V2.Base.BaseController">
             <inheritdoc />

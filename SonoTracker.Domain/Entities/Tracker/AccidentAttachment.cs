@@ -1,4 +1,3 @@
-using SonoTracker.Domain.Entities.Attachments;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
 using System;

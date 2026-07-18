@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SonoTracker.Common.DTO.Lookup.Attach
 {
     [ExcludeFromCodeCoverage]
-    public class AddAttachDto : IEntityDto<string>
+    public class AddAttachmentDto : IEntityDto<string>
     {
         public string Id { get; set; }
 

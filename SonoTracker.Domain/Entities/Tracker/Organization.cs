@@ -1,4 +1,3 @@
-using SonoTracker.Domain.Entities.Attachments;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Domain.Enum;
@@ -46,8 +45,9 @@ namespace SonoTracker.Domain.Entities.Tracker
         public string? CommercialRegistrationNumber { get; set; }
         public string? WebSiteAddress { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Nationality))]

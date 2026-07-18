@@ -1,10 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Tracker;
 
-namespace SonoTracker.Domain.Entities.Attachments
+namespace SonoTracker.Domain.Entities.Lookups
 {
     public class Attachment : BaseEntity<string>
     {

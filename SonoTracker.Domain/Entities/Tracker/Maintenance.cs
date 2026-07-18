@@ -36,9 +36,9 @@ namespace SonoTracker.Domain.Entities.Tracker
         public required string FloatingUnitId { get; set; }
         public virtual FloatingUnit? FloatingUnit { get; set; }
 
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         [ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public HashSet<MaintenanceAttachment> MaintenanceAttachments { get; set; } = [];

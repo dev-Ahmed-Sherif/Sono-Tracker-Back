@@ -22,5 +22,9 @@ namespace SonoTracker.Domain.Entities.Lookups
 
         public virtual HashSet<TripNationality> TripNationalities { get; set; } = [];
 
+        public virtual HashSet<TripPassenger> TripPassengers { get; set; } = [];
+
+        public virtual HashSet<TripStaff> TripStaffs { get; set; } = [];
+
     }
 }

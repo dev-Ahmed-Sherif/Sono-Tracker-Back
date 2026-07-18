@@ -36,8 +36,9 @@ namespace SonoTracker.Domain.Entities.TrackerNotification
         public string? MessagingGroupId { get; set; }
         public virtual MessagingGroup? MessagingGroup { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
         public bool IsRead { get; set; }
     }

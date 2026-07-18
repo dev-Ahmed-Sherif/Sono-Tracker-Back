@@ -2,13 +2,15 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Tracker.FloatingUnits;
+using SonoTracker.Application.Services.LookUp.Attachments;
+using SonoTracker.Application.Services.Tracker.TripAttachment;
 using SonoTracker.Application.Services.Tracker.TripInformation;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Tracker.FloatingUnit;
 using SonoTracker.Common.DTO.Tracker.TripInformation;
 using SonoTracker.Common.DTO.Tracker.TripInformation.Parameters;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -20,9 +22,9 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class TripInformationController(
-                    ITripInformationService tripInformationService, 
-                    IFloatingUnitService floatingUnitService) : BaseController
+    public class TripInformationController(ITripInformationService tripInformationService,
+                                           ITripAttachmentService tripAttachmentService,
+                                           IAttachmentService attachService) : BaseController
     {
         /// <summary>
         /// Get By Id 
@@ -95,64 +97,18 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        public async Task<IFinalResult> AddAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddTripInformationDto dto, CancellationToken cancellationToken = default)
         {
-            string floatingUnitCode, TripCode = "";
+            IFinalResult res = await tripInformationService.AddAsync(dto, cancellationToken);
 
-            var floatingUnit = await floatingUnitService.GetByIdAsync(dto.FloatingUnitId, cancellationToken);
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
-            // Fix: Cast the floatingUnit.Data to the appropriate type that contains the 'Code' property.
-            if (floatingUnit.Data is FloatingUnitDto floatingUnitDto)
-            {
-                floatingUnitCode = floatingUnitDto.Code;
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
 
-                TripInformationFilter filter = new()
-                {
-                    FloatingUnitId = dto.FloatingUnitId,
-                    IsDeleted = false
-                };
-
-                // Check if the trip information already exists for the given floating unit id
-                var exist = await tripInformationService.GetAllFilterAsync(filter, cancellationToken);
-                // Fix: Explicitly cast exist.Data to a collection type to access the Count property.
-                var existDataCollection = exist.Data as ICollection<TripInformationDto>;
-
-                if (existDataCollection?.Count > 0)
-                {
-                    // Handle existing trip information logic here (if needed)
-                    var lastTrip = existDataCollection.LastOrDefault();
-                    if (lastTrip != null && lastTrip.Code.StartsWith(floatingUnitCode))
-                    {
-                        // Extract the numeric part and increment it
-                        var numericPart = lastTrip.Code[floatingUnitCode.Length..];
-                        if (int.TryParse(numericPart, out int number))
-                        {
-                            number++;
-                            TripCode = floatingUnitCode + number.ToString("D4"); // Ensure 4 digits
-                        }
-                    }
-                }
-                else
-                {
-                    TripCode = floatingUnitCode + "0001";
-                }
-            }
-
-            AddTripInformationDto addTripInformation = new()
-            {
-                Code = TripCode,
-                FloatingUnitId = dto.FloatingUnitId,
-                RouteId = dto.RouteId,
-                SartDate = dto.SartDate,
-                EndDate = dto.EndDate,
-                StaffNumber = dto.StaffNumber,
-                PassengerNumber = dto.PassengerNumber,
-                PassengerAttachment = dto.PassengerAttachment
-            };
-
-            var res = await tripInformationService.AddAsync(addTripInformation, cancellationToken);
-
-            return res;
+            return Created("", res);
         }
 
         /// <summary>
@@ -161,8 +117,19 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="model">Object content</param>
         /// <returns></returns>
         [HttpPut("update")]
-        public async Task<IFinalResult> UpdateAsync([FromForm] AddTripInformationDto model, CancellationToken cancellationToken = default)
-                                        => await tripInformationService.UpdateAsync(model, cancellationToken);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddTripInformationDto model, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await tripInformationService.UpdateAsync(model, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            if (res.Status == HttpStatusCode.Conflict) return Conflict(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Remove  by id
@@ -171,8 +138,16 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("delete/{id}")]
-        public async Task<IFinalResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
-                                        => await tripInformationService.DeleteAsync(id, cancellationToken);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await tripInformationService.DeleteAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Soft Remove by id
@@ -181,8 +156,16 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteSoft/{id}")]
-        public async Task<IFinalResult> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
-                                        => await tripInformationService.DeleteSoftAsync(id, cancellationToken);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteSoftAsync(string id, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await tripInformationService.DeleteSoftAsync(id, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
 
         /// <summary>
         /// Remove Range by Organization Ids
@@ -191,7 +174,43 @@ namespace SonoTracker.Api.Controllers.V1.Tracker.Trip
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("deleteRange")]
-        public async Task<IFinalResult> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-                                        => await tripInformationService.DeleteRangeAsync(ids, cancellationToken);
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> DeleteRangeAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await tripInformationService.DeleteRangeAsync(ids, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Accepted(res);
+        }
+
+        /// <summary>
+        /// Deletes a range of attachments by their IDs.
+        /// </summary>
+        /// <param name="ids">A collection of attachment IDs to delete.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>An <see cref="IFinalResult"/> indicating the result of the operation.</returns>
+        [HttpDelete("deleteRange/attachments")]
+        public async Task<ActionResult<IFinalResult>> DeleteRangeAttachmentsAsync([FromBody] IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            if (ids == null || !ids.Any())
+            {
+                return new FinalResult
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "No IDs provided for deletion."
+                };
+            }
+
+            IFinalResult resultTripAttach = await tripAttachmentService.DeleteRangeWithAttachIdRangeAsync(ids, cancellationToken);
+            IFinalResult resultAttach = await attachService.DeleteRangeAsync(ids, cancellationToken);
+            if (resultAttach.Status == HttpStatusCode.BadRequest && resultTripAttach.Status == HttpStatusCode.BadRequest)
+            {
+                return BadRequest(resultAttach);
+            }
+
+            return Ok(resultAttach);
+        }
     }
 }

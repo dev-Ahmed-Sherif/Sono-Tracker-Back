@@ -50,8 +50,8 @@ namespace SonoTracker.Domain.Entities.Tracker
         public required string UnitTypeId { get; set; }
         public virtual UnitType? UnitType { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        [Required, MaxLength(50), ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<FloatingUnitStaff> FloatingUnitStaffs { get; set; } = [];

@@ -1,4 +1,3 @@
-using SonoTracker.Domain.Entities.Attachments;
 using SonoTracker.Domain.Entities.Base;
 using SonoTracker.Domain.Entities.Lookups;
 using System;
@@ -23,11 +22,19 @@ namespace SonoTracker.Domain.Entities.Tracker
         [Required, MaxLength(50)]
         public required string Code { get; set; }
         [Required]
-        public DateOnly SartDate { get; set; }
+        public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public int StaffNumber { get; set; }
         public int PassengerNumber { get; set; }
         public int AttachmentNumber { get; set; }
+
+        [Required]
+        public required bool IsAccepted { get; set; }
+
+        [Required, MaxLength(140)]
+        public required string PassengerAttachment { get; set; }
+        [Required, MaxLength(140)]
+        public required string StaffAttachment { get; set; }
 
         [Required, MaxLength(50)] 
         [ForeignKey(nameof(FloatingUnit))]
@@ -39,12 +46,15 @@ namespace SonoTracker.Domain.Entities.Tracker
         public required string RouteId { get; set; }
         public virtual Route? Route { get; set; }
         
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<TripNationality> NationalityTrips { get; set; } = [];
         public virtual HashSet<TripMarina> TripMarinas { get; set; } = [];
-        public virtual HashSet<TripPassengerAttachment> TripPassengerAttachments { get; set; } = [];
+        public virtual HashSet<TripAttachment> TripAttachments { get; set; } = [];
+        public virtual HashSet<TripPassenger> TripPassengers { get; set; } = [];
+        public virtual HashSet<TripStaff> TripStaffs { get; set; } = [];
     }
 }

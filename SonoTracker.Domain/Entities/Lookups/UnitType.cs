@@ -19,8 +19,9 @@ namespace SonoTracker.Domain.Entities.Lookups
         }
         public UnitCategory UnitCategory { get; set; }
 
-        [MaxLength(50), ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
+        [Required, MaxLength(50)]
+        [ForeignKey(nameof(Governorate))]
+        public required string GovernorateId { get; set; }
         public virtual Governorate? Governorate { get; set; }
 
         public virtual HashSet<FloatingUnit> FloatingUnits { get; set; } = [];
